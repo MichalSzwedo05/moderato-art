@@ -1,4 +1,4 @@
-FROM node:22.14.0-alpine3.21 AS base
+FROM node:22.23.1-alpine AS base
 
 WORKDIR /app
 ENV NEXT_TELEMETRY_DISABLED=1
@@ -27,6 +27,13 @@ ENV PORT=3000
 
 RUN addgroup --system --gid 1001 nextjs \
   && adduser --system --uid 1001 --ingroup nextjs nextjs
+
+# The production server runs only Node and does not need package managers.
+RUN rm -rf /usr/local/lib/node_modules/corepack \
+  /usr/local/lib/node_modules/npm \
+  /usr/local/bin/corepack \
+  /usr/local/bin/npm \
+  /usr/local/bin/npx
 
 COPY --from=builder --chown=nextjs:nextjs /app/public ./public
 COPY --from=builder --chown=nextjs:nextjs /app/.next/standalone ./
