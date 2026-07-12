@@ -1,234 +1,239 @@
 # Moderato Art
 
-## Cel projektu
+## Project Goal
 
-Celem projektu jest stworzenie profesjonalnej, minimalistycznej i nowoczesnej strony internetowej dla marki Moderato Art.
+The goal is to create a professional, minimalist, and modern website for Moderato Art.
 
-Strona będzie działać pod domeną:
+The website will be available at:
 
 `moderato-art.pl`
 
-Osoba prowadząca działalność:
+Business owner:
 
 `Magdalena Warzecha`
 
-Strona ma pełnić funkcję wizytówki, portfolio oraz punktu kontaktowego dla rodziców i opiekunów, którzy chcą zapisać dziecko na zajęcia muzyczne.
+The website will act as a business profile, portfolio, and contact point for parents and guardians who want to enrol a child in music classes.
 
-## Charakter strony
+## Website Characteristics
 
-Strona ma być:
+The website should be:
 
-- profesjonalna
-- minimalistyczna
-- elegancka
-- szybka
-- przejrzysta
-- przyjazna na telefonie
-- łatwa w obsłudze dla rodziców
-- nastawiona na kontakt telefoniczny i formularz
-- przygotowana pod zdjęcia, banery i materiały promocyjne
-- możliwa do uruchomienia przez Docker Compose
+- professional
+- minimalist
+- elegant
+- fast
+- easy to understand
+- mobile-friendly
+- easy for parents and guardians to use
+- focused on phone contact and the contact form
+- ready for photos, banners, and promotional materials
+- runnable with Docker Compose
 
-## Grupa docelowa
+## Target Audience
 
-Oferta zajęć jest skierowana do dzieci, szczególnie dzieci w wieku przedszkolnym.
+The classes are intended for children, especially preschool-aged children.
 
-Strona komunikacyjnie jest skierowana do rodziców i opiekunów, ponieważ to oni podejmują decyzję o kontakcie, zapisaniu dziecka na zajęcia i ustaleniu szczegółów organizacyjnych.
+The website communication is aimed at parents and guardians because they make the decision to contact the business, enrol a child, and arrange organisational details.
 
-Na stronie nie należy sugerować, że oferta obejmuje zajęcia dla rodziców. Rodzice są odbiorcami informacji, ale uczestnikami zajęć są dzieci.
+The website must not imply that the offer includes classes for parents. Parents and guardians are the audience for the information, while children are the class participants.
 
-## Główny cel strony
+## Website Language
 
-Najważniejszym celem strony jest zachęcenie rodzica do kontaktu.
+The public website must be written in Polish, including the interface, marketing copy, form labels and messages, legal pages, and SEO metadata.
 
-Główne działania użytkownika:
+Project documentation and source code will remain in English unless a Polish user-facing value is required.
 
-- wykonanie telefonu
-- wysłanie formularza kontaktowego
-- zapytanie o dostępne terminy
-- rezerwacja zajęć dla dziecka
+## Primary Website Goal
 
-## Zakres treści
+The primary goal is to encourage a parent or guardian to make contact.
 
-## 1. Sekcja główna
+Primary user actions:
 
-Pierwszy widok strony powinien jasno komunikować, czym jest Moderato Art.
+- make a phone call
+- submit the contact form
+- ask about available dates
+- reserve classes for a child
 
-Sekcja powinna zawierać:
+## Content Scope
 
-- nazwę Moderato Art
-- informację, że zajęcia prowadzi Magdalena Warzecha
-- krótkie hasło związane z nauką śpiewu i muzyką dla dzieci
-- informację, że oferta dotyczy dzieci w wieku przedszkolnym i szkolnym
-- przycisk „Zarezerwuj zajęcia”
-- przycisk „Zadzwoń”
-- zdjęcie lub baner związany z muzyką, śpiewem albo zajęciami dziecięcymi
+### 1. Hero Section
 
-Przykładowy kierunek komunikacji:
+The first screen should clearly explain what Moderato Art is.
 
-„Zajęcia muzyczne i nauka śpiewu dla dzieci prowadzone w spokojnej, przyjaznej atmosferze.”
+It should include:
 
-## 2. O Moderato Art
+- the Moderato Art name
+- information that the classes are led by Magdalena Warzecha
+- a short message about singing and music classes for children
+- information that the offer is for preschool and school-aged children
+- a "Book a Class" button
+- a "Call Now" button
+- a photo or banner related to music, singing, or children's activities
 
-Sekcja powinna przedstawić działalność oraz osobę prowadzącą.
+Suggested message direction:
 
-Treść powinna obejmować:
+"Music and singing classes for children, delivered in a calm and welcoming environment."
 
-- krótkie przedstawienie Magdaleny Warzechy
-- opis idei Moderato Art
-- podejście do pracy z dziećmi
-- informację o rozwijaniu muzykalności, rytmu i swobody śpiewania
-- podkreślenie spokojnej i bezpiecznej atmosfery
-- informację, że szczegóły zajęć są ustalane indywidualnie przez kontakt
+### 2. About Moderato Art
 
-Nie należy publikować prywatnego adresu zamieszkania ani danych lokalizacyjnych, które klient chce przekazywać dopiero po kontakcie.
+This section should introduce the business and its owner.
 
-## 3. Oferta
+It should include:
 
-Główne elementy oferty:
+- a short introduction to Magdalena Warzecha
+- the Moderato Art idea and mission
+- the approach to working with children
+- information about developing musicality, rhythm, and confidence in singing
+- an emphasis on a calm and safe atmosphere
+- information that class details are arranged individually by contact
 
-- indywidualna nauka śpiewu dla dzieci
-- grupowe zajęcia muzyczne dla dzieci
-- zajęcia rytmiczne dla dzieci
-- zajęcia muzyczne dla dzieci w wieku przedszkolnym
+The website must not publish a private home address or location details that the client wants to share only after contact.
 
-Każda pozycja oferty powinna mieć:
+### 3. Offer
 
-- krótki opis
-- prostą ikonę lub zdjęcie
-- informację, dla kogo są zajęcia
-- przycisk prowadzący do kontaktu lub formularza
+Core services:
 
-Oferta nie powinna zawierać zajęć dla rodziców.
+- individual singing lessons for children
+- group music classes for children
+- rhythm classes for children
+- music classes for preschool-aged children
 
-## 4. Dlaczego warto
+Each offer item should include:
 
-Sekcja powinna budować zaufanie i pomagać rodzicowi podjąć decyzję.
+- a short description
+- a simple icon or photo
+- information about who the class is for
+- a button leading to contact or the contact form
 
-Możliwe elementy:
+The offer must not include classes for parents.
 
-- indywidualne podejście do dziecka
-- nauka przez zabawę
-- rozwój muzykalności
-- rozwój rytmu
-- oswajanie dziecka ze śpiewem
-- przyjazna atmosfera
-- zajęcia dopasowane do wieku dziecka
-- możliwość ustalenia szczegółów bezpośrednio z prowadzącą
+### 4. Why Choose Moderato Art
 
-## 5. Galeria
+This section should build trust and help parents make a decision.
 
-Strona powinna mieć miejsce na zdjęcia i banery.
+Potential points:
 
-Galeria może zawierać:
+- an individual approach to each child
+- learning through play
+- musical development
+- rhythm development
+- helping children become comfortable with singing
+- a welcoming atmosphere
+- classes matched to the child's age
+- the option to arrange details directly with the instructor
 
-- zdjęcia z zajęć
-- zdjęcia tematyczne
-- zdjęcia promujące atmosferę zajęć
-- grafiki związane z muzyką
-- banery promocyjne
+### 5. Gallery
 
-Zdjęcia powinny być zoptymalizowane pod szybkie ładowanie, szczególnie na telefonie.
+The website should include a space for photos and banners.
 
-## 6. Opinie
+The gallery may include:
 
-Sekcja opinii może zostać dodana jako element opcjonalny.
+- photos from classes
+- thematic photos
+- photos showing the atmosphere of the classes
+- music-related illustrations
+- promotional banners
 
-Jeżeli klient ma opinie rodziców, można je pokazać na stronie.
+Images should be optimised for fast loading, especially on mobile devices.
 
-Jeżeli opinii nie ma na start, sekcja może zostać przygotowana później.
+### 6. Testimonials
 
-## 7. Formularz kontaktowy
+A testimonials section may be added as an optional element.
 
-Formularz będzie służył do wysyłania zapytań przez rodziców i opiekunów.
+If the client has testimonials from parents, they can be displayed on the website.
 
-Planowane pola formularza:
+If no testimonials are available at launch, this section can be added later.
 
-- imię i nazwisko rodzica lub opiekuna
-- adres e-mail
-- numer telefonu
-- typ zajęć
-- wiek dziecka
-- treść wiadomości
-- zgoda na kontakt
-- zgoda RODO lub informacja o przetwarzaniu danych
+### 7. Contact Form
 
-Formularz powinien zapisywać dane do bazy danych.
+The form will allow parents and guardians to submit enquiries.
 
-W przyszłości formularz może zostać połączony z aplikacją mobilną lub panelem administracyjnym.
+Planned form fields:
 
-## 8. Kontakt
+- parent or guardian's full name
+- email address
+- phone number
+- class type
+- child's age
+- message
+- required acknowledgement of the Privacy Policy
 
-Sekcja kontaktowa powinna zawierać:
+The form should save submissions to the database.
 
-- numer telefonu
-- adres e-mail
-- formularz kontaktowy
-- ewentualne linki do social media
-- informację, że szczegóły zajęć są ustalane indywidualnie
+The form must link to the Privacy Policy and state the purpose and retention period for submitted data. Separate consent should be requested only if it is legally required, for example for marketing communication.
 
-Nie należy publikować prywatnego adresu zamieszkania.
+In the future, it can be connected to a mobile application or an administration panel.
 
-## Wymagania dotyczące wyglądu
+### 8. Contact
 
-Strona ma być wykonana w stylu profesjonalnym i minimalistycznym.
+The contact section should include:
 
-Szczegóły dotyczące kolorów, fontów, zdjęć i dokładnego stylu zostaną ustalone później.
+- phone number
+- email address
+- contact form
+- optional social media links
+- information that class details are arranged individually
 
-Aktualne założenia wizualne:
+The private home address must not be published.
 
-- jasny i spokojny układ
-- dużo przestrzeni
-- czytelna typografia
-- mała liczba kolorów
-- duże przyciski kontaktowe
-- proste sekcje
-- delikatne animacje
-- układ mobile-first
-- estetyka dopasowana do edukacji muzycznej dzieci
+## Visual Requirements
 
-## Mobile-first
+The website should use a professional and minimalist visual style.
 
-Strona ma być projektowana przede wszystkim pod telefon.
+Details such as colours, fonts, photography, and the final visual direction will be decided later.
 
-Najważniejsze wymagania dla widoku mobilnego:
+Current visual principles:
 
-- bardzo czytelne nagłówki
-- krótkie bloki tekstu
-- duże przyciski
-- szybki dostęp do telefonu
-- szybki dostęp do formularza
-- brak przeładowania treścią
-- lekkie zdjęcia
-- płynne przewijanie
-- brak ciężkich efektów wizualnych
+- a bright and calm layout
+- generous whitespace
+- readable typography
+- a limited colour palette
+- prominent contact buttons
+- simple sections
+- subtle animations
+- a mobile-first layout
+- an aesthetic suitable for children's music education
 
-Widok desktopowy powinien być rozszerzeniem wersji mobilnej, a nie odwrotnie.
+## Mobile-First Design
 
-## Animacje
+The website should be designed primarily for mobile devices.
 
-Strona ma zawierać animacje, które uruchamiają się dopiero po przewinięciu do danej sekcji.
+Key requirements for the mobile view:
 
-Planowane animacje:
+- highly readable headings
+- short blocks of text
+- large buttons
+- quick access to the phone number
+- quick access to the contact form
+- no content overload
+- lightweight images
+- smooth scrolling
+- no heavy visual effects
 
-- delikatne pojawianie się sekcji
-- subtelne przesunięcie elementów z dołu do góry
-- animacje kart oferty
-- płynne pojawianie się zdjęć
-- lekkie animacje przycisków
-- opcjonalny delikatny efekt na banerze
+The desktop version should extend the mobile experience, not the other way around.
 
-Animacje nie mogą spowalniać strony ani przeszkadzać użytkownikowi.
+## Animations
 
-Należy obsłużyć ustawienie systemowe:
+The website should include animations that start only when the user scrolls to a section.
+
+Planned animations:
+
+- gentle section fade-ins
+- subtle bottom-to-top movement
+- offer card animations
+- smooth image reveals
+- lightweight button animations
+- an optional subtle banner effect
+
+Animations must not slow down the website or interfere with usability.
+
+The implementation must respect the system setting:
 
 `prefers-reduced-motion`
 
-Jeżeli użytkownik ma ograniczone animacje w systemie, strona powinna ograniczyć lub wyłączyć efekty ruchu.
+When a user has reduced motion enabled, the website should reduce or disable motion effects.
 
-## Proponowane technologie
-
-Rekomendowany stack na start:
+## Recommended Technology Stack
 
 - Next.js
 - React
@@ -240,39 +245,39 @@ Rekomendowany stack na start:
 - Docker
 - Docker Compose
 
-## Uzasadnienie wyboru technologii
+## Technology Rationale
 
-Next.js dobrze nadaje się do profesjonalnych stron wizytówek, portfolio oraz landing page.
+Next.js is well suited for professional business websites, portfolios, and landing pages.
 
-React pozwoli wygodnie budować sekcje strony jako komponenty.
+React makes it convenient to build individual website sections as components.
 
-TypeScript zmniejszy ryzyko błędów podczas rozwoju projektu.
+TypeScript reduces the risk of errors during development.
 
-Tailwind CSS przyspieszy budowę minimalistycznego i responsywnego interfejsu.
+Tailwind CSS speeds up the implementation of a minimalist and responsive interface.
 
-Framer Motion pozwoli przygotować animacje uruchamiane po przewinięciu.
+Framer Motion supports scroll-triggered animations.
 
-Prisma uprości obsługę bazy danych.
+Prisma simplifies database access.
 
-PostgreSQL będzie dobrym wyborem pod formularz, przyszły panel administracyjny i ewentualną aplikację mobilną.
+PostgreSQL is a good choice for the contact form, a future administration panel, and a potential mobile application.
 
-Docker Compose pozwoli uruchomić całość jednym poleceniem.
+Docker Compose enables the complete application to be run with a single command.
 
 ## Docker
 
-Projekt powinien być możliwy do uruchomienia komendą:
+The project should be runnable with:
 
 ```bash
 docker compose up
 ```
 
-Planowane kontenery:
+Planned containers:
 
-- aplikacja Next.js
-- baza danych PostgreSQL
-- opcjonalnie Adminer lub pgAdmin w środowisku lokalnym
+- Next.js application
+- PostgreSQL database
+- optional Adminer or pgAdmin for local development
 
-## Planowana struktura projektu
+## Planned Project Structure
 
 ```text
 moderato-art/
@@ -307,17 +312,17 @@ moderato-art/
   PLAN.md
 ```
 
-## Baza danych
+## Database
 
-Baza danych będzie przechowywać zgłoszenia z formularza kontaktowego.
+The database will store contact form submissions.
 
-Planowany model:
+Planned model:
 
 ```text
 ContactSubmission
 ```
 
-Planowane pola:
+Planned fields:
 
 - id
 - parentName
@@ -326,74 +331,76 @@ Planowane pola:
 - lessonType
 - childAge
 - message
-- consent
+- privacyPolicyAccepted
+- privacyPolicyVersion
+- privacyPolicyAcceptedAt
 - status
 - createdAt
 - updatedAt
 
-Planowane statusy zgłoszenia:
+Planned submission statuses:
 
 - new
 - contacted
 - archived
 
-W pierwszej wersji wystarczy zapis zgłoszeń do bazy danych.
+The first version only needs to save submissions to the database.
 
-Panel administracyjny może zostać dodany później.
+An administration panel can be added later.
 
 ## API
 
-Na start potrzebny będzie endpoint do obsługi formularza.
+The initial implementation requires an endpoint for the contact form.
 
-Planowany endpoint:
+Planned endpoint:
 
 ```text
 POST /api/contact
 ```
 
-Endpoint powinien:
+The endpoint should:
 
-- przyjmować dane formularza
-- walidować dane po stronie serwera
-- zapisywać zgłoszenie do bazy danych
-- zwracać czytelny komunikat sukcesu lub błędu
-- nie ujawniać szczegółów technicznych użytkownikowi
+- receive form data
+- validate data on the server
+- save the submission to the database
+- return a clear success or error message
+- avoid exposing technical details to the user
 
-W przyszłości API może zostać rozszerzone pod aplikację mobilną.
+The API can later be extended for a mobile application.
 
-## Bezpieczeństwo
+## Security
 
-Formularz powinien mieć:
+The contact form should include:
 
-- walidację po stronie klienta
-- walidację po stronie serwera
-- ochronę przed spamem
-- ograniczenie liczby wysyłek
-- zgodę na kontakt
-- informację RODO
-- bezpieczne przechowywanie danych w bazie
-- brak publicznego dostępu do zgłoszeń
+- client-side validation
+- server-side validation
+- spam protection
+- submission rate limiting
+- a Privacy Policy link and acknowledgement
+- a documented data-retention period
+- secure database storage
+- no public access to submissions
 
-Dane prywatne klienta nie powinny być publikowane na stronie.
+The client's private information must not be published on the website.
 
 ## SEO
 
-Strona powinna być przygotowana pod wyszukiwarki.
+The website should be prepared for search engines.
 
-Wymagane elementy:
+Required elements:
 
-- poprawny tytuł strony
-- opis meta
-- Open Graph
-- semantyczne nagłówki
-- responsywne obrazy
-- szybkie ładowanie
-- sitemap.xml
-- robots.txt
-- poprawne adresy URL
-- teksty opisujące ofertę
+- an appropriate page title
+- a meta description
+- Open Graph metadata
+- semantic headings
+- responsive images
+- fast loading
+- `sitemap.xml`
+- `robots.txt`
+- meaningful URLs
+- content that describes the offer
 
-Przykładowe frazy SEO:
+Example Polish SEO phrases:
 
 - nauka śpiewu dla dzieci
 - zajęcia muzyczne dla dzieci
@@ -403,185 +410,187 @@ Przykładowe frazy SEO:
 - Moderato Art
 - Magdalena Warzecha
 
-## Dostępność
+## Accessibility
 
-Strona powinna być dostępna i wygodna dla użytkowników.
+The website should be accessible and convenient to use.
 
-Wymagania:
+Requirements:
 
-- odpowiedni kontrast
-- czytelne fonty
-- opisy alternatywne zdjęć
-- poprawna kolejność nagłówków
-- obsługa klawiatury
-- czytelne komunikaty błędów formularza
-- widoczne stany przycisków i linków
-- ograniczenie animacji dla użytkowników z `prefers-reduced-motion`
+- sufficient colour contrast
+- readable fonts
+- alternative text for images
+- correct heading order
+- keyboard support
+- clear form validation messages
+- visible button and link states
+- reduced animation for users with `prefers-reduced-motion`
 
-## Plan implementacji
+## Implementation Plan
 
-## Etap 1: Przygotowanie repozytorium
+### Phase 1: Repository Setup
 
-Zadania:
+Tasks:
 
-- utworzenie repozytorium GitHub
-- przygotowanie projektu Next.js
-- konfiguracja TypeScript
-- konfiguracja Tailwind CSS
-- dodanie podstawowej struktury katalogów
-- dodanie README.md
-- dodanie PLAN.md
-- dodanie .env.example
-- dodanie .gitignore
+- create the GitHub repository
+- create the Next.js project
+- configure TypeScript
+- configure Tailwind CSS
+- add the base directory structure
+- add `README.md`
+- add `PLAN.md`
+- add `.env.example`
+- add `.gitignore`
 
-## Etap 2: Docker i środowisko lokalne
+### Phase 2: Docker and Local Environment
 
-Zadania:
+Tasks:
 
-- dodanie Dockerfile
-- dodanie docker-compose.yml
-- konfiguracja kontenera aplikacji
-- konfiguracja kontenera PostgreSQL
-- sprawdzenie uruchamiania przez `docker compose up`
-- przygotowanie zmiennych środowiskowych
+- add a `Dockerfile`
+- add `docker-compose.yml`
+- configure the application container
+- configure the PostgreSQL container
+- verify startup with `docker compose up`
+- prepare environment variables
 
-## Etap 3: Podstawowy layout strony
+### Phase 3: Base Website Layout
 
-Zadania:
+Tasks:
 
-- stworzenie layoutu głównego
-- dodanie sekcji Hero
-- dodanie sekcji O Moderato Art
-- dodanie sekcji Oferta
-- dodanie sekcji Dlaczego warto
-- dodanie sekcji Galeria
-- dodanie sekcji Kontakt
-- dodanie stopki
+- create the main layout
+- add the Hero section
+- add the About Moderato Art section
+- add the Offer section
+- add the Why Choose Moderato Art section
+- add the Gallery section
+- add the Contact section
+- add the footer
 
-## Etap 4: Styl mobile-first
+### Phase 4: Mobile-First Styling
 
-Zadania:
+Tasks:
 
-- przygotowanie widoku mobilnego
-- dopracowanie przycisków CTA
-- dopracowanie odstępów
-- dopracowanie typografii
-- przygotowanie responsywnego układu dla tabletu
-- przygotowanie responsywnego układu dla desktopu
+- implement the mobile view
+- refine call-to-action buttons
+- refine spacing
+- refine typography
+- create a responsive tablet layout
+- create a responsive desktop layout
 
-## Etap 5: Animacje
+### Phase 5: Animations
 
-Zadania:
+Tasks:
 
-- dodanie komponentu do animacji sekcji po przewinięciu
-- dodanie animacji wejścia dla sekcji
-- dodanie animacji kart oferty
-- dodanie animacji zdjęć
-- obsługa `prefers-reduced-motion`
-- sprawdzenie płynności animacji na telefonie
+- add a component for scroll-triggered section animations
+- add section entrance animations
+- add offer card animations
+- add image animations
+- support `prefers-reduced-motion`
+- verify animation performance on mobile devices
 
-## Etap 6: Formularz kontaktowy
+### Phase 6: Contact Form
 
-Zadania:
+Tasks:
 
-- stworzenie formularza kontaktowego
-- dodanie walidacji po stronie klienta
-- dodanie komunikatów błędów
-- dodanie komunikatu sukcesu
-- dodanie zgody na kontakt
-- dodanie informacji RODO
-- przygotowanie endpointu API
+- create the contact form
+- add client-side validation
+- add error messages
+- add a success message
+- add Privacy Policy acknowledgement
+- add a Privacy Policy link
+- create the API endpoint
 
-## Etap 7: Baza danych
+### Phase 7: Database
 
-Zadania:
+Tasks:
 
-- konfiguracja Prisma
-- konfiguracja PostgreSQL
-- stworzenie modelu ContactSubmission
-- przygotowanie migracji
-- połączenie formularza z bazą
-- test zapisu danych
+- configure Prisma
+- configure PostgreSQL
+- create the `ContactSubmission` model
+- prepare a migration
+- connect the form to the database
+- test data persistence
 
-## Etap 8: Przygotowanie pod przyszłą aplikację mobilną
+### Phase 8: Preparation for a Future Mobile Application
 
-Zadania:
+Tasks:
 
-- zachowanie czytelnej struktury API
-- oddzielenie logiki formularza od UI
-- przygotowanie statusów zgłoszeń
-- pozostawienie możliwości dodania autoryzacji
-- pozostawienie możliwości dodania panelu administracyjnego
+- maintain a clear API structure
+- separate form logic from the user interface
+- prepare submission statuses
+- preserve the option to add authentication
+- preserve the option to add an administration panel
 
-## Etap 9: Testy i weryfikacja
+### Phase 9: Testing and Verification
 
-Zadania:
+Tasks:
 
-- sprawdzenie działania strony na telefonie
-- sprawdzenie działania strony na desktopie
-- sprawdzenie formularza
-- sprawdzenie zapisu do bazy danych
-- sprawdzenie błędów formularza
-- sprawdzenie SEO
-- sprawdzenie wydajności
-- sprawdzenie uruchamiania przez Docker Compose
+- test the website on mobile devices
+- test the website on desktop browsers
+- test the contact form
+- test database persistence
+- test form error states
+- verify SEO
+- verify performance
+- verify startup with Docker Compose
 
-## Etap 10: Wdrożenie
+### Phase 10: Deployment
 
-Zadania:
+Tasks:
 
-- wybór hostingu
-- konfiguracja domeny `moderato-art.pl`
-- konfiguracja SSL
-- konfiguracja zmiennych środowiskowych
-- konfiguracja produkcyjnej bazy danych
-- uruchomienie strony produkcyjnie
-- końcowe sprawdzenie formularza
+- choose hosting
+- configure the `moderato-art.pl` domain
+- configure SSL
+- configure environment variables
+- configure the production database
+- deploy the website
+- perform final contact form testing
 
 ## MVP
 
-Pierwsza wersja strony powinna zawierać:
+The first website version should include:
 
-- stronę główną
-- sekcję Hero
-- sekcję O Moderato Art
-- sekcję Oferta
-- sekcję Dlaczego warto
-- miejsce na galerię
-- formularz kontaktowy
-- sekcję Kontakt
-- animacje po przewinięciu
-- bazę danych PostgreSQL
-- uruchamianie przez Docker Compose
+- the home page
+- the Hero section
+- the About Moderato Art section
+- the Offer section
+- the Why Choose Moderato Art section
+- a gallery placeholder
+- the contact form
+- the Contact section
+- scroll-triggered animations
+- a PostgreSQL database
+- Docker Compose startup
 
-## Funkcje na później
+## Future Features
 
-Możliwe rozszerzenia:
+Potential extensions:
 
-- panel administracyjny
-- powiadomienia e-mail
-- integracja z aplikacją mobilną
-- kalendarz rezerwacji
-- opinie rodziców
-- blog lub aktualności
-- system zarządzania zdjęciami
-- integracja z social media
-- wersja wielojęzyczna
+- administration panel
+- email notifications
+- mobile application integration
+- booking calendar
+- parent testimonials
+- blog or news section
+- photo management system
+- social media integration
+- multilingual version
 
-## Otwarte decyzje
+## Open Decisions
 
-Do ustalenia później:
+To be decided later:
 
-- dokładny styl wizualny
-- kolorystyka
-- fonty
-- finalne zdjęcia
-- finalne banery
-- finalne teksty marketingowe
-- numer telefonu
-- adres e-mail
-- linki social media
-- treść zgody RODO
-- hosting produkcyjny
-- czy formularz ma wysyłać e-mail
-- czy będzie potrzebny panel administracyjny
+- detailed visual direction
+- colour palette
+- fonts
+- final photos
+- final banners
+- final marketing copy
+- phone number
+- email address
+- social media links
+- Privacy Policy content
+- data-retention period
+- whether marketing communication consent is required
+- production hosting
+- whether the form should send email notifications
+- whether an administration panel is required
