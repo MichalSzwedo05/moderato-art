@@ -235,7 +235,7 @@ When a user has reduced motion enabled, the website should reduce or disable mot
 
 ## Recommended Technology Stack
 
-- Next.js
+- Next.js 16
 - React
 - TypeScript
 - Tailwind CSS
@@ -244,6 +244,21 @@ When a user has reduced motion enabled, the website should reduce or disable mot
 - PostgreSQL
 - Docker
 - Docker Compose
+
+## Current Implementation Status
+
+The following foundation is implemented and verified locally:
+
+- Next.js 16 application using the App Router and TypeScript
+- Polish-language starter page, metadata, and health endpoint at `GET /health`
+- multi-stage production Docker image running as a non-root user
+- local Docker Compose stack with the application and PostgreSQL
+- production Docker Compose configuration with Caddy as a reverse proxy and automatic HTTPS
+- GitHub Actions for linting, type checking, production builds, container scans, and image publishing
+- versioned Docker images published to GitHub Container Registry
+- Dependabot updates for npm, Docker, and GitHub Actions
+
+The website design, content sections, contact form, Prisma schema, and application database integration are still planned work.
 
 ## Technology Rationale
 
@@ -271,11 +286,31 @@ The project should be runnable with:
 docker compose up
 ```
 
-Planned containers:
+Implemented local containers:
 
 - Next.js application
 - PostgreSQL database
-- optional Adminer or pgAdmin for local development
+
+Implemented production containers:
+
+- Next.js application
+- PostgreSQL database
+- Caddy reverse proxy with automatic HTTPS
+
+## CI/CD and Production Deployment
+
+The `Continuous Integration` GitHub Actions workflow runs automatically for pull requests and pushes to `main`. It runs linting, type checks, a production build, Docker image scanning with Trivy, and publishes a commit-SHA-tagged image to GitHub Container Registry after a successful push to `main`.
+
+The `Deploy Production` workflow is started manually from GitHub Actions. It is designed to require approval through the GitHub `production` environment before connecting to a Hetzner VPS over SSH and running Docker Compose.
+
+Before the first production deployment, the following external configuration is required:
+
+- provision the Hetzner VPS
+- point the domain DNS records to the VPS
+- create the GitHub `production` environment with a required reviewer
+- add the required VPS and GitHub Container Registry secrets
+
+The complete configuration and rollback procedure are documented in `README.md`.
 
 ## Planned Project Structure
 
@@ -429,6 +464,8 @@ Requirements:
 
 ### Phase 1: Repository Setup
 
+Status: complete
+
 Tasks:
 
 - create the GitHub repository
@@ -442,6 +479,8 @@ Tasks:
 - add `.gitignore`
 
 ### Phase 2: Docker and Local Environment
+
+Status: complete
 
 Tasks:
 
@@ -534,6 +573,8 @@ Tasks:
 - verify startup with Docker Compose
 
 ### Phase 10: Deployment
+
+Status: deployment automation complete; production infrastructure pending
 
 Tasks:
 
