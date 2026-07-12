@@ -1,0 +1,50 @@
+name: Deploy Production
+
+on:
+  workflow_dispatch:
+
+env:
+  APP_IMAGE: ghcr.io/${{ github.repository }}:${{ github.sha }}
+  DEPLOY_SHA: ${{ github.sha }}
+
+jobs:
+  deploy:
+    name: Deploy production
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: https://${{ vars.SITE_DOMAIN }}
+    permissions:
+      contents: read
+    env:
+      GHCR_PULL_TOKEN: ${{ secrets.GHCR_PULL_TOKEN }}
+      GHCR_USERNAME: ${{ secrets.GHCR_USERNAME }}
+      VPS_APP_PATH: ${{ secrets.VPS_APP_PATH }}
+      VPS_HOST: ${{ secrets.VPS_HOST }}
+      VPS_PORT: ${{ secrets.VPS_PORT }}
+      VPS_USER: ${{ secrets.VPS_USER }}
+    steps:
+      - name: Configure SSH
+        run: |
+          install -d -m 700 ~/.ssh
+          printf '%s\n' "${{ secrets.VPS_SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          printf '%s\n' "${{ secrets.VPS_SSH_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/known_hosts
+      - name: Update containers on the VPS
+        run: |
+          encoded_token=$(printf '%s' "$GHCR_PULL_TOKEN" | base64 | tr -d '\n')
+          ssh -p "$VPS_PORT" "$VPS_USER@$VPS_HOST" \
+            "APP_IMAGE='$APP_IMAGE' DEPLOY_SHA='$DEPLOY_SHA' GHCR_USERNAME='$GHCR_USERNAME' GHCR_PULL_TOKEN_B64='$encoded_token' VPS_APP_PATH='$VPS_APP_PATH' bash -s" <<'REMOTE'
+          set -eu
+
+          cd "$VPS_APP_PATH"
+          git fetch --depth=1 origin "$DEPLOY_SHA"
+          git checkout --detach "$DEPLOY_SHA"
+          printf '%s' "$GHCR_PULL_TOKEN_B64" | base64 -d | docker login ghcr.io --username "$GHCR_USERNAME" --password-stdin
+          APP_IMAGE="$APP_IMAGE" docker compose --env-file .env.production -f docker-compose.production.yml pull app
+          APP_IMAGE="$APP_IMAGE" docker compose --env-file .env.production -f docker-compose.production.yml up -d --remove-orphans
+          docker image prune --force
+          REMOTE
+      - name: Verify public health endpoint
+        run: curl --fail --retry 12 --retry-delay 5 "https://${{ vars.SITE_DOMAIN }}/health"
