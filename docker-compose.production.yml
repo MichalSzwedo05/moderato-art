@@ -4,12 +4,6 @@ services:
     restart: unless-stopped
     environment:
       DATABASE_URL: ${DATABASE_URL:?DATABASE_URL must be set}
-      LANGFUSE_BASE_URL: ${LANGFUSE_BASE_URL:-https://cloud.langfuse.com}
-      LANGFUSE_PUBLIC_KEY: ${LANGFUSE_PUBLIC_KEY:-}
-      LANGFUSE_RELEASE: ${LANGFUSE_RELEASE:-unknown}
-      LANGFUSE_SAMPLE_RATE: ${LANGFUSE_SAMPLE_RATE:-0.2}
-      LANGFUSE_SECRET_KEY: ${LANGFUSE_SECRET_KEY:-}
-      LANGFUSE_TRACING_ENVIRONMENT: ${LANGFUSE_TRACING_ENVIRONMENT:-production}
       NEXT_PUBLIC_SITE_URL: https://${SITE_DOMAIN:?SITE_DOMAIN must be set}
       NODE_ENV: production
     depends_on:

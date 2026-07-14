@@ -46,25 +46,6 @@ npm run build
 
 The health endpoint is available at `GET /health`.
 
-## Langfuse Tracing
-
-The application includes optional Langfuse tracing for future AI operations and safe server error traces. Tracing is disabled unless both `LANGFUSE_PUBLIC_KEY` and `LANGFUSE_SECRET_KEY` are configured.
-
-Create a Langfuse project, then copy its API keys from `Settings` -> `API Keys` into `.env` for local development or `.env.production` on the VPS. Do not commit either file.
-
-```dotenv
-LANGFUSE_PUBLIC_KEY=pk-lf-...
-LANGFUSE_SECRET_KEY=sk-lf-...
-LANGFUSE_BASE_URL=https://cloud.langfuse.com
-LANGFUSE_TRACING_ENVIRONMENT=development
-LANGFUSE_RELEASE=local
-LANGFUSE_SAMPLE_RATE=1
-```
-
-Use `traceAiOperation` from `lib/langfuse.ts` for future AI route handlers. Pass only the minimum safe input and output necessary for debugging. The exporter masks email addresses, phone numbers, and payment-card numbers before sending data to Langfuse.
-
-For production, set `LANGFUSE_TRACING_ENVIRONMENT=production` and begin with `LANGFUSE_SAMPLE_RATE=0.2`. The deployment workflow sets `LANGFUSE_RELEASE` to the deployed Git commit SHA automatically.
-
 ## CI/CD
 
 The workflow in `.github/workflows/ci.yml` runs on every pull request and push to `main`.

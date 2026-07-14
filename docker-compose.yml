@@ -6,12 +6,6 @@ services:
     command: npm run dev
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER:-moderato}:${POSTGRES_PASSWORD:-moderato_dev_password}@db:5432/${POSTGRES_DB:-moderato}?schema=public
-      LANGFUSE_BASE_URL: ${LANGFUSE_BASE_URL:-https://cloud.langfuse.com}
-      LANGFUSE_PUBLIC_KEY: ${LANGFUSE_PUBLIC_KEY:-}
-      LANGFUSE_RELEASE: ${LANGFUSE_RELEASE:-local}
-      LANGFUSE_SAMPLE_RATE: ${LANGFUSE_SAMPLE_RATE:-1}
-      LANGFUSE_SECRET_KEY: ${LANGFUSE_SECRET_KEY:-}
-      LANGFUSE_TRACING_ENVIRONMENT: ${LANGFUSE_TRACING_ENVIRONMENT:-development}
       NEXT_PUBLIC_SITE_URL: http://localhost:3000
       NODE_ENV: development
     ports:

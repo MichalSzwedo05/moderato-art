@@ -257,7 +257,6 @@ The following foundation is implemented and verified locally:
 - GitHub Actions for linting, type checking, production builds, container scans, and image publishing
 - versioned Docker images published to GitHub Container Registry
 - Dependabot updates for npm, Docker, and GitHub Actions
-- optional Langfuse tracing foundation with server-error observations, data masking, and helpers for future AI operations
 
 The website design, content sections, contact form, Prisma schema, and application database integration are still planned work.
 
