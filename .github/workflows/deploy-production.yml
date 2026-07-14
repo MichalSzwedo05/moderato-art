@@ -42,8 +42,8 @@ jobs:
           git fetch --depth=1 origin "$DEPLOY_SHA"
           git checkout --detach "$DEPLOY_SHA"
           printf '%s' "$GHCR_PULL_TOKEN_B64" | base64 -d | docker login ghcr.io --username "$GHCR_USERNAME" --password-stdin
-          APP_IMAGE="$APP_IMAGE" docker compose --env-file .env.production -f docker-compose.production.yml pull app
-          APP_IMAGE="$APP_IMAGE" docker compose --env-file .env.production -f docker-compose.production.yml up -d --remove-orphans
+          APP_IMAGE="$APP_IMAGE" LANGFUSE_RELEASE="$DEPLOY_SHA" docker compose --env-file .env.production -f docker-compose.production.yml pull app
+          APP_IMAGE="$APP_IMAGE" LANGFUSE_RELEASE="$DEPLOY_SHA" docker compose --env-file .env.production -f docker-compose.production.yml up -d --remove-orphans
           docker image prune --force
           REMOTE
       - name: Verify public health endpoint
