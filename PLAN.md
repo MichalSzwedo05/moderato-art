@@ -27,6 +27,7 @@ The website should be:
 - easy for parents and guardians to use
 - focused on phone contact and the contact form
 - ready for photos, banners, and promotional materials
+- available through a public HTTPS URL that can be opened by scanning a QR code
 - runnable with Docker Compose
 
 ## Target Audience
@@ -136,7 +137,21 @@ The gallery may include:
 
 Images should be optimised for fast loading, especially on mobile devices.
 
-### 6. Testimonials
+### 6. Blog and Articles
+
+The website should include a public blog or articles section with a list of published posts and individual article pages.
+
+Each article should include:
+
+- a title
+- publication date
+- main content
+- optional cover image
+- a meaningful URL for search engines
+
+An authenticated administrator should be able to create, edit, save drafts, publish, unpublish, and archive articles without changing the source code.
+
+### 7. Testimonials
 
 A testimonials section may be added as an optional element.
 
@@ -144,7 +159,7 @@ If the client has testimonials from parents, they can be displayed on the websit
 
 If no testimonials are available at launch, this section can be added later.
 
-### 7. Contact Form
+### 8. Contact Form
 
 The form will allow parents and guardians to submit enquiries.
 
@@ -164,7 +179,7 @@ The form must link to the Privacy Policy and state the purpose and retention per
 
 In the future, it can be connected to a mobile application or an administration panel.
 
-### 8. Contact
+### 9. Contact
 
 The contact section should include:
 
@@ -258,7 +273,7 @@ The following foundation is implemented and verified locally:
 - versioned Docker images published to GitHub Container Registry
 - Dependabot updates for npm, Docker, and GitHub Actions
 
-The website design, content sections, contact form, Prisma schema, and application database integration are still planned work.
+The website design, content sections, blog and article management, contact form, Prisma schema, and application database integration are still planned work.
 
 ## Technology Rationale
 
@@ -320,10 +335,18 @@ moderato-art/
     api/
       contact/
         route.ts
+    admin/
+      articles/
+        page.tsx
+    blog/
+      [slug]/
+        page.tsx
+      page.tsx
     layout.tsx
     page.tsx
   components/
     About.tsx
+    Blog.tsx
     Contact.tsx
     ContactForm.tsx
     Footer.tsx
@@ -349,7 +372,7 @@ moderato-art/
 
 ## Database
 
-The database will store contact form submissions.
+The database will store contact form submissions and blog articles.
 
 Planned model:
 
@@ -379,9 +402,29 @@ Planned submission statuses:
 - contacted
 - archived
 
-The first version only needs to save submissions to the database.
+Planned article model:
 
-An administration panel can be added later.
+```text
+Article
+```
+
+Planned fields:
+
+- id
+- title
+- slug
+- content
+- coverImageUrl
+- status
+- publishedAt
+- createdAt
+- updatedAt
+
+Planned article statuses:
+
+- draft
+- published
+- archived
 
 ## API
 
@@ -403,6 +446,8 @@ The endpoint should:
 
 The API can later be extended for a mobile application.
 
+The administration panel will also require protected endpoints for managing articles.
+
 ## Security
 
 The contact form should include:
@@ -415,6 +460,7 @@ The contact form should include:
 - a documented data-retention period
 - secure database storage
 - no public access to submissions
+- authenticated and authorised access to article management
 
 The client's private information must not be published on the website.
 
@@ -434,6 +480,7 @@ Required elements:
 - `robots.txt`
 - meaningful URLs
 - content that describes the offer
+- indexable pages for published blog articles
 
 Example Polish SEO phrases:
 
@@ -501,6 +548,7 @@ Tasks:
 - add the Offer section
 - add the Why Choose Moderato Art section
 - add the Gallery section
+- add the Blog section and article pages
 - add the Contact section
 - add the footer
 
@@ -545,21 +593,30 @@ Tasks:
 - configure Prisma
 - configure PostgreSQL
 - create the `ContactSubmission` model
+- create the `Article` model
 - prepare a migration
 - connect the form to the database
 - test data persistence
 
-### Phase 8: Preparation for a Future Mobile Application
+### Phase 8: Blog and Article Management
+
+Tasks:
+
+- create public blog listing and article pages
+- create an administrator authentication flow
+- create an article management interface
+- support draft, published, and archived article statuses
+- verify that unpublished articles are not publicly accessible
+
+### Phase 9: Preparation for a Future Mobile Application
 
 Tasks:
 
 - maintain a clear API structure
 - separate form logic from the user interface
 - prepare submission statuses
-- preserve the option to add authentication
-- preserve the option to add an administration panel
 
-### Phase 9: Testing and Verification
+### Phase 10: Testing and Verification
 
 Tasks:
 
@@ -568,11 +625,12 @@ Tasks:
 - test the contact form
 - test database persistence
 - test form error states
+- test article creation, editing, publishing, and public visibility
 - verify SEO
 - verify performance
 - verify startup with Docker Compose
 
-### Phase 10: Deployment
+### Phase 11: Deployment
 
 Status: deployment automation complete; production infrastructure pending
 
@@ -585,6 +643,8 @@ Tasks:
 - configure the production database
 - deploy the website
 - perform final contact form testing
+- generate a QR code linked to the final public HTTPS URL
+- verify that scanning the QR code opens the website on a mobile device
 
 ## MVP
 
@@ -596,6 +656,7 @@ The first website version should include:
 - the Offer section
 - the Why Choose Moderato Art section
 - a gallery placeholder
+- a blog or articles section with administrator-managed publishing
 - the contact form
 - the Contact section
 - scroll-triggered animations
@@ -606,12 +667,10 @@ The first website version should include:
 
 Potential extensions:
 
-- administration panel
 - email notifications
 - mobile application integration
 - booking calendar
 - parent testimonials
-- blog or news section
 - photo management system
 - social media integration
 - multilingual version
@@ -634,4 +693,3 @@ To be decided later:
 - whether marketing communication consent is required
 - production hosting
 - whether the form should send email notifications
-- whether an administration panel is required
