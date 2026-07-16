@@ -1,23 +1,26 @@
+import Image from "next/image";
+
 const offers = [
   {
     number: "01",
-    title: "Lekcje śpiewu",
-    description: "Indywidualna praca z głosem, oddechem i pewnością siebie.",
+    title: "Rytmisolki",
+    subtitle: "Zajęcia muzyczno-rytmiczne",
+    audience: "Dla dzieci w wieku przedszkolnym",
+    description: "Śpiew, ruch i twórcza zabawa rozwijające słuch muzyczny, rytm i wyobraźnię.",
   },
   {
     number: "02",
-    title: "Zajęcia muzyczne",
-    description: "Spotkania pełne dźwięków, ruchu i muzycznej wyobraźni.",
+    title: "Junior Voice",
+    subtitle: "Grupowe lekcje śpiewu",
+    audience: "Dla dzieci w wieku przedszkolnym",
+    description: "Bezpieczne odkrywanie głosu, śpiew przy fortepianie i pierwsze doświadczenia sceniczne.",
   },
   {
     number: "03",
-    title: "Rytmika",
-    description: "Rozwijanie poczucia rytmu przez zabawę i wspólne muzykowanie.",
-  },
-  {
-    number: "04",
-    title: "Muzyka dla przedszkolaków",
-    description: "Łagodne pierwsze spotkania z muzyką dla najmłodszych dzieci.",
+    title: "Studio Wokalne",
+    subtitle: "Indywidualne lekcje śpiewu",
+    audience: "Dla dzieci, młodzieży i dorosłych",
+    description: "Świadoma praca nad oddechem, emisją głosu, dykcją i interpretacją utworów.",
   },
 ];
 
@@ -55,13 +58,8 @@ export default function HomePage() {
       <header className="site-header">
         <div className="site-shell navigation">
           <a className="brand" href="#start" aria-label="Moderato Art - strona główna">
-            <span className="brand-mark" aria-hidden="true">
-              M
-            </span>
-            <span>
-              <strong>Moderato</strong>
-              <small>art</small>
-            </span>
+            <Image className="brand-logo" src="/moderato-logo.jpg" alt="Moderato" width={1563} height={600} priority />
+            <span className="brand-tagline">Muzyczna Kraina Malucha</span>
           </a>
           <nav aria-label="Główna nawigacja">
             <a href="#o-mnie">O mnie</a>
@@ -84,8 +82,8 @@ export default function HomePage() {
                 Daj dziecku <em>głos,</em> który lubi brzmieć.
               </h1>
               <p className="hero-intro">
-                Zajęcia muzyczne i nauka śpiewu dla dzieci prowadzone z uwagą,
-                czułością i radością odkrywania.
+                Zajęcia muzyczno-rytmiczne, grupowe lekcje śpiewu i indywidualna
+                praca z głosem dla dzieci, młodzieży i dorosłych.
               </p>
               <div className="hero-actions">
                 <a className="button button-primary" href="#kontakt">
@@ -95,7 +93,7 @@ export default function HomePage() {
                   Poznaj ofertę <span aria-hidden="true">-&gt;</span>
                 </a>
               </div>
-              <p className="hero-note">Zajęcia dla dzieci w wieku przedszkolnym i szkolnym</p>
+              <p className="hero-note">Zajęcia grupowe dla przedszkolaków oraz indywidualne lekcje śpiewu</p>
             </div>
 
             <div className="hero-art" aria-hidden="true">
@@ -105,6 +103,7 @@ export default function HomePage() {
               <div className="note note-one">o</div>
               <div className="note note-two">o</div>
               <div className="note note-three">o</div>
+              <Image className="identity-card" src="/moderato-identity-card.png" alt="" width={100} height={200} priority />
               <p>W muzyce jest miejsce na każdy głos.</p>
             </div>
           </div>
@@ -112,10 +111,16 @@ export default function HomePage() {
 
         <section className="intro-section" id="o-mnie" aria-labelledby="about-title">
           <div className="site-shell intro-grid">
-            <div className="portrait-placeholder" role="img" aria-label="Miejsce na portret Magdaleny Warzechy-Hiller">
-              <div className="portrait-sun" />
-              <span>Portret<br />Magdaleny</span>
-            </div>
+            <figure className="portrait">
+              <Image
+                src="/magdalena-warzecha-hiller.jpg"
+                alt="Magdalena Warzecha-Hiller"
+                fill
+                priority
+                sizes="(max-width: 900px) min(100vw - 3rem, 30rem), 31vw"
+              />
+              <figcaption>Magdalena Warzecha-Hiller</figcaption>
+            </figure>
             <div className="intro-copy">
               <p className="eyebrow">Poznaj prowadzącą</p>
               <h2 id="about-title">Muzyka zaczyna się od uważnego słuchania.</h2>
@@ -141,10 +146,10 @@ export default function HomePage() {
             <div className="section-heading">
               <div>
                 <p className="eyebrow">Co robimy</p>
-                <h2 id="offer-title">Zajęcia, które rozwijają po swojemu.</h2>
+                <h2 id="offer-title">Znajdź swój rytm i własny głos.</h2>
               </div>
               <p>
-                Wybierz formę zajęć, a szczegóły ustalimy spokojnie podczas rozmowy.
+                Wybierz program dopasowany do wieku, potrzeb i muzycznych marzeń.
               </p>
             </div>
             <div className="offer-grid">
@@ -152,6 +157,8 @@ export default function HomePage() {
                 <article className="offer-card" key={offer.number}>
                   <span>{offer.number}</span>
                   <h3>{offer.title}</h3>
+                  <p className="offer-subtitle">{offer.subtitle}</p>
+                  <p className="offer-audience">{offer.audience}</p>
                   <p>{offer.description}</p>
                   <a href="#kontakt" aria-label={`Zapytaj o: ${offer.title}`}>
                     Więcej <span aria-hidden="true">-&gt;</span>
@@ -168,8 +175,8 @@ export default function HomePage() {
               <p className="eyebrow">Dobra atmosfera</p>
               <h2 id="benefits-title">Ważna jest nie tylko melodia.</h2>
               <p className="benefits-intro">
-                Muzyka pomaga dziecku słuchać, wyrażać emocje i z większą
-                swobodą być sobą. Dlatego dbamy o proces, nie o perfekcję.
+                Muzyka pomaga słuchać, wyrażać emocje i z większą swobodą być
+                sobą. Dlatego dbamy o proces, nie o perfekcję.
               </p>
             </div>
             <ul>
@@ -190,7 +197,7 @@ export default function HomePage() {
                 <p className="eyebrow">Przestrzeń do tworzenia</p>
                 <h2 id="gallery-title">Miejsce, w którym muzyka się dzieje.</h2>
               </div>
-              <p>Tu wkrótce pojawią się zdjęcia z zajęć i muzyczne inspiracje.</p>
+              <p>Tu wkrótce pojawią się kolejne zdjęcia z zajęć i muzyczne inspiracje.</p>
             </div>
             <div className="gallery-grid" aria-label="Miejsce na galerię zdjęć">
               <div className="gallery-tile gallery-tile-tall"><span>01</span></div>
@@ -228,10 +235,10 @@ export default function HomePage() {
           <div className="site-shell contact-grid">
             <div>
               <p className="eyebrow">Porozmawiajmy</p>
-              <h2 id="contact-title">Zobaczmy, czego potrzebuje Twoje dziecko.</h2>
+              <h2 id="contact-title">Znajdźmy zajęcia dla Ciebie lub Twojego dziecka.</h2>
               <p>
-                Napisz kilka słów o dziecku i o tym, czego szukacie. Odpowiem i
-                wspólnie ustalimy najlepszą formę pierwszego spotkania.
+                Napisz kilka słów o tym, czego szukasz. Odpowiem i wspólnie
+                ustalimy najlepszą formę pierwszego spotkania.
               </p>
               <p className="contact-placeholder">
                 Dane kontaktowe zostaną uzupełnione przed publikacją strony.
@@ -262,8 +269,8 @@ export default function HomePage() {
       <footer className="site-footer">
         <div className="site-shell footer-content">
           <a className="brand brand-footer" href="#start" aria-label="Moderato Art - powrót na początek">
-            <span className="brand-mark" aria-hidden="true">M</span>
-            <span><strong>Moderato</strong><small>art</small></span>
+            <span className="footer-brand-name">Moderato</span>
+            <span className="brand-tagline">Muzyczna Kraina Malucha</span>
           </a>
           <p>Muzyka i śpiew dla dzieci.</p>
           <p>© {new Date().getFullYear()} Moderato Art</p>
