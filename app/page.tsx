@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { CurrentYear } from "./current-year";
 
 const offers = [
   {
@@ -273,7 +274,7 @@ export default function HomePage() {
             <span className="brand-tagline">Muzyczna Kraina Malucha</span>
           </a>
           <p>Muzyka i śpiew dla dzieci.</p>
-          <p>© {new Date().getFullYear()} Moderato Art</p>
+          <p>© <CurrentYear /> Moderato Art</p>
         </div>
       </footer>
     </>

@@ -1,11 +1,3 @@
-@import url("https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&display=swap");
-
-@font-face {
-  font-family: "Feather Bold";
-  src: url("https://db.onlinewebfonts.com/t/14936bb7a4b6575fd2eee80a3ab52cc2.woff2") format("woff2");
-  font-display: swap;
-}
-
 :root {
   --green: #ff5b62;
   --green-hover: #d84550;
@@ -22,7 +14,7 @@
   --golden: #f4c56d;
   color: var(--gray-text);
   background: var(--cream);
-  font-family: "Nunito", "DIN Round Pro", -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family: var(--font-nunito), "DIN Round Pro", -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 * {
@@ -111,7 +103,7 @@ textarea {
 
 .footer-brand-name {
   color: #fff;
-  font-family: "Feather Bold", "Nunito", sans-serif;
+  font-family: var(--font-nunito), "DIN Round Pro", sans-serif;
   font-size: 1.45rem;
   letter-spacing: -0.07em;
 }
@@ -119,7 +111,7 @@ textarea {
 h1,
 h2,
 h3 {
-  font-family: "Feather Bold", "Nunito", "DIN Round Pro", sans-serif;
+  font-family: var(--font-nunito), "DIN Round Pro", sans-serif;
 }
 
 .navigation nav {
