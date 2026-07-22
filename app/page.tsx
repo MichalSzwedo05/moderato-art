@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { CurrentYear } from "./current-year";
+import { ThemeSwitcher } from "./theme-switcher";
 
 const offers = [
   {
@@ -65,9 +66,10 @@ export default function HomePage() {
           <nav aria-label="Główna nawigacja">
             <a href="#o-mnie">O mnie</a>
             <a href="#oferta">Oferta</a>
-            <a href="#blog">Blog</a>
+            <a href="#blog">Artykuły</a>
             <a href="#kontakt">Kontakt</a>
           </nav>
+          <ThemeSwitcher />
           <a className="header-action" href="#kontakt">
             Zapytaj o zajęcia
           </a>
