@@ -1,6 +1,13 @@
 import type { Metadata } from "next";
+import { Nunito } from "next/font/google";
 import type { ReactNode } from "react";
 import "./globals.css";
+
+const nunito = Nunito({
+  subsets: ["latin", "latin-ext"],
+  display: "swap",
+  variable: "--font-nunito",
+});
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 
@@ -21,7 +28,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
   return (
-    <html lang="pl">
+    <html lang="pl" className={nunito.variable}>
       <body>{children}</body>
     </html>
   );
