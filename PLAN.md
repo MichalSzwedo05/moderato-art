@@ -554,6 +554,8 @@ Tasks:
 
 ### Phase 4: Mobile-First Styling
 
+Status: complete
+
 Tasks:
 
 - implement the mobile view
@@ -564,6 +566,8 @@ Tasks:
 - create a responsive desktop layout
 
 ### Phase 5: Animations
+
+Status: complete
 
 Tasks:
 
