@@ -586,6 +586,11 @@ h2 {
   padding-block: 7rem;
 }
 
+.intro-section {
+  background: linear-gradient(180deg, var(--cream-deep), var(--cream));
+  border-top: 1px solid var(--border-color);
+}
+
 .intro-grid,
 .benefits-grid,
 .contact-grid {
@@ -964,6 +969,8 @@ h2 {
   padding-block: 2.2rem;
   color: rgb(255 255 255 / 56%);
   background: var(--footer-background);
+  /* Extends the footer color into bottom overscroll without changing the top canvas. */
+  box-shadow: 0 100vh 0 100vh var(--footer-background);
 }
 
 .footer-content {
