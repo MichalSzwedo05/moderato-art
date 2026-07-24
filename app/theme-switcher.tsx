@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, type ChangeEvent } from "react";
+import { useEffect, useRef, useState, type ChangeEvent, type SyntheticEvent } from "react";
 
 type ThemeVariant = "signature" | "ocean" | "sunrise";
 
@@ -13,6 +13,7 @@ const variants: { value: ThemeVariant; label: string }[] = [
 export function ThemeSwitcher() {
   const [variant, setVariant] = useState<ThemeVariant>("signature");
   const [darkMode, setDarkMode] = useState(false);
+  const detailsRef = useRef<HTMLDetailsElement>(null);
 
   useEffect(() => {
     document.documentElement.dataset.variant = variant;
@@ -24,6 +25,16 @@ export function ThemeSwitcher() {
     };
   }, [darkMode, variant]);
 
+  useEffect(() => {
+    function closeSwitcher() {
+      detailsRef.current?.removeAttribute("open");
+    }
+
+    window.addEventListener("mobile-navigation-open", closeSwitcher);
+
+    return () => window.removeEventListener("mobile-navigation-open", closeSwitcher);
+  }, []);
+
   function handleVariantChange(event: ChangeEvent<HTMLInputElement>) {
     setVariant(event.target.value as ThemeVariant);
   }
@@ -32,8 +43,14 @@ export function ThemeSwitcher() {
     setDarkMode(event.target.checked);
   }
 
+  function handleToggle(event: SyntheticEvent<HTMLDetailsElement>) {
+    if (event.currentTarget.open) {
+      window.dispatchEvent(new Event("theme-switcher-open"));
+    }
+  }
+
   return (
-    <details className="theme-switcher">
+    <details className="theme-switcher" onToggle={handleToggle} ref={detailsRef}>
       <summary>Wygląd</summary>
       <div className="theme-panel">
         <fieldset>

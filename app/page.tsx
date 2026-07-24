@@ -1,5 +1,7 @@
 import Image from "next/image";
 import { CurrentYear } from "./current-year";
+import { MobileNavigation } from "./mobile-navigation";
+import { ScrollReveal } from "./scroll-reveal";
 import { ThemeSwitcher } from "./theme-switcher";
 
 const offers = [
@@ -70,6 +72,7 @@ export default function HomePage() {
             <a href="#kontakt">Kontakt</a>
           </nav>
           <ThemeSwitcher />
+          <MobileNavigation />
           <a className="header-action" href="#kontakt">
             Zapytaj o zajęcia
           </a>
@@ -114,7 +117,7 @@ export default function HomePage() {
 
         <section className="intro-section" id="o-mnie" aria-labelledby="about-title">
           <div className="site-shell intro-grid">
-            <figure className="portrait">
+            <ScrollReveal as="figure" className="portrait" variant="left">
               <Image
                 src="/magdalena-warzecha-hiller.jpg"
                 alt="Magdalena Warzecha-Hiller"
@@ -123,8 +126,8 @@ export default function HomePage() {
                 sizes="(max-width: 900px) min(100vw - 3rem, 30rem), 31vw"
               />
               <figcaption>Magdalena Warzecha-Hiller</figcaption>
-            </figure>
-            <div className="intro-copy">
+            </ScrollReveal>
+            <ScrollReveal className="intro-copy" delay={120} variant="right">
               <p className="eyebrow">Poznaj prowadzącą</p>
               <h2 id="about-title">Muzyka zaczyna się od uważnego słuchania.</h2>
               <p>
@@ -140,7 +143,7 @@ export default function HomePage() {
               <a className="text-link" href="#kontakt">
                 Dowiedz się więcej <span aria-hidden="true">-&gt;</span>
               </a>
-            </div>
+            </ScrollReveal>
           </div>
         </section>
 
@@ -156,8 +159,8 @@ export default function HomePage() {
               </p>
             </div>
             <div className="offer-grid">
-              {offers.map((offer) => (
-                <article className="offer-card" key={offer.number}>
+              {offers.map((offer, index) => (
+                <ScrollReveal as="article" className="offer-card" delay={index * 100} key={offer.number}>
                   <span>{offer.number}</span>
                   <h3>{offer.title}</h3>
                   <p className="offer-subtitle">{offer.subtitle}</p>
@@ -166,7 +169,7 @@ export default function HomePage() {
                   <a href="#kontakt" aria-label={`Zapytaj o: ${offer.title}`}>
                     Więcej <span aria-hidden="true">-&gt;</span>
                   </a>
-                </article>
+                </ScrollReveal>
               ))}
             </div>
           </div>
@@ -174,22 +177,24 @@ export default function HomePage() {
 
         <section className="benefits-section" aria-labelledby="benefits-title">
           <div className="site-shell benefits-grid">
-            <div>
+            <ScrollReveal>
               <p className="eyebrow">Dobra atmosfera</p>
               <h2 id="benefits-title">Ważna jest nie tylko melodia.</h2>
               <p className="benefits-intro">
                 Muzyka pomaga słuchać, wyrażać emocje i z większą swobodą być
                 sobą. Dlatego dbamy o proces, nie o perfekcję.
               </p>
-            </div>
-            <ul>
-              {benefits.map((benefit) => (
-                <li key={benefit}>
-                  <span aria-hidden="true">+</span>
-                  {benefit}
-                </li>
-              ))}
-            </ul>
+            </ScrollReveal>
+            <ScrollReveal as="div" delay={120} variant="right">
+              <ul>
+                {benefits.map((benefit) => (
+                  <li key={benefit}>
+                    <span aria-hidden="true">+</span>
+                    {benefit}
+                  </li>
+                ))}
+              </ul>
+            </ScrollReveal>
           </div>
         </section>
 
@@ -203,10 +208,10 @@ export default function HomePage() {
               <p>Tu wkrótce pojawią się kolejne zdjęcia z zajęć i muzyczne inspiracje.</p>
             </div>
             <div className="gallery-grid" aria-label="Miejsce na galerię zdjęć">
-              <div className="gallery-tile gallery-tile-tall"><span>01</span></div>
-              <div className="gallery-tile gallery-tile-warm"><span>02</span></div>
-              <div className="gallery-tile gallery-tile-blue"><span>03</span></div>
-              <div className="gallery-tile gallery-tile-wide"><span>04</span></div>
+              <ScrollReveal className="gallery-tile gallery-tile-tall" delay={0} variant="scale"><span>01</span></ScrollReveal>
+              <ScrollReveal className="gallery-tile gallery-tile-warm" delay={100} variant="scale"><span>02</span></ScrollReveal>
+              <ScrollReveal className="gallery-tile gallery-tile-blue" delay={180} variant="scale"><span>03</span></ScrollReveal>
+              <ScrollReveal className="gallery-tile gallery-tile-wide" delay={240} variant="scale"><span>04</span></ScrollReveal>
             </div>
           </div>
         </section>
@@ -223,12 +228,12 @@ export default function HomePage() {
               </a>
             </div>
             <div className="article-grid">
-              {articles.map((article) => (
-                <article className="article-card" key={article.title}>
+              {articles.map((article, index) => (
+                <ScrollReveal as="article" className="article-card" delay={index * 100} key={article.title}>
                   <p>{article.category}</p>
                   <h3>{article.title}</h3>
                   <span>{article.date}</span>
-                </article>
+                </ScrollReveal>
               ))}
             </div>
           </div>
@@ -236,7 +241,7 @@ export default function HomePage() {
 
         <section className="contact-section" id="kontakt" aria-labelledby="contact-title">
           <div className="site-shell contact-grid">
-            <div>
+            <ScrollReveal>
               <p className="eyebrow">Porozmawiajmy</p>
               <h2 id="contact-title">Znajdźmy zajęcia dla Ciebie lub Twojego dziecka.</h2>
               <p>
@@ -246,25 +251,27 @@ export default function HomePage() {
               <p className="contact-placeholder">
                 Dane kontaktowe zostaną uzupełnione przed publikacją strony.
               </p>
-            </div>
-            <form className="contact-form" action="#" method="post">
-              <label>
-                Imię i nazwisko rodzica lub opiekuna
-                <input name="name" type="text" autoComplete="name" placeholder="Np. Anna Kowalska" disabled />
-              </label>
-              <label>
-                Adres e-mail
-                <input name="email" type="email" autoComplete="email" placeholder="twoj@email.pl" disabled />
-              </label>
-              <label>
-                Wiadomość
-                <textarea name="message" rows={4} placeholder="Napisz, ile lat ma dziecko i jakie zajęcia Cię interesują." disabled />
-              </label>
-              <button className="button button-primary" type="button" disabled>
-                Formularz wkrótce
-              </button>
-              <small>Formularz zostanie aktywowany po konfiguracji danych kontaktowych.</small>
-            </form>
+            </ScrollReveal>
+            <ScrollReveal as="div" delay={120} variant="scale">
+              <form className="contact-form" action="#" method="post">
+                <label>
+                  Imię i nazwisko rodzica lub opiekuna
+                  <input name="name" type="text" autoComplete="name" placeholder="Np. Anna Kowalska" disabled />
+                </label>
+                <label>
+                  Adres e-mail
+                  <input name="email" type="email" autoComplete="email" placeholder="twoj@email.pl" disabled />
+                </label>
+                <label>
+                  Wiadomość
+                  <textarea name="message" rows={4} placeholder="Napisz, ile lat ma dziecko i jakie zajęcia Cię interesują." disabled />
+                </label>
+                <button className="button button-primary" type="button" disabled>
+                  Formularz wkrótce
+                </button>
+                <small>Formularz zostanie aktywowany po konfiguracji danych kontaktowych.</small>
+              </form>
+            </ScrollReveal>
           </div>
         </section>
       </main>
