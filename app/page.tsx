@@ -53,6 +53,33 @@ const articles = [
   },
 ];
 
+const galleryPhotos = [
+  {
+    alt: "Gitary, keyboard i mikrofon w domowej przestrzeni muzycznej",
+    className: "gallery-tile-tall",
+    sizes: "(max-width: 760px) calc((100vw - 3.25rem) / 2), (max-width: 1184px) 33vw, 24rem",
+    src: "/gallery/music-room.jpg",
+  },
+  {
+    alt: "Klawisze fortepianu w ciepłym świetle",
+    className: "gallery-tile-warm",
+    sizes: "(max-width: 760px) calc((100vw - 3.25rem) / 2), (max-width: 1184px) 33vw, 24rem",
+    src: "/gallery/piano-keys.jpg",
+  },
+  {
+    alt: "Mikrofon przygotowany do śpiewu",
+    className: "gallery-tile-blue",
+    sizes: "(max-width: 760px) calc((100vw - 3.25rem) / 2), (max-width: 1184px) 33vw, 24rem",
+    src: "/gallery/stage-microphone.jpg",
+  },
+  {
+    alt: "Instrumenty w kameralnym studiu muzycznym",
+    className: "gallery-tile-wide",
+    sizes: "(max-width: 760px) calc(100vw - 2.25rem), (max-width: 1184px) 66vw, 50rem",
+    src: "/gallery/music-studio.jpg",
+  },
+];
+
 export default function HomePage() {
   return (
     <>
@@ -205,13 +232,15 @@ export default function HomePage() {
                 <p className="eyebrow">Przestrzeń do tworzenia</p>
                 <h2 id="gallery-title">Miejsce, w którym muzyka się dzieje.</h2>
               </div>
-              <p>Tu wkrótce pojawią się kolejne zdjęcia z zajęć i muzyczne inspiracje.</p>
+              <p>Przykładowe kadry z muzycznej przestrzeni i inspiracji do wspólnego tworzenia.</p>
             </div>
-            <div className="gallery-grid" aria-label="Miejsce na galerię zdjęć">
-              <ScrollReveal className="gallery-tile gallery-tile-tall" delay={0} variant="scale"><span>01</span></ScrollReveal>
-              <ScrollReveal className="gallery-tile gallery-tile-warm" delay={100} variant="scale"><span>02</span></ScrollReveal>
-              <ScrollReveal className="gallery-tile gallery-tile-blue" delay={180} variant="scale"><span>03</span></ScrollReveal>
-              <ScrollReveal className="gallery-tile gallery-tile-wide" delay={240} variant="scale"><span>04</span></ScrollReveal>
+            <div aria-label="Galeria muzycznych inspiracji" className="gallery-grid" role="group">
+              {galleryPhotos.map((photo, index) => (
+                <ScrollReveal className={`gallery-tile ${photo.className}`} delay={index * 80} key={photo.src} variant="scale">
+                  <Image alt={photo.alt} fill sizes={photo.sizes} src={photo.src} />
+                  <span aria-hidden="true">{String(index + 1).padStart(2, "0")}</span>
+                </ScrollReveal>
+              ))}
             </div>
           </div>
         </section>

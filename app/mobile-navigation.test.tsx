@@ -68,4 +68,27 @@ describe("MobileNavigation", () => {
 
     expect(details.open).toBe(false);
   });
+
+  it("closes the appearance switcher after an outside click or Escape", () => {
+    const { container } = render(<ThemeSwitcher />);
+    const details = container.querySelector("details");
+    const summary = screen.getByText("Wygląd");
+
+    if (!details) {
+      throw new Error("Theme switcher details element was not rendered.");
+    }
+
+    details.open = true;
+    fireEvent.pointerDown(screen.getByLabelText("Wizytówka"));
+    expect(details.open).toBe(true);
+
+    fireEvent.pointerDown(document.body);
+    expect(details.open).toBe(false);
+
+    details.open = true;
+    fireEvent.keyDown(window, { key: "Escape" });
+
+    expect(details.open).toBe(false);
+    expect(summary).toHaveFocus();
+  });
 });
