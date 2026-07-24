@@ -35,6 +35,33 @@ export function ThemeSwitcher() {
     return () => window.removeEventListener("mobile-navigation-open", closeSwitcher);
   }, []);
 
+  useEffect(() => {
+    function handlePointerDown(event: PointerEvent) {
+      const details = detailsRef.current;
+
+      if (details?.open && event.target instanceof Node && !details.contains(event.target)) {
+        details.removeAttribute("open");
+      }
+    }
+
+    function handleKeyDown(event: KeyboardEvent) {
+      const details = detailsRef.current;
+
+      if (event.key === "Escape" && details?.open) {
+        details.removeAttribute("open");
+        details.querySelector("summary")?.focus();
+      }
+    }
+
+    document.addEventListener("pointerdown", handlePointerDown);
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.removeEventListener("pointerdown", handlePointerDown);
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, []);
+
   function handleVariantChange(event: ChangeEvent<HTMLInputElement>) {
     setVariant(event.target.value as ThemeVariant);
   }

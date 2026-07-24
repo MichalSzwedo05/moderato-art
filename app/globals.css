@@ -796,9 +796,18 @@ h2 {
   transition: box-shadow 240ms ease, transform 240ms ease, background-color 280ms ease;
 }
 
+.gallery-tile img {
+  object-fit: cover;
+  transition: transform 280ms ease;
+}
+
 .gallery-tile:hover {
   box-shadow: 0 1rem 2rem rgb(57 35 93 / 12%);
   transform: translateY(-0.35rem) rotate(-0.5deg);
+}
+
+.gallery-tile:hover img {
+  transform: scale(1.04);
 }
 
 .gallery-tile::after {
@@ -1087,7 +1096,7 @@ h2 {
   }
 }
 
-@media (max-width: 760px) {
+@media (max-width: 900px) {
   .navigation {
     gap: 0.55rem;
   }
@@ -1184,6 +1193,32 @@ h2 {
   }
 }
 
+@media (max-width: 760px) {
+  .gallery-grid {
+    grid-template-areas:
+      "tall warm"
+      "tall blue"
+      "wide wide";
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-rows: 10rem 8rem 8rem;
+  }
+
+  .gallery-tile {
+    min-height: 0;
+  }
+
+  .gallery-tile-tall {
+    grid-area: tall;
+  }
+
+  .gallery-tile-warm { grid-area: warm; }
+  .gallery-tile-blue { grid-area: blue; }
+
+  .gallery-tile-wide {
+    grid-area: wide;
+  }
+}
+
 @media (max-width: 680px) {
   .site-shell {
     width: min(100% - 2.25rem, 74rem);
@@ -1257,19 +1292,6 @@ h2 {
 
   .offer-card {
     min-height: 12.8rem;
-  }
-
-  .gallery-grid {
-    grid-template-columns: 1fr 1fr;
-    grid-template-rows: 10rem 8rem 8rem;
-  }
-
-  .gallery-tile-tall {
-    grid-row: span 2;
-  }
-
-  .gallery-tile-wide {
-    grid-column: span 2;
   }
 
   .article-card {

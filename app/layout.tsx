@@ -33,7 +33,7 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
         {children}
         <noscript
           dangerouslySetInnerHTML={{
-            __html: "<style>.reveal{opacity:1!important;transform:none!important}@media(max-width:760px){.mobile-menu-button{display:none!important}.mobile-navigation nav[hidden]{position:static!important;display:grid!important;width:100%!important;margin-top:.5rem;padding:.55rem;opacity:1!important;pointer-events:auto!important;transform:none!important}.mobile-navigation nav[hidden] a{padding:.8rem;color:inherit;text-decoration:none}}</style>",
+            __html: "<style>.reveal{opacity:1!important;transform:none!important}@media(max-width:900px){.navigation{flex-wrap:wrap}.mobile-navigation{flex:0 0 100%;width:100%}.mobile-menu-button{display:none!important}.mobile-navigation nav[hidden]{position:static!important;display:grid!important;width:100%!important;margin-top:.5rem;padding:.55rem;opacity:1!important;pointer-events:auto!important;transform:none!important}.mobile-navigation nav[hidden] a{padding:.8rem;color:inherit;text-decoration:none}}</style>",
           }}
         />
       </body>
