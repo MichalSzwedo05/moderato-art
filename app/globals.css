@@ -603,8 +603,10 @@ h2 {
 }
 
 .portrait img {
+  filter: blur(16px);
   object-fit: cover;
   object-position: center;
+  transform: scale(1.08);
 }
 
 .portrait::after {

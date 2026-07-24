@@ -18,7 +18,7 @@ export const metadata: Metadata = {
     template: "%s | Moderato Art",
   },
   description:
-    "Zajęcia muzyczne, nauka śpiewu i rytmika dla dzieci prowadzone przez Magdalenę Warzechę.",
+    "Zajęcia muzyczne, nauka śpiewu i rytmika dla dzieci prowadzone przez Magdalenę Kwiatkowską.",
   openGraph: {
     locale: "pl_PL",
     type: "website",
