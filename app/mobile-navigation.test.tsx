@@ -48,6 +48,25 @@ describe("MobileNavigation", () => {
     });
   });
 
+  it("stays open after an inside click and closes after an outside click", () => {
+    render(
+      <>
+        <MobileNavigation />
+        <button type="button">Poza menu</button>
+      </>,
+    );
+
+    const button = screen.getByRole("button", { name: "Menu" });
+    const navigation = screen.getByRole("navigation", { hidden: true });
+
+    fireEvent.click(button);
+    fireEvent.pointerDown(screen.getByText("O mnie"));
+    expect(navigation).not.toHaveAttribute("hidden");
+
+    fireEvent.pointerDown(screen.getByRole("button", { name: "Poza menu" }));
+    expect(navigation).toHaveAttribute("hidden");
+  });
+
   it("closes the appearance switcher when mobile navigation opens", () => {
     const { container } = render(
       <>

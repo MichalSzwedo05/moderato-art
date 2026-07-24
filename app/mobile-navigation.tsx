@@ -5,6 +5,7 @@ import { useEffect, useId, useRef, useState, type MouseEvent } from "react";
 export function MobileNavigation() {
   const [isOpen, setIsOpen] = useState(false);
   const buttonRef = useRef<HTMLButtonElement>(null);
+  const navigationRef = useRef<HTMLDivElement>(null);
   const navigationId = useId();
 
   useEffect(() => {
@@ -19,9 +20,21 @@ export function MobileNavigation() {
       }
     }
 
-    window.addEventListener("keydown", handleKeyDown);
+    function handlePointerDown(event: PointerEvent) {
+      const navigation = navigationRef.current;
 
-    return () => window.removeEventListener("keydown", handleKeyDown);
+      if (event.target instanceof Node && navigation && !navigation.contains(event.target)) {
+        setIsOpen(false);
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyDown);
+    document.addEventListener("pointerdown", handlePointerDown);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      document.removeEventListener("pointerdown", handlePointerDown);
+    };
   }, [isOpen]);
 
   useEffect(() => {
@@ -49,7 +62,7 @@ export function MobileNavigation() {
   }
 
   return (
-    <div className="mobile-navigation">
+    <div className="mobile-navigation" ref={navigationRef}>
       <button
         aria-controls={navigationId}
         aria-expanded={isOpen}
