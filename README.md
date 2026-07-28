@@ -12,6 +12,7 @@ The contact form is intentionally unavailable in this preview and remains fail-c
 
 - Next.js 16 with TypeScript
 - PostgreSQL 17
+- Neon PostgreSQL support for Vercel deployments
 - Docker Compose
 - Caddy reverse proxy with automatic HTTPS
 - GitHub Actions and GitHub Container Registry
@@ -52,6 +53,37 @@ npm run build
 ```
 
 The health endpoint is available at `GET /health`.
+
+## Vercel and Neon Demo Setup
+
+The Vercel deployment can use Neon instead of the local Docker PostgreSQL service. This makes the same database-backed application available to a client through Vercel while keeping local Docker development optional.
+
+1. Create a Neon project and database, or connect Neon to the Vercel project through the Neon integration.
+2. Create separate Neon branches/databases for development, preview, and production. Never use the production database for local development or Vercel previews.
+3. In Vercel project settings, add the following server-only variables to the matching environment:
+
+| Variable | Value |
+| --- | --- |
+| `DATABASE_URL` | Neon pooled connection string for application runtime; it contains the `-pooler` hostname and `sslmode=require`. |
+| `DIRECT_URL` | Neon direct, non-pooled connection string for Prisma migrations; it also uses `sslmode=require`. |
+| `NEXT_PUBLIC_SITE_URL` | Production URL, for example `https://moderato-art.vercel.app`. Preview deployments fall back to `VERCEL_URL` when Vercel System Environment Variables are enabled. |
+| `CONTACT_FORM_ENABLED` | `false` until the separate data-collection activation review is complete. |
+
+Do not expose either database URL through a `NEXT_PUBLIC_` variable.
+
+For a Vercel-compatible local preview:
+
+```bash
+npx vercel link
+npx vercel pull --environment=preview
+npx vercel dev
+```
+
+Use `--environment=development` instead when testing against the Neon development database. Enable Vercel System Environment Variables in Project Settings for the automatic `VERCEL_URL` metadata fallback.
+
+The Prisma runtime automatically uses the Neon adapter for `*.neon.tech` URLs and the PostgreSQL adapter for local Docker URLs. Prisma migration commands prefer `DIRECT_URL`; run `npm run db:migrate:deploy` against the intended Neon branch before enabling a deployment that requires the new schema.
+
+Vercel does not apply Prisma migrations automatically. Keep `CONTACT_FORM_ENABLED=false` until a dedicated, reviewed migration and data-collection activation workflow is configured.
 
 ## Contact Form and Database Staging
 

@@ -1,11 +1,12 @@
 import "dotenv/config";
 import { defineConfig } from "prisma/config";
+import { getMigrationDatabaseUrl } from "./lib/database-url";
 
-const databaseUrl = process.env.DATABASE_URL;
-
-if (!databaseUrl && process.env.PRISMA_GENERATE !== "true") {
-  throw new Error("DATABASE_URL must be set for Prisma commands that access the database.");
-}
+const databaseUrl = getMigrationDatabaseUrl(
+  process.env.DIRECT_URL,
+  process.env.DATABASE_URL,
+  process.env.PRISMA_GENERATE === "true",
+);
 
 export default defineConfig({
   schema: "prisma/schema.prisma",
@@ -13,6 +14,6 @@ export default defineConfig({
     path: "prisma/migrations",
   },
   datasource: {
-    url: databaseUrl ?? "postgresql://placeholder:placeholder@localhost:5432/placeholder",
+    url: databaseUrl,
   },
 });
