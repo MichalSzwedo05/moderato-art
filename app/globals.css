@@ -990,6 +990,25 @@ h2 {
   line-height: 1.4;
 }
 
+.contact-form-test-notice {
+  margin: 0;
+  padding: 0.75rem;
+  color: var(--dark-blue);
+  background: color-mix(in srgb, var(--golden) 20%, var(--surface));
+  border-radius: 0.65rem;
+  font-size: 0.78rem;
+  line-height: 1.4;
+}
+
+.contact-form-honeypot {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
 .site-footer {
   padding-block: 2.2rem;
   color: rgb(255 255 255 / 56%);

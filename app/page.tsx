@@ -1,4 +1,6 @@
 import Image from "next/image";
+import { connection } from "next/server";
+import { isContactTestEnabled } from "../lib/contact-test";
 import { ContactForm } from "./contact-form";
 import { CurrentYear } from "./current-year";
 import { MobileNavigation } from "./mobile-navigation";
@@ -81,7 +83,10 @@ const galleryPhotos = [
   },
 ];
 
-export default function HomePage() {
+export default async function HomePage() {
+  await connection();
+  const contactFormTestEnabled = isContactTestEnabled();
+
   return (
     <>
       <a className="skip-link" href="#main-content">
@@ -283,7 +288,7 @@ export default function HomePage() {
               </p>
             </ScrollReveal>
             <ScrollReveal as="div" delay={120} variant="scale">
-              <ContactForm />
+              <ContactForm testEnabled={contactFormTestEnabled} />
             </ScrollReveal>
           </div>
         </section>

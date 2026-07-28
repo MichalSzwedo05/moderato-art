@@ -96,6 +96,20 @@ Prisma schema and the initial PostgreSQL migration are present for `ContactSubmi
 - abuse protection, restricted authorised access to submissions, and a documented handling workflow;
 - a production migration job that applies and verifies `prisma migrate deploy` before the application rollout.
 
+### Restricted Resend Test
+
+The production contact form remains unavailable by default. A short, synthetic-data-only Resend test is the sole exception: it sends a plain-text test message to the Resend account owner and does not write the payload to PostgreSQL.
+
+To run it, set these **Production-only**, server-side variables in Vercel (or the equivalent restricted VPS environment):
+
+- `CONTACT_FORM_ENABLED=true`
+- `CONTACT_FORM_TEST_ENABLED=true`
+- `CONTACT_FORM_TEST_TOKEN` to a unique random value of at least 32 characters
+- `RESEND_API_KEY` to a restricted Resend sending key
+- `CONTACT_FORM_RECIPIENT` to the Resend account owner's address
+
+Resend's `onboarding@resend.dev` sender can only deliver these test emails to the account owner. Use fictitious data only, redeploy after changing variables, and immediately set both form flags back to `false` and redeploy after the test. This exception does not activate production data collection or replace the requirements above.
+
 Security updates from Dependabot remain immediate and are exempt from the one-open-PR limit. Version updates are grouped into one weekly PR per npm, Docker, and GitHub Actions ecosystem; PostgreSQL major updates remain isolated for a reviewed database-upgrade procedure.
 
 ## CI/CD
