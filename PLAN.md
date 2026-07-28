@@ -8,9 +8,9 @@ The website will be available at:
 
 `moderato-art.pl`
 
-Business owner:
+Business owner and data-controller identity:
 
-`Magdalena Warzecha`
+To be confirmed before the public contact form is activated.
 
 The website will act as a business profile, portfolio, and contact point for parents and guardians who want to enrol a child in music classes.
 
@@ -273,7 +273,7 @@ The following foundation is implemented and verified locally:
 - versioned Docker images published to GitHub Container Registry
 - Dependabot updates for npm, Docker, and GitHub Actions
 
-The website design, content sections, blog and article management, contact form, Prisma schema, and application database integration are still planned work.
+The website design and core content sections are implemented. The contact form and API are staged fail-closed, while the Prisma schema and initial migration are committed but not yet applied. Blog/article management remains planned work.
 
 ## Technology Rationale
 
@@ -580,6 +580,8 @@ Tasks:
 
 ### Phase 6: Contact Form
 
+Status: partially implemented; fail-closed pending legal and production approval
+
 Tasks:
 
 - create the contact form
@@ -591,6 +593,8 @@ Tasks:
 - create the API endpoint
 
 ### Phase 7: Database
+
+Status: partially implemented; schema and migration staged, not applied
 
 Tasks:
 

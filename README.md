@@ -1,6 +1,12 @@
 # Moderato Art
 
-Moderato Art is a Polish-language website for children's singing, music, and rhythm classes led by Magdalena Warzecha.
+Moderato Art is a Polish-language website for children's singing, music, and rhythm classes.
+
+## Public Preview
+
+The current Vercel deployment is available at [https://moderato-art.vercel.app](https://moderato-art.vercel.app).
+
+The contact form is intentionally unavailable in this preview and remains fail-closed until the legal notice, production database, retention process, and submission-handling workflow are approved.
 
 ## Technology
 
@@ -41,10 +47,24 @@ Node.js 22 is required outside Docker.
 npm ci
 npm run lint
 npm run typecheck
+npm run db:generate
 npm run build
 ```
 
 The health endpoint is available at `GET /health`.
+
+## Contact Form and Database Staging
+
+Prisma schema and the initial PostgreSQL migration are present for `ContactSubmission` and `Article`. The public contact form and `POST /api/contact` intentionally return an unavailable state and do not read, validate, log, or store request data.
+
+`CONTACT_FORM_ENABLED` defaults to `false` in local and production Compose configuration. Do not enable data collection until a separately reviewed release provides:
+
+- an approved privacy notice with the legal controller identity, processing basis, recipients, data-subject rights, and policy version;
+- a production PostgreSQL host, encrypted backup and restore process, and a scheduled verified deletion process;
+- abuse protection, restricted authorised access to submissions, and a documented handling workflow;
+- a production migration job that applies and verifies `prisma migrate deploy` before the application rollout.
+
+Security updates from Dependabot remain immediate and are exempt from the one-open-PR limit. Version updates are grouped into one weekly PR per npm, Docker, and GitHub Actions ecosystem; PostgreSQL major updates remain isolated for a reviewed database-upgrade procedure.
 
 ## CI/CD
 
@@ -110,6 +130,7 @@ Create the following production environment secrets:
 | `VPS_APP_PATH` | `/opt/moderato-art` |
 | `VPS_HOST` | VPS IPv4 address or hostname |
 | `VPS_PORT` | `22` |
+| `VPS_USER` | Non-root deployment user on the VPS |
 | `VPS_SSH_KNOWN_HOSTS` | The VPS SSH host key in known-hosts format |
 | `VPS_SSH_PRIVATE_KEY` | Private SSH key for the deployment user |
 
@@ -158,6 +179,6 @@ curl --fail https://moderato-art.pl/health
 
 Before storing contact form data in production, configure an encrypted daily PostgreSQL backup outside the VPS. Test restoration at least once before accepting real submissions.
 
-## Planned Database Migrations
+## Planned Database Activation
 
-The contact form database schema has not been implemented yet. When Prisma is added, update the deployment workflow to run `prisma migrate deploy` before the new application container is started.
+The initial Prisma migration is committed but has not been applied because Docker Desktop is unavailable in the current development environment. The VPS Compose topology contains a provisional in-stack PostgreSQL service, while the Vercel preview has no production database. Before enabling the form, select the production topology, apply the migration to an isolated PostgreSQL instance, verify it from an empty database, and add a dedicated migration image/job to production deployment.

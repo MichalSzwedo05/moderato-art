@@ -6,6 +6,7 @@ services:
     command: npm run dev
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER:-moderato}:${POSTGRES_PASSWORD:-moderato_dev_password}@db:5432/${POSTGRES_DB:-moderato}?schema=public
+      CONTACT_FORM_ENABLED: ${CONTACT_FORM_ENABLED:-false}
       NEXT_PUBLIC_SITE_URL: http://localhost:3000
       NODE_ENV: development
     ports:
