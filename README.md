@@ -42,7 +42,7 @@ docker compose down --volumes
 
 ## Quality Checks
 
-Node.js 22 is required outside Docker.
+Node.js 22.13 LTS or Node.js 24 or newer is required outside Docker. Node.js 23 is not supported by the dependency set.
 
 ```bash
 npm ci
