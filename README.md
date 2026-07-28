@@ -1,11 +1,18 @@
 # Moderato Art
 
-Moderato Art is a Polish-language website for children's singing, music, and rhythm classes led by Magdalena Warzecha.
+Moderato Art is a Polish-language website for children's singing, music, and rhythm classes.
+
+## Public Preview
+
+The current Vercel deployment is available at [https://moderato-art.vercel.app](https://moderato-art.vercel.app).
+
+The contact form is intentionally unavailable in this preview and remains fail-closed until the legal notice, production database, retention process, and submission-handling workflow are approved.
 
 ## Technology
 
 - Next.js 16 with TypeScript
 - PostgreSQL 17
+- Neon PostgreSQL support for Vercel deployments
 - Docker Compose
 - Caddy reverse proxy with automatic HTTPS
 - GitHub Actions and GitHub Container Registry
@@ -35,16 +42,61 @@ docker compose down --volumes
 
 ## Quality Checks
 
-Node.js 22 is required outside Docker.
+Node.js 22.13 LTS or Node.js 24 or newer is required outside Docker. Node.js 23 is not supported by the dependency set.
 
 ```bash
 npm ci
 npm run lint
 npm run typecheck
+npm run db:generate
 npm run build
 ```
 
 The health endpoint is available at `GET /health`.
+
+## Vercel and Neon Demo Setup
+
+The Vercel deployment can use Neon instead of the local Docker PostgreSQL service. This makes the same database-backed application available to a client through Vercel while keeping local Docker development optional.
+
+1. Create a Neon project and database, or connect Neon to the Vercel project through the Neon integration.
+2. Create separate Neon branches/databases for development, preview, and production. Never use the production database for local development or Vercel previews.
+3. In Vercel project settings, add the following server-only variables to the matching environment:
+
+| Variable | Value |
+| --- | --- |
+| `DATABASE_URL` | Neon pooled connection string for application runtime; it contains the `-pooler` hostname and `sslmode=require`. |
+| `DIRECT_URL` | Neon direct, non-pooled connection string for Prisma migrations; it also uses `sslmode=require`. |
+| `NEXT_PUBLIC_SITE_URL` | Production URL, for example `https://moderato-art.vercel.app`. Preview deployments fall back to `VERCEL_URL` when Vercel System Environment Variables are enabled. |
+| `CONTACT_FORM_ENABLED` | `false` until the separate data-collection activation review is complete. |
+
+Do not expose either database URL through a `NEXT_PUBLIC_` variable.
+
+For a Vercel-compatible local preview:
+
+```bash
+npx vercel link
+npx vercel pull --environment=preview
+npx vercel dev
+```
+
+Use `--environment=development` instead when testing against the Neon development database. Enable Vercel System Environment Variables in Project Settings for the automatic `VERCEL_URL` metadata fallback.
+
+The Prisma runtime automatically uses the Neon adapter for `*.neon.tech` URLs and the PostgreSQL adapter for local Docker URLs. Prisma migration commands prefer `DIRECT_URL`; run `npm run db:migrate:deploy` against the intended Neon branch before enabling a deployment that requires the new schema.
+
+Vercel does not apply Prisma migrations automatically. Keep `CONTACT_FORM_ENABLED=false` until a dedicated, reviewed migration and data-collection activation workflow is configured.
+
+## Contact Form and Database Staging
+
+Prisma schema and the initial PostgreSQL migration are present for `ContactSubmission` and `Article`. The public contact form and `POST /api/contact` intentionally return an unavailable state and do not read, validate, log, or store request data.
+
+`CONTACT_FORM_ENABLED` defaults to `false` in local and production Compose configuration. Do not enable data collection until a separately reviewed release provides:
+
+- an approved privacy notice with the legal controller identity, processing basis, recipients, data-subject rights, and policy version;
+- a production PostgreSQL host, encrypted backup and restore process, and a scheduled verified deletion process;
+- abuse protection, restricted authorised access to submissions, and a documented handling workflow;
+- a production migration job that applies and verifies `prisma migrate deploy` before the application rollout.
+
+Security updates from Dependabot remain immediate and are exempt from the one-open-PR limit. Version updates are grouped into one weekly PR per npm, Docker, and GitHub Actions ecosystem; PostgreSQL major updates remain isolated for a reviewed database-upgrade procedure.
 
 ## CI/CD
 
@@ -110,6 +162,7 @@ Create the following production environment secrets:
 | `VPS_APP_PATH` | `/opt/moderato-art` |
 | `VPS_HOST` | VPS IPv4 address or hostname |
 | `VPS_PORT` | `22` |
+| `VPS_USER` | Non-root deployment user on the VPS |
 | `VPS_SSH_KNOWN_HOSTS` | The VPS SSH host key in known-hosts format |
 | `VPS_SSH_PRIVATE_KEY` | Private SSH key for the deployment user |
 
@@ -158,6 +211,6 @@ curl --fail https://moderato-art.pl/health
 
 Before storing contact form data in production, configure an encrypted daily PostgreSQL backup outside the VPS. Test restoration at least once before accepting real submissions.
 
-## Planned Database Migrations
+## Planned Database Activation
 
-The contact form database schema has not been implemented yet. When Prisma is added, update the deployment workflow to run `prisma migrate deploy` before the new application container is started.
+The initial Prisma migration is committed but has not been applied because Docker Desktop is unavailable in the current development environment. The VPS Compose topology contains a provisional in-stack PostgreSQL service, while the Vercel preview has no production database. Before enabling the form, select the production topology, apply the migration to an isolated PostgreSQL instance, verify it from an empty database, and add a dedicated migration image/job to production deployment.

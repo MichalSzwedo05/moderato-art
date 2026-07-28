@@ -4,5 +4,6 @@
 .next/
 node_modules/
 coverage/
+generated/
 npm-debug.log*
 tsconfig.tsbuildinfo

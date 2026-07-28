@@ -4,6 +4,7 @@ services:
     restart: unless-stopped
     environment:
       DATABASE_URL: ${DATABASE_URL:?DATABASE_URL must be set}
+      CONTACT_FORM_ENABLED: ${CONTACT_FORM_ENABLED:-false}
       NEXT_PUBLIC_SITE_URL: https://${SITE_DOMAIN:?SITE_DOMAIN must be set}
       NODE_ENV: production
     depends_on:

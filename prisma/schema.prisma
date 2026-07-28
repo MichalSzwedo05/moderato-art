@@ -1,0 +1,49 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum ContactSubmissionStatus {
+  NEW
+  CONTACTED
+  ARCHIVED
+}
+
+enum ArticleStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+model ContactSubmission {
+  id                       String                  @id @default(cuid())
+  parentName               String                  @db.VarChar(120)
+  email                    String                  @db.VarChar(254)
+  phone                    String?                 @db.VarChar(40)
+  lessonType               String?                 @db.VarChar(80)
+  childAgeRange            String?                 @db.VarChar(40)
+  message                  String                  @db.Text
+  status                   ContactSubmissionStatus @default(NEW)
+  retentionAnchorAt        DateTime                @default(now())
+  deleteAfter              DateTime?
+  createdAt                DateTime                @default(now())
+  updatedAt                DateTime                @updatedAt
+
+  @@index([deleteAfter])
+}
+
+model Article {
+  id            String        @id @default(cuid())
+  title         String        @db.VarChar(200)
+  slug          String        @unique @db.VarChar(220)
+  content       String        @db.Text
+  coverImageUrl String?       @db.VarChar(2048)
+  status        ArticleStatus @default(DRAFT)
+  publishedAt   DateTime?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+}

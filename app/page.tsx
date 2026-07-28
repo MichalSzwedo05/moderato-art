@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { ContactForm } from "./contact-form";
 import { CurrentYear } from "./current-year";
 import { MobileNavigation } from "./mobile-navigation";
 import { ScrollReveal } from "./scroll-reveal";
@@ -282,24 +283,7 @@ export default function HomePage() {
               </p>
             </ScrollReveal>
             <ScrollReveal as="div" delay={120} variant="scale">
-              <form className="contact-form" action="#" method="post">
-                <label>
-                  Imię i nazwisko rodzica lub opiekuna
-                  <input name="name" type="text" autoComplete="name" placeholder="Np. Anna Kowalska" disabled />
-                </label>
-                <label>
-                  Adres e-mail
-                  <input name="email" type="email" autoComplete="email" placeholder="twoj@email.pl" disabled />
-                </label>
-                <label>
-                  Wiadomość
-                  <textarea name="message" rows={4} placeholder="Napisz, ile lat ma dziecko i jakie zajęcia Cię interesują." disabled />
-                </label>
-                <button className="button button-primary" type="button" disabled>
-                  Formularz wkrótce
-                </button>
-                <small>Formularz zostanie aktywowany po konfiguracji danych kontaktowych.</small>
-              </form>
+              <ContactForm />
             </ScrollReveal>
           </div>
         </section>
