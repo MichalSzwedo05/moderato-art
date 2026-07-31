@@ -55,6 +55,23 @@ jobs:
           exit-code: "1"
           ignore-unfixed: true
           severity: CRITICAL,HIGH
+      - name: Build migration image for scanning
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          load: true
+          push: false
+          target: migrator
+          tags: moderato-art:migrator-ci
+          cache-from: type=gha
+      - name: Scan migration image
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          image-ref: moderato-art:migrator-ci
+          format: table
+          exit-code: "1"
+          ignore-unfixed: true
+          severity: CRITICAL,HIGH
       - name: Log in to GitHub Container Registry
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         uses: docker/login-action@v4
@@ -69,5 +86,15 @@ jobs:
           context: .
           push: true
           tags: ${{ env.IMAGE_NAME }}:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      - name: Publish migration image
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          push: true
+          target: migrator
+          tags: ${{ env.IMAGE_NAME }}:${{ github.sha }}-migrate
           cache-from: type=gha
           cache-to: type=gha,mode=max

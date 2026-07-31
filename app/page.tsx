@@ -1,6 +1,8 @@
 import Image from "next/image";
 import { connection } from "next/server";
 import { isContactTestEnabled } from "../lib/contact-test";
+import { getPublishedArticles } from "../lib/public-articles";
+import { ArticleLibrary } from "./article-library";
 import { ContactForm } from "./contact-form";
 import { CurrentYear } from "./current-year";
 import { MobileNavigation } from "./mobile-navigation";
@@ -38,24 +40,6 @@ const benefits = [
   "Spokojna przestrzeń do budowania odwagi",
 ];
 
-const articles = [
-  {
-    category: "Dla rodziców",
-    title: "Jak muzyka wspiera codzienny rozwój dziecka?",
-    date: "Wkrótce",
-  },
-  {
-    category: "Wokół głosu",
-    title: "Pierwsze kroki w nauce śpiewu - bez presji",
-    date: "Wkrótce",
-  },
-  {
-    category: "Inspiracje",
-    title: "Rytm, ruch i radość wspólnego muzykowania",
-    date: "Wkrótce",
-  },
-];
-
 const galleryPhotos = [
   {
     alt: "Gitary, keyboard i mikrofon w domowej przestrzeni muzycznej",
@@ -86,6 +70,7 @@ const galleryPhotos = [
 export default async function HomePage() {
   await connection();
   const contactFormTestEnabled = isContactTestEnabled();
+  const articles = await getPublishedArticles();
 
   return (
     <>
@@ -258,19 +243,9 @@ export default async function HomePage() {
                 <p className="eyebrow">Czytelnia Moderato</p>
                 <h2 id="blog-title">Kilka słów o muzyce i dzieciach.</h2>
               </div>
-              <a className="text-link" href="#kontakt">
-                Wszystkie artykuły <span aria-hidden="true">-&gt;</span>
-              </a>
+              <span className="text-link">Czytaj bez opuszczania strony</span>
             </div>
-            <div className="article-grid">
-              {articles.map((article, index) => (
-                <ScrollReveal as="article" className="article-card" delay={index * 100} key={article.title}>
-                  <p>{article.category}</p>
-                  <h3>{article.title}</h3>
-                  <span>{article.date}</span>
-                </ScrollReveal>
-              ))}
-            </div>
+            <ArticleLibrary articles={articles} />
           </div>
         </section>
 

@@ -19,6 +19,12 @@ FROM dependencies AS builder
 COPY . .
 RUN npm run build
 
+FROM dependencies AS migrator
+
+COPY . .
+
+CMD ["./node_modules/.bin/prisma", "migrate", "deploy"]
+
 FROM base AS runner
 
 ENV NODE_ENV=production
