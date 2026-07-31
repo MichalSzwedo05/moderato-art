@@ -3,6 +3,7 @@ import { connection } from "next/server";
 import { isContactTestEnabled } from "../lib/contact-test";
 import { getPublishedArticles } from "../lib/public-articles";
 import { ArticleLibrary } from "./article-library";
+import { OfferModalLink, PublicModals } from "./public-modals";
 import { ContactForm } from "./contact-form";
 import { CurrentYear } from "./current-year";
 import { MobileNavigation } from "./mobile-navigation";
@@ -85,15 +86,13 @@ export default async function HomePage() {
           </a>
           <nav aria-label="Główna nawigacja">
             <a href="#o-mnie">O mnie</a>
-            <a href="#oferta">Oferta</a>
+            <OfferModalLink>Oferta</OfferModalLink>
             <a href="#blog">Artykuły</a>
             <a href="#kontakt">Kontakt</a>
           </nav>
           <ThemeSwitcher />
           <MobileNavigation />
-          <a className="header-action" href="#kontakt">
-            Zapytaj o zajęcia
-          </a>
+          <a className="header-action" href="#kontakt">Zapytaj o zajęcia</a>
         </div>
       </header>
 
@@ -110,12 +109,8 @@ export default async function HomePage() {
                 praca z głosem dla dzieci, młodzieży i dorosłych.
               </p>
               <div className="hero-actions">
-                <a className="button button-primary" href="#kontakt">
-                  Zapytaj o zajęcia
-                </a>
-                <a className="text-link" href="#oferta">
-                  Poznaj ofertę <span aria-hidden="true">-&gt;</span>
-                </a>
+                <a className="button button-primary" href="#kontakt">Zapytaj o zajęcia</a>
+                <OfferModalLink className="text-link" href="#oferta">Poznaj ofertę <span aria-hidden="true">-&gt;</span></OfferModalLink>
               </div>
               <p className="hero-note">Zajęcia grupowe dla przedszkolaków oraz indywidualne lekcje śpiewu</p>
             </div>
@@ -158,9 +153,7 @@ export default async function HomePage() {
                 dziecka. Bez pośpiechu, za to z dużą dozą ciekawości, ruchu i
                 wspólnego muzykowania.
               </p>
-              <a className="text-link" href="#kontakt">
-                Dowiedz się więcej <span aria-hidden="true">-&gt;</span>
-              </a>
+                <a className="text-link" href="#kontakt">Dowiedz się więcej <span aria-hidden="true">-&gt;</span></a>
             </ScrollReveal>
           </div>
         </section>
@@ -184,9 +177,7 @@ export default async function HomePage() {
                   <p className="offer-subtitle">{offer.subtitle}</p>
                   <p className="offer-audience">{offer.audience}</p>
                   <p>{offer.description}</p>
-                  <a href="#kontakt" aria-label={`Zapytaj o: ${offer.title}`}>
-                    Więcej <span aria-hidden="true">-&gt;</span>
-                  </a>
+                  <OfferModalLink>Więcej <span aria-hidden="true">-&gt;</span></OfferModalLink>
                 </ScrollReveal>
               ))}
             </div>
@@ -243,7 +234,7 @@ export default async function HomePage() {
                 <p className="eyebrow">Czytelnia Moderato</p>
                 <h2 id="blog-title">Kilka słów o muzyce i dzieciach.</h2>
               </div>
-              <span className="text-link">Czytaj bez opuszczania strony</span>
+              <span className="text-link">Najnowsze artykuły</span>
             </div>
             <ArticleLibrary articles={articles} />
           </div>
@@ -268,6 +259,7 @@ export default async function HomePage() {
           </div>
         </section>
       </main>
+      <PublicModals />
 
       <footer className="site-footer">
         <div className="site-shell footer-content">

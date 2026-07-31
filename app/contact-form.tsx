@@ -1,12 +1,13 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useId, useState } from "react";
 
 type ContactFormProps = {
   testEnabled?: boolean;
 };
 
 export function ContactForm({ testEnabled = false }: ContactFormProps) {
+  const statusId = useId();
   const [status, setStatus] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -53,7 +54,7 @@ export function ContactForm({ testEnabled = false }: ContactFormProps) {
   }
 
   return (
-    <form className="contact-form" aria-describedby="contact-form-status" onSubmit={testEnabled ? submitTestForm : undefined}>
+    <form className="contact-form" aria-describedby={statusId} onSubmit={testEnabled ? submitTestForm : undefined}>
       <fieldset disabled={!testEnabled}>
         <legend>Formularz kontaktowy</legend>
         {testEnabled && (
@@ -108,7 +109,7 @@ export function ContactForm({ testEnabled = false }: ContactFormProps) {
           {testEnabled ? (isSubmitting ? "Wysyłanie..." : "Wyślij wiadomość testową") : "Formularz chwilowo niedostępny"}
         </button>
       </fieldset>
-      <small aria-live="polite" id="contact-form-status">
+      <small aria-live="polite" id={statusId}>
         {status || (testEnabled
           ? "Test jest chroniony kodem dostępu i wysyła wiadomości wyłącznie na konto Resend właściciela."
           : "Formularz zostanie aktywowany po zatwierdzeniu zasad przetwarzania danych i infrastruktury.")}

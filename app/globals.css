@@ -948,6 +948,16 @@ h2 {
 .article-page time { color: var(--gray-light); font-weight: 700; }
 .article-page > img { width: 100%; height: auto; margin-top: 2rem; border-radius: 1rem; }
 
+.public-modal { width: min(42rem, calc(100% - 2rem)); max-height: calc(100dvh - 2rem); padding: clamp(2rem, 6vw, 4rem); color: var(--gray-text); background: var(--surface); border: 0; border-radius: 1.25rem; box-shadow: 0 2rem 5rem rgb(16 15 62 / 30%); }
+.public-modal::backdrop { background: rgb(16 15 62 / 66%); backdrop-filter: blur(4px); }
+.public-modal h2 { margin-top: 0; color: var(--dark-blue); font-size: clamp(2rem, 6vw, 3.5rem); line-height: 1; }
+.public-modal p { line-height: 1.7; }
+.public-modal-close { position: absolute; top: 1rem; right: 1rem; width: 2.6rem; height: 2.6rem; color: var(--dark-blue); background: var(--cream); border: 0; border-radius: 50%; cursor: pointer; font-size: 1.6rem; }
+.public-modal-list { display: grid; gap: .8rem; margin: 1.5rem 0 0; padding: 0; list-style: none; }
+.public-modal-list li { display: grid; gap: .3rem; padding: 1rem; background: var(--cream); border-radius: .75rem; }
+.public-modal-list a, .public-modal-list strong { color: var(--dark-blue); font-weight: 900; }
+.public-modal-list span { color: var(--gray-light); font-size: .9rem; line-height: 1.45; }
+
 .contact-section {
   background: var(--contact-background);
 }
