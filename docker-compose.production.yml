@@ -9,6 +9,12 @@ services:
       CONTACT_FORM_TEST_TOKEN: ${CONTACT_FORM_TEST_TOKEN:-}
       RESEND_API_KEY: ${RESEND_API_KEY:-}
       CONTACT_FORM_RECIPIENT: ${CONTACT_FORM_RECIPIENT:-}
+      ADMIN_CMS_ENABLED: ${ADMIN_CMS_ENABLED:-false}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-}
+      ADMIN_AUTH_URL: ${ADMIN_AUTH_URL:-}
+      ADMIN_AUTH_RESEND_FROM: ${ADMIN_AUTH_RESEND_FROM:-}
+      ADMIN_AUTH_RESEND_KEY: ${ADMIN_AUTH_RESEND_KEY:-}
+      ADMIN_RATE_LIMIT_SECRET: ${ADMIN_RATE_LIMIT_SECRET:-}
       NEXT_PUBLIC_SITE_URL: https://${SITE_DOMAIN:?SITE_DOMAIN must be set}
       NODE_ENV: production
     depends_on:
@@ -35,6 +41,18 @@ services:
       - database
     volumes:
       - postgres_data:/var/lib/postgresql/data
+
+  migrate:
+    image: ${MIGRATOR_IMAGE:?MIGRATOR_IMAGE must be set}
+    profiles: ["migration"]
+    environment:
+      DATABASE_URL: ${DATABASE_URL:?DATABASE_URL must be set}
+      DIRECT_URL: ${DIRECT_URL:?DIRECT_URL must be set}
+    networks:
+      - database
+    depends_on:
+      db:
+        condition: service_healthy
 
   caddy:
     image: caddy:2.10.0-alpine

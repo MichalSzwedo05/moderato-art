@@ -85,6 +85,25 @@ The Prisma runtime automatically uses the Neon adapter for `*.neon.tech` URLs an
 
 Vercel does not apply Prisma migrations automatically. Keep `CONTACT_FORM_ENABLED=false` until a dedicated, reviewed migration and data-collection activation workflow is configured.
 
+## Admin CMS
+
+The CMS is an application-level `/admin` login, not Caddy browser Basic Auth. It is disabled by default and fails closed unless `ADMIN_CMS_ENABLED=true`. One exact email address can request a Resend magic link; the request form always gives the same response for unknown addresses, unavailable configuration, throttling, and delivery failures.
+
+Set these server-only variables only after applying the `admin_cms` Prisma migration:
+
+| Variable | Requirement |
+| --- | --- |
+| `ADMIN_CMS_ENABLED` | Exactly `true` to enable the CMS. |
+| `ADMIN_EMAIL` | The one exact administrator email address. |
+| `ADMIN_AUTH_URL` | The canonical public HTTPS origin only, for example `https://moderato-art.pl`; no path, query, or trailing slash. Never derive this from request headers. |
+| `ADMIN_AUTH_RESEND_FROM` | A sender on a Resend-verified domain, for example `Moderato Art <admin@moderato-art.pl>`. |
+| `ADMIN_AUTH_RESEND_KEY` | A dedicated restricted Resend sending key, separate from the contact-form key. |
+| `ADMIN_RATE_LIMIT_SECRET` | A unique random secret of at least 32 characters, used to HMAC client addresses before storing rate-limit buckets. |
+
+The production Compose app is reachable only through Caddy. Caddy replaces `X-Forwarded-For` with the directly connected client address, so the app can use it for its database-backed, 15-minute login rate limit without storing raw IP addresses. Do not publish port 3000, bypass Caddy, or change Caddy to pass client-supplied forwarding headers. The admin session cookie is `__Host-` scoped, Secure, HttpOnly, SameSite=Lax, and has an eight-hour server-checked expiry; logout revokes it in the database.
+
+Articles are created as Markdown through `/admin`; only their metadata and Markdown source are stored. Public rendering remains a separate concern and must use `react-markdown` rather than injecting raw HTML.
+
 ## Contact Form and Database Staging
 
 Prisma schema and the initial PostgreSQL migration are present for `ContactSubmission` and `Article`. The public contact form and `POST /api/contact` intentionally return an unavailable state and do not read, validate, log, or store request data.

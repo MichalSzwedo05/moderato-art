@@ -7,6 +7,12 @@ services:
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER:-moderato}:${POSTGRES_PASSWORD:-moderato_dev_password}@db:5432/${POSTGRES_DB:-moderato}?schema=public
       CONTACT_FORM_ENABLED: ${CONTACT_FORM_ENABLED:-false}
+      ADMIN_CMS_ENABLED: ${ADMIN_CMS_ENABLED:-false}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-}
+      ADMIN_AUTH_URL: ${ADMIN_AUTH_URL:-}
+      ADMIN_AUTH_RESEND_FROM: ${ADMIN_AUTH_RESEND_FROM:-}
+      ADMIN_AUTH_RESEND_KEY: ${ADMIN_AUTH_RESEND_KEY:-}
+      ADMIN_RATE_LIMIT_SECRET: ${ADMIN_RATE_LIMIT_SECRET:-}
       NEXT_PUBLIC_SITE_URL: http://localhost:3000
       NODE_ENV: development
     ports:

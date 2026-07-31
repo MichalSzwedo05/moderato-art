@@ -41,9 +41,44 @@ model Article {
   title         String        @db.VarChar(200)
   slug          String        @unique @db.VarChar(220)
   content       String        @db.Text
-  coverImageUrl String?       @db.VarChar(2048)
+  category      String        @db.VarChar(100)
+  excerpt       String        @db.VarChar(500)
+  imageUrl      String?       @map("coverImageUrl") @db.VarChar(2048)
   status        ArticleStatus @default(DRAFT)
   publishedAt   DateTime?
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
+
+  @@index([category, status])
+  @@index([status, publishedAt])
+}
+
+model AdminMagicLink {
+  id            String   @id @default(cuid())
+  tokenHash     String   @unique @db.Char(64)
+  requesterHash String   @db.Char(64)
+  expiresAt     DateTime
+  usedAt        DateTime?
+  createdAt     DateTime @default(now())
+
+  @@index([expiresAt])
+}
+
+model AdminSession {
+  id          String   @id @default(cuid())
+  sessionHash String   @unique @db.Char(64)
+  expiresAt   DateTime
+  revokedAt   DateTime?
+  createdAt   DateTime @default(now())
+
+  @@index([expiresAt])
+}
+
+model AdminLoginRateLimit {
+  identifierHash String   @id @db.Char(64)
+  attempts       Int
+  resetAt        DateTime
+  updatedAt      DateTime @updatedAt
+
+  @@index([resetAt])
 }
