@@ -23,6 +23,13 @@ FROM dependencies AS migrator
 
 COPY . .
 
+RUN npm prune --omit=dev \
+  && rm -rf /usr/local/lib/node_modules/corepack \
+  /usr/local/lib/node_modules/npm \
+  /usr/local/bin/corepack \
+  /usr/local/bin/npm \
+  /usr/local/bin/npx
+
 CMD ["./node_modules/.bin/prisma", "migrate", "deploy"]
 
 FROM base AS runner
