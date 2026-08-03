@@ -1,0 +1,40 @@
+"use client";
+
+import Image from "next/image";
+import { useEffect, useId, useRef, useState, type MouseEvent } from "react";
+import type { GalleryPhoto } from "../lib/gallery";
+
+export function GalleryViewer({ compact, photos }: { compact?: boolean; photos: readonly GalleryPhoto[] }) {
+  const dialogRef = useRef<HTMLDialogElement>(null);
+  const openerRef = useRef<HTMLAnchorElement>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const labelId = useId();
+  const [index, setIndex] = useState<number>();
+  const photo = index === undefined ? undefined : photos[index];
+
+  function open(event: MouseEvent<HTMLAnchorElement>, selectedIndex: number) {
+    if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey
+      || !dialogRef.current || typeof dialogRef.current.showModal !== "function") return;
+    event.preventDefault();
+    openerRef.current = event.currentTarget;
+    setIndex(selectedIndex);
+  }
+
+  useEffect(() => {
+    if (index === undefined || !dialogRef.current || dialogRef.current.open) return;
+    dialogRef.current.showModal();
+    closeButtonRef.current?.focus();
+  }, [index]);
+
+  return <>
+    <div className={compact ? "gallery-grid" : "gallery-page-grid"} role="group" aria-label="Galeria zdjęć">
+      {photos.map((item, selectedIndex) => <a className={compact ? `gallery-tile ${item.className}` : "gallery-page-tile"} href={compact ? "/galeria" : item.src} key={item.id} onClick={(event) => open(event, selectedIndex)}>
+        <Image alt={item.alt} fill sizes={compact ? item.sizes : "(max-width: 760px) 100vw, 33vw"} src={item.src} />
+        {compact ? <span aria-hidden="true">{String(selectedIndex + 1).padStart(2, "0")}</span> : null}
+      </a>)}
+    </div>
+    <dialog aria-labelledby={labelId} className="gallery-lightbox" onClose={() => { setIndex(undefined); openerRef.current?.focus(); }} ref={dialogRef}>
+      {photo ? <figure><Image alt={photo.alt} height={900} sizes="(max-width: 900px) 96vw, 70rem" src={photo.src} width={1400} /><figcaption id={labelId}>{photo.alt} — zdjęcie {(index || 0) + 1} z {photos.length}</figcaption><button aria-label="Zamknij podgląd zdjęcia" onClick={() => dialogRef.current?.close()} ref={closeButtonRef} type="button">×</button><button aria-label="Poprzednie zdjęcie" disabled={index === 0} onClick={() => setIndex((value) => value === undefined ? value : value - 1)} type="button">←</button><button aria-label="Następne zdjęcie" disabled={index === photos.length - 1} onClick={() => setIndex((value) => value === undefined ? value : value + 1)} type="button">→</button></figure> : null}
+    </dialog>
+  </>;
+}

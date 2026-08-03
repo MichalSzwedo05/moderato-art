@@ -9,6 +9,8 @@ import { CurrentYear } from "./current-year";
 import { MobileNavigation } from "./mobile-navigation";
 import { ScrollReveal } from "./scroll-reveal";
 import { ThemeSwitcher } from "./theme-switcher";
+import { GalleryViewer } from "./gallery-viewer";
+import { galleryPhotos } from "../lib/gallery";
 
 const offers = [
   {
@@ -39,33 +41,6 @@ const benefits = [
   "Nauka przez zabawę i swobodne odkrywanie",
   "Troska o zdrową, świadomą pracę z głosem",
   "Spokojna przestrzeń do budowania odwagi",
-];
-
-const galleryPhotos = [
-  {
-    alt: "Gitary, keyboard i mikrofon w domowej przestrzeni muzycznej",
-    className: "gallery-tile-tall",
-    sizes: "(max-width: 760px) calc((100vw - 3.25rem) / 2), (max-width: 1184px) 33vw, 24rem",
-    src: "/gallery/music-room.jpg",
-  },
-  {
-    alt: "Klawisze fortepianu w ciepłym świetle",
-    className: "gallery-tile-warm",
-    sizes: "(max-width: 760px) calc((100vw - 3.25rem) / 2), (max-width: 1184px) 33vw, 24rem",
-    src: "/gallery/piano-keys.jpg",
-  },
-  {
-    alt: "Mikrofon przygotowany do śpiewu",
-    className: "gallery-tile-blue",
-    sizes: "(max-width: 760px) calc((100vw - 3.25rem) / 2), (max-width: 1184px) 33vw, 24rem",
-    src: "/gallery/stage-microphone.jpg",
-  },
-  {
-    alt: "Instrumenty w kameralnym studiu muzycznym",
-    className: "gallery-tile-wide",
-    sizes: "(max-width: 760px) calc(100vw - 2.25rem), (max-width: 1184px) 66vw, 50rem",
-    src: "/gallery/music-studio.jpg",
-  },
 ];
 
 export default async function HomePage() {
@@ -207,23 +182,16 @@ export default async function HomePage() {
           </div>
         </section>
 
-        <section className="gallery-section" aria-labelledby="gallery-title">
+        <section className="gallery-section" id="galeria" aria-labelledby="gallery-title">
           <div className="site-shell">
             <div className="section-heading compact-heading">
               <div>
                 <p className="eyebrow">Przestrzeń do tworzenia</p>
                 <h2 id="gallery-title">Miejsce, w którym muzyka się dzieje.</h2>
               </div>
-              <p>Przykładowe kadry z muzycznej przestrzeni i inspiracji do wspólnego tworzenia.</p>
+              <a className="text-link" href="/galeria">Otwórz całą galerię</a>
             </div>
-            <div aria-label="Galeria muzycznych inspiracji" className="gallery-grid" role="group">
-              {galleryPhotos.map((photo, index) => (
-                <ScrollReveal className={`gallery-tile ${photo.className}`} delay={index * 80} key={photo.src} variant="scale">
-                  <Image alt={photo.alt} fill sizes={photo.sizes} src={photo.src} />
-                  <span aria-hidden="true">{String(index + 1).padStart(2, "0")}</span>
-                </ScrollReveal>
-              ))}
-            </div>
+            <GalleryViewer compact photos={galleryPhotos} />
           </div>
         </section>
 

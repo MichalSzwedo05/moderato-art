@@ -72,12 +72,15 @@ export function PublicModals() {
       window.history.replaceState({}, "", url);
       setModal(undefined);
     }
+  }
+
+  function restoreFocus() {
     if (openerRef.current && !openerRef.current.closest("[hidden]")) openerRef.current.focus();
     else document.querySelector<HTMLButtonElement>(".mobile-menu-button")?.focus();
   }
 
-  return <dialog aria-labelledby={titleId} className="public-modal" id="offer-modal" onClose={() => modal && close()} ref={dialogRef}>
-    <button aria-label="Zamknij okno" className="public-modal-close" onClick={close} type="button">×</button>
+  return <dialog aria-labelledby={titleId} className="public-modal" id="offer-modal" onClose={() => { if (modal) close(); restoreFocus(); }} ref={dialogRef}>
+    <button aria-label="Zamknij okno" className="public-modal-close" onClick={() => dialogRef.current?.close()} type="button">×</button>
     {modal === "offers" && <section><p className="eyebrow">Oferta</p><h2 id={titleId}>Znajdź swój rytm i własny głos.</h2><ul className="public-modal-list"><li><strong>Rytmisolki</strong><span>Zajęcia muzyczno-rytmiczne dla przedszkolaków.</span></li><li><strong>Junior Voice</strong><span>Grupowe lekcje śpiewu dla dzieci.</span></li><li><strong>Studio Wokalne</strong><span>Indywidualna praca z głosem.</span></li></ul></section>}
   </dialog>;
 }
