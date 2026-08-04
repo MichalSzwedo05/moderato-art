@@ -87,20 +87,25 @@ Vercel does not apply Prisma migrations automatically. Keep `CONTACT_FORM_ENABLE
 
 ## Admin CMS
 
-The CMS is an application-level `/admin` login, not Caddy browser Basic Auth. It is disabled by default and fails closed unless `ADMIN_CMS_ENABLED=true`. One exact email address can request a Resend magic link; the request form always gives the same response for unknown addresses, unavailable configuration, throttling, and delivery failures.
+The CMS is an application-level `/admin` login, not Caddy browser Basic Auth. It is disabled by default and fails closed unless `ADMIN_CMS_ENABLED=true`. Set one explicit `ADMIN_AUTH_MODE`: `magic_link` for a Resend magic link sent to one exact email address, or `password` for one username and an Argon2id password hash. The login form and routes fail closed if settings for the selected mode are incomplete or credentials for both modes are present.
 
-Set these server-only variables only after applying the `admin_cms` Prisma migration:
+Set these server-only variables only after applying all committed Prisma migrations, including `20260731120000_admin_cms` and `20260804150000_admin_password_sessions`:
 
 | Variable | Requirement |
 | --- | --- |
 | `ADMIN_CMS_ENABLED` | Exactly `true` to enable the CMS. |
-| `ADMIN_EMAIL` | The one exact administrator email address. |
+| `ADMIN_AUTH_MODE` | Exactly `magic_link` or `password`. Existing deployments default to `magic_link` only when omitted. |
+| `ADMIN_EMAIL` | Required only for `magic_link`: the one exact administrator email address. Leave empty in password mode. |
 | `ADMIN_AUTH_URL` | The canonical public HTTPS origin only, for example `https://moderato-art.pl`; no path, query, or trailing slash. Never derive this from request headers. |
-| `ADMIN_AUTH_RESEND_FROM` | A sender on a Resend-verified domain, for example `Moderato Art <admin@moderato-art.pl>`. |
-| `ADMIN_AUTH_RESEND_KEY` | A dedicated restricted Resend sending key, separate from the contact-form key. |
+| `ADMIN_AUTH_RESEND_FROM` | Required only for `magic_link`: a sender on a Resend-verified domain. Leave empty in password mode. |
+| `ADMIN_AUTH_RESEND_KEY` | Required only for `magic_link`: a dedicated restricted Resend sending key. Leave empty in password mode. |
+| `ADMIN_USERNAME` | Required only for `password`: 1–100 ASCII letters, digits, `.`, `_`, or `-`. |
+| `ADMIN_PASSWORD_HASH` | Required only for `password`: Argon2id PHC hash. Never store a plaintext password. |
 | `ADMIN_RATE_LIMIT_SECRET` | A unique random secret of at least 32 characters, used to HMAC client addresses before storing rate-limit buckets. |
 
-The production Compose app is reachable only through Caddy. Caddy replaces `X-Forwarded-For` with the directly connected client address, so the app can use it for its database-backed, 15-minute login rate limit without storing raw IP addresses. Do not publish port 3000, bypass Caddy, or change Caddy to pass client-supplied forwarding headers. The admin session cookie is `__Host-` scoped, Secure, HttpOnly, SameSite=Lax, and has an eight-hour server-checked expiry; logout revokes it in the database.
+Generate the password hash on a trusted machine using Argon2id with at least 64 MiB memory and three iterations. Store only the complete PHC string as an encrypted Vercel/environment variable. In `.env.production`, wrap the complete hash in single quotes, for example `ADMIN_PASSWORD_HASH='$argon2id$...'`, so Docker Compose does not interpolate `$`. Changing `ADMIN_PASSWORD_HASH` automatically invalidates password-mode sessions. Password login retains the per-IP database limiter and adds a wider account limiter; both reset after 15 minutes.
+
+The production Compose app is reachable only through Caddy. Caddy replaces `X-Forwarded-For` with the directly connected client address, so the app can use it for its database-backed, 15-minute login rate limit without storing raw IP addresses. Do not publish port 3000, bypass Caddy, or change Caddy to pass client-supplied forwarding headers. The admin session cookie is `__Host-` scoped, Secure, HttpOnly, SameSite=Lax, and has an eight-hour server-checked expiry; logout revokes it in the database. Switching modes invalidates sessions created through the other mode; delete outstanding magic links and revoke sessions when disabling the CMS.
 
 Articles are created as Markdown through `/admin`; only their metadata and Markdown source are stored. Public rendering remains a separate concern and must use `react-markdown` rather than injecting raw HTML.
 

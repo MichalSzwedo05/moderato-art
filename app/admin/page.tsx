@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { createArticle, updateArticle } from "./actions";
-import { getAdminSession, isAdminCmsEnabled } from "@/lib/admin-auth";
+import { getAdminAuthConfig, getAdminSession } from "@/lib/admin-auth";
 import { getPrisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
@@ -15,19 +15,18 @@ type AdminPageProps = {
   searchParams: Promise<{ article?: string; login?: string }>;
 };
 
-function LoginForm({ notice }: { notice?: string }) {
+function LoginForm({ mode, notice }: { mode: "magic_link" | "password"; notice?: string }) {
   return (
     <main className="admin-shell">
       <section className="admin-card admin-login-card">
         <p className="admin-eyebrow">Moderato Art</p>
         <h1>Panel administracyjny</h1>
-        <p>Podaj adres e-mail administratora. Jeśli dostęp jest możliwy, otrzymasz link do logowania.</p>
-        {notice === "sent" ? <p className="admin-success" role="status">Jeśli adres ma dostęp, link do logowania został wysłany.</p> : null}
+        <p>{mode === "password" ? "Podaj nazwę użytkownika i hasło administratora." : "Podaj adres e-mail administratora. Jeśli dostęp jest możliwy, otrzymasz link do logowania."}</p>
+        {mode === "magic_link" && notice === "sent" ? <p className="admin-success" role="status">Jeśli adres ma dostęp, link do logowania został wysłany.</p> : null}
         {notice && notice !== "sent" ? <p className="admin-notice" role="status">Nie można teraz zalogować się. Spróbuj ponownie.</p> : null}
-        <form action="/admin/auth/request" method="post" className="admin-form">
-          <label htmlFor="admin-email">Adres e-mail</label>
-          <input autoComplete="email" id="admin-email" name="email" required type="email" />
-          <button type="submit">Wyślij link</button>
+        <form action={mode === "password" ? "/admin/auth/password" : "/admin/auth/request"} method="post" className="admin-form">
+          {mode === "password" ? <><label htmlFor="admin-username">Nazwa użytkownika</label><input autoComplete="username" id="admin-username" maxLength={100} name="username" required /><label htmlFor="admin-password">Hasło</label><input autoComplete="current-password" id="admin-password" maxLength={1024} name="password" required type="password" /></> : <><label htmlFor="admin-email">Adres e-mail</label><input autoComplete="email" id="admin-email" name="email" required type="email" /></>}
+          <button type="submit">{mode === "password" ? "Zaloguj" : "Wyślij link"}</button>
         </form>
       </section>
     </main>
@@ -58,7 +57,8 @@ async function getArticles() {
 
 export default async function AdminPage({ searchParams }: AdminPageProps) {
   const params = await searchParams;
-  if (!isAdminCmsEnabled()) {
+  const config = getAdminAuthConfig();
+  if (!config) {
     return (
       <main className="admin-shell">
         <section className="admin-card"><p>Panel administracyjny jest chwilowo niedostępny.</p></section>
@@ -68,7 +68,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
 
   const session = await getAdminSession();
   if (!session) {
-    return <LoginForm notice={params.login} />;
+    return <LoginForm mode={config.mode} notice={params.login} />;
   }
 
   const articles = await getArticles();

@@ -25,13 +25,13 @@ function response(config: ReturnType<typeof getAdminAuthConfig>, location: strin
 
 export async function POST(request: Request) {
   const config = getAdminAuthConfig();
-  if (!config || !isSameAdminOrigin(request.headers.get("origin"), config)) {
+  if (!config || config.mode !== "magic_link" || !isSameAdminOrigin(request.headers.get("origin"), config)) {
     return response(config, "/admin?login=invalid", 403);
   }
 
   try {
     const token = (await request.formData()).get("token");
-    const sessionToken = typeof token === "string" ? await consumeMagicLink(token) : undefined;
+    const sessionToken = typeof token === "string" ? await consumeMagicLink(token, config) : undefined;
     if (!sessionToken) {
       return response(config, "/admin?login=invalid");
     }
