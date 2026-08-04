@@ -31,7 +31,7 @@ function genericResponse(config = getAdminAuthConfig()) {
 
 export async function POST(request: Request) {
   const config = getAdminAuthConfig();
-  if (!config || !isSameAdminOrigin(request.headers.get("origin"), config)) {
+  if (!config || config.mode !== "magic_link" || !isSameAdminOrigin(request.headers.get("origin"), config)) {
     return genericResponse(config);
   }
 

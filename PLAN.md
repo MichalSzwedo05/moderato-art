@@ -273,7 +273,7 @@ The following foundation is implemented and verified locally:
 - versioned Docker images published to GitHub Container Registry
 - Dependabot updates for npm, Docker, and GitHub Actions
 
-The website design and core content sections are implemented. The contact form and API are staged fail-closed, while the Prisma schema and initial migration are committed but not yet applied. Blog/article management remains planned work.
+The website design and core content sections are implemented, including a public `/galeria` page with an accessible photo viewer. The CMS is implemented: `/admin` supports either a one-email Resend magic link or a single username with an Argon2id password hash, and an authenticated administrator can create, edit, draft, publish, unpublish, and archive Markdown articles. Public article cards and `/articles/[slug]` pages expose only published articles. The contact form and API remain staged fail-closed. Prisma migrations are committed but have not been applied to a hosted database.
 
 ## Technology Rationale
 
@@ -580,7 +580,7 @@ Tasks:
 
 ### Phase 6: Contact Form
 
-Status: partially implemented; fail-closed pending legal and production approval
+Status: partially implemented; fail-closed pending legal and production approval. It must remain disabled during CMS Preview and initial CMS-only production rollout.
 
 Tasks:
 
@@ -594,7 +594,7 @@ Tasks:
 
 ### Phase 7: Database
 
-Status: partially implemented; schema and migration staged, not applied
+Status: partially implemented; schema and migrations for contact submissions, articles, CMS sessions, magic links, and rate limiting are committed, but not applied to a hosted database.
 
 Tasks:
 
@@ -607,6 +607,8 @@ Tasks:
 - test data persistence
 
 ### Phase 8: Blog and Article Management
+
+Status: implemented in the application; hosted database and end-to-end deployment validation pending.
 
 Tasks:
 
@@ -626,6 +628,8 @@ Tasks:
 
 ### Phase 10: Testing and Verification
 
+Status: automated lint, type checks, unit tests, production build, and container scans are in CI. Browser-level CMS and hosted-database verification remain pending.
+
 Tasks:
 
 - test the website on mobile devices
@@ -637,10 +641,13 @@ Tasks:
 - verify SEO
 - verify performance
 - verify startup with Docker Compose
+- test the CMS on a non-production Vercel Preview with a disposable database: request and consume a magic link, create a draft, confirm it is private, publish it, confirm the public list and detail page, then unpublish/archive and confirm it becomes private again
+- test logout, expired/reused magic links, unauthenticated access denial, and login rate limiting
+- test the final domain on mobile, including the gallery, article URLs, sitemap/robots, and QR-code destination
 
 ### Phase 11: Deployment
 
-Status: deployment automation complete; production infrastructure pending
+Status: deployment automation complete; production infrastructure and CMS rollout readiness pending. Initial deployment is CMS-only, not the completion of the contact-form MVP.
 
 Tasks:
 
@@ -654,6 +661,29 @@ Tasks:
 - generate a QR code linked to the final public HTTPS URL
 - verify that scanning the QR code opens the website on a mobile device
 
+Deployment gates:
+
+- select and document one database topology before configuring infrastructure: either PostgreSQL operated on the Hetzner VPS or Neon PostgreSQL; do not keep an unused second production database
+- align Docker Compose, `.env.production.example`, migration networking, backup ownership, and rollback instructions with that topology
+- rehearse the exact migration image against a disposable database and perform a documented restore test before any production migration
+- use a temporary staging hostname and separate non-production database before directing `moderato-art.pl` traffic to the VPS; lower DNS TTL before cutover and retain Vercel as a rollback option
+- configure a database/CMS readiness check in addition to the process liveness endpoint at `/health`
+- verify Resend sender-domain ownership (SPF/DKIM/DMARC), use a dedicated restricted CMS key, and set `ADMIN_AUTH_URL` to the exact canonical HTTPS origin
+- keep `CONTACT_FORM_ENABLED=false` and `CONTACT_FORM_TEST_ENABLED=false` until the legal controller identity, Privacy Policy, retention/deletion process, abuse protection, and submission-handling process are approved
+- define an owner, observation window, alert/log review, and rollback trigger for the cutover
+
+#### CMS test on Vercel Preview
+
+This is permitted only as an isolated test, not as production activation. Before enabling it, an authorised Vercel user must verify project linkage, Git integration, branch aliases, Preview environment scoping, and Deployment Protection.
+
+1. Create a dedicated preview branch and a disposable Neon database branch; never connect a Preview deployment to the production database.
+2. Verify that the pooled `DATABASE_URL` and direct `DIRECT_URL` refer to the same disposable Neon branch. Apply `prisma migrate deploy` through a controlled migration command using `DIRECT_URL`; do not add `DIRECT_URL` to Vercel runtime variables.
+3. Configure the Preview-only, branch-scoped server variables: `DATABASE_URL` (pooled Neon URL), `ADMIN_CMS_ENABLED=true`, `ADMIN_EMAIL`, `ADMIN_AUTH_RESEND_FROM`, `ADMIN_AUTH_RESEND_KEY`, a unique `ADMIN_RATE_LIMIT_SECRET` of at least 32 characters, `CONTACT_FORM_ENABLED=false`, and `CONTACT_FORM_TEST_ENABLED=false`.
+4. Set `ADMIN_AUTH_URL` to the stable HTTPS Vercel branch URL for that preview. It must exactly match the browser origin used for `/admin`; it cannot be the production URL or an expiring deployment URL.
+5. Verify that Vercel Preview is not protected in a way that prevents the administrator from opening the magic-link callback. Request the link only from the configured `ADMIN_EMAIL` and use a Resend-verified sender domain.
+6. Perform the Phase 10 CMS test sequence. For each draft, published, unpublished, and archived state, verify the homepage listing, `/articles/<slug>`, and `/api/articles/<slug>`; withdrawn content must return the expected unavailable result. Confirm the persisted database row/status directly or in a fresh deployment/session.
+7. Remove test articles and revoke the session. Disable the branch-scoped CMS variables, redeploy with `ADMIN_CMS_ENABLED=false` (or delete the Preview deployment and alias), and confirm `/admin` is unavailable before discarding the disposable database branch and revoking test credentials.
+
 ## MVP
 
 The first website version should include:
@@ -663,7 +693,7 @@ The first website version should include:
 - the About Moderato Art section
 - the Offer section
 - the Why Choose Moderato Art section
-- a gallery placeholder
+- a public gallery with optimised images and an accessible viewer
 - a blog or articles section with administrator-managed publishing
 - the contact form
 - the Contact section
@@ -699,5 +729,5 @@ To be decided later:
 - Privacy Policy content
 - data-retention period
 - whether marketing communication consent is required
-- production hosting
+- production database topology and backup/restore owner (Hetzner PostgreSQL or Neon)
 - whether the form should send email notifications

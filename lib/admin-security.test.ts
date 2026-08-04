@@ -1,8 +1,10 @@
+import argon2 from "argon2";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   createRandomToken,
   createRateLimitIdentifier,
   getAdminAuthConfig,
+  getAdminSessionVersion,
   getTrustedClientAddress,
   hashToken,
   isMagicToken,
@@ -29,6 +31,33 @@ describe("admin security configuration", () => {
     expect(getAdminAuthConfig({ ...environment, ADMIN_RATE_LIMIT_SECRET: "short" })).toBeUndefined();
     expect(getAdminAuthConfig({ ...environment, ADMIN_AUTH_URL: "http://localhost:3000", NODE_ENV: "development" })?.authOrigin).toBe("http://localhost:3000");
     expect(getAdminAuthConfig({ ...environment, ADMIN_AUTH_URL: "http://localhost:3000" })).toBeUndefined();
+  });
+
+  it("accepts a complete password configuration and rejects mixed, weak, and malformed hashes", async () => {
+    const passwordHash = await argon2.hash("password-for-configuration-test", {
+      memoryCost: 65_536,
+      parallelism: 1,
+      timeCost: 3,
+      type: argon2.argon2id,
+    });
+    const passwordEnvironment = {
+      ADMIN_AUTH_MODE: "password",
+      ADMIN_AUTH_URL: "https://moderato-art.pl",
+      ADMIN_CMS_ENABLED: "true",
+      ADMIN_PASSWORD_HASH: passwordHash,
+      ADMIN_RATE_LIMIT_SECRET: environment.ADMIN_RATE_LIMIT_SECRET,
+      ADMIN_USERNAME: "admin",
+    };
+    const config = getAdminAuthConfig(passwordEnvironment);
+
+    expect(config?.mode).toBe("password");
+    expect(config && getAdminSessionVersion(config)).toHaveLength(64);
+    expect(getAdminAuthConfig({ ...passwordEnvironment, ADMIN_EMAIL: "owner@example.com" })).toBeUndefined();
+    expect(getAdminAuthConfig({ ...passwordEnvironment, ADMIN_PASSWORD_HASH: "not-a-hash" })).toBeUndefined();
+    expect(getAdminAuthConfig({ ...passwordEnvironment, ADMIN_PASSWORD_HASH: "$argon2id$v=19$m=1024,t=1,p=1$abcdefghijklmnop$abcdefghijklmnopqrstuv" })).toBeUndefined();
+    expect(getAdminAuthConfig({ ...passwordEnvironment, ADMIN_PASSWORD_HASH: "$argon2id$v=19$m=999999,t=3,p=1$abcdefghijklmnop$abcdefghijklmnopqrstuv" })).toBeUndefined();
+    expect(getAdminAuthConfig({ ...passwordEnvironment, ADMIN_PASSWORD_HASH: "$argon2id$v=19$m=65536,t=3,p=1$AAAAAAAAAAA$AAAAAA" })).toBeUndefined();
+    expect(getAdminAuthConfig({ ...passwordEnvironment, ADMIN_PASSWORD_HASH: "$argon2id$v=19$m=65536,t=3,p=1$A$A" })).toBeUndefined();
   });
 
   it("creates 32-byte URL-safe secrets and one-way identifiers", () => {

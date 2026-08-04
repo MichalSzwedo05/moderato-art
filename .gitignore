@@ -7,3 +7,7 @@ coverage/
 generated/
 npm-debug.log*
 tsconfig.tsbuildinfo
+.vercel
+.env
+.env.local
+.env.production

@@ -6,6 +6,7 @@ import {
   createRateLimitIdentifier,
   getTrustedClientAddress,
   getAdminAuthConfig,
+  getAdminSessionVersion,
   hashToken,
   isAdminCmsEnabled,
   isMagicToken,
@@ -16,6 +17,7 @@ const magicLinkLifetimeMs = 15 * 60 * 1000;
 const sessionLifetimeMs = 8 * 60 * 60 * 1000;
 const rateLimitLifetimeMs = 15 * 60 * 1000;
 const maxLoginRequestsPerWindow = 5;
+const maxPasswordLoginRequestsPerWindow = 20;
 
 export const adminSessionCookieName = "__Host-moderato-admin-session";
 
@@ -30,10 +32,9 @@ function logResendFailure(error: unknown) {
   });
 }
 
-export async function takeLoginRateLimit(clientAddress: string, config: AdminAuthConfig) {
+async function takeRateLimit(identifierHash: string, maximumAttempts: number) {
   const prisma = getPrisma();
   const now = new Date();
-  const identifierHash = createRateLimitIdentifier(clientAddress, config.rateLimitSecret);
 
   await prisma.adminLoginRateLimit.deleteMany({
     where: { resetAt: { lte: now } },
@@ -42,7 +43,7 @@ export async function takeLoginRateLimit(clientAddress: string, config: AdminAut
   const incremented = await prisma.adminLoginRateLimit.updateMany({
     data: { attempts: { increment: 1 } },
     where: {
-      attempts: { lt: maxLoginRequestsPerWindow },
+      attempts: { lt: maximumAttempts },
       identifierHash,
       resetAt: { gt: now },
     },
@@ -65,7 +66,7 @@ export async function takeLoginRateLimit(clientAddress: string, config: AdminAut
     const retried = await prisma.adminLoginRateLimit.updateMany({
       data: { attempts: { increment: 1 } },
       where: {
-        attempts: { lt: maxLoginRequestsPerWindow },
+        attempts: { lt: maximumAttempts },
         identifierHash,
         resetAt: { gt: now },
       },
@@ -74,10 +75,19 @@ export async function takeLoginRateLimit(clientAddress: string, config: AdminAut
   }
 }
 
+export async function takeLoginRateLimit(clientAddress: string, config: AdminAuthConfig) {
+  return takeRateLimit(createRateLimitIdentifier(clientAddress, config.rateLimitSecret), maxLoginRequestsPerWindow);
+}
+
+export async function takePasswordLoginRateLimit(clientAddress: string, config: AdminAuthConfig) {
+  if (!(await takeLoginRateLimit(clientAddress, config))) return false;
+  return takeRateLimit(createRateLimitIdentifier("admin-password-account", config.rateLimitSecret), maxPasswordLoginRequestsPerWindow);
+}
+
 export async function createAndSendMagicLink(
   email: string,
   clientAddress: string,
-  config: AdminAuthConfig,
+  config: AdminAuthConfig & { mode: "magic_link" },
 ) {
   const token = createRandomToken();
   const prisma = getPrisma();
@@ -118,7 +128,7 @@ export async function createAndSendMagicLink(
   return true;
 }
 
-export async function consumeMagicLink(token: string) {
+export async function consumeMagicLink(token: string, config: AdminAuthConfig) {
   if (!isMagicToken(token)) {
     return undefined;
   }
@@ -141,6 +151,8 @@ export async function consumeMagicLink(token: string) {
 
     await transaction.adminSession.create({
       data: {
+        authMode: config.mode,
+        credentialVersion: getAdminSessionVersion(config),
         expiresAt: new Date(now.getTime() + sessionLifetimeMs),
         sessionHash: hashToken(sessionToken),
       },
@@ -151,10 +163,22 @@ export async function consumeMagicLink(token: string) {
   return consumed ? sessionToken : undefined;
 }
 
+export async function createAdminSession(config: AdminAuthConfig) {
+  const sessionToken = createRandomToken();
+  await getPrisma().adminSession.create({
+    data: {
+      authMode: config.mode,
+      credentialVersion: getAdminSessionVersion(config),
+      expiresAt: new Date(Date.now() + sessionLifetimeMs),
+      sessionHash: hashToken(sessionToken),
+    },
+  });
+  return sessionToken;
+}
+
 export async function getAdminSession() {
-  if (!isAdminCmsEnabled()) {
-    return undefined;
-  }
+  const config = getAdminAuthConfig();
+  if (!config) return undefined;
 
   const sessionToken = (await cookies()).get(adminSessionCookieName)?.value;
   if (!sessionToken || !isMagicToken(sessionToken)) {
@@ -165,6 +189,8 @@ export async function getAdminSession() {
     return await getPrisma().adminSession.findFirst({
       where: {
         expiresAt: { gt: new Date() },
+        authMode: config.mode,
+        credentialVersion: getAdminSessionVersion(config),
         revokedAt: null,
         sessionHash: hashToken(sessionToken),
       },

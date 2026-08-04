@@ -21,6 +21,7 @@
     "@prisma/adapter-neon": "^7.9.1",
     "@prisma/adapter-pg": "^7.9.1",
     "@prisma/client": "^7.9.1",
+    "argon2": "^0.45.1",
     "next": "16.2.12",
     "pg": "^8.22.0",
     "prisma": "^7.9.1",
@@ -46,6 +47,7 @@
     "vitest": "^4.1.10"
   },
   "overrides": {
+    "fast-uri": "3.1.5",
     "postcss": "8.5.18",
     "sharp": "0.35.0"
   }

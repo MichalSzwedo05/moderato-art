@@ -1,0 +1,3 @@
+ALTER TABLE "AdminSession"
+  ADD COLUMN "authMode" VARCHAR(20) NOT NULL DEFAULT 'magic_link',
+  ADD COLUMN "credentialVersion" CHAR(64) NOT NULL DEFAULT 'b31f6b9a4489f6b772bcc4ce53579d138bb0c2ad97bfb35074501b989ba150b9';
