@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useId, useRef, useState, type MouseEvent } from "react";
-import { OfferModalLink } from "./public-modals";
 
 export function MobileNavigation() {
   const [isOpen, setIsOpen] = useState(false);
@@ -80,7 +79,7 @@ export function MobileNavigation() {
       </button>
       <nav aria-label="Nawigacja mobilna" data-open={isOpen} hidden={!isOpen} id={navigationId} onClick={handleNavigationClick}>
         <a href="#o-mnie">O mnie</a>
-        <OfferModalLink>Oferta</OfferModalLink>
+        <a href="#oferta">Oferta</a>
         <a href="#blog">Artykuły</a>
         <a href="#kontakt">Kontakt</a>
       </nav>
