@@ -11,30 +11,7 @@ import { ScrollReveal } from "./scroll-reveal";
 import { ThemeSwitcher } from "./theme-switcher";
 import { GalleryViewer } from "./gallery-viewer";
 import { galleryPhotos } from "../lib/gallery";
-
-const offers = [
-  {
-    number: "01",
-    title: "Rytmisolki",
-    subtitle: "Zajęcia muzyczno-rytmiczne",
-    audience: "Dla dzieci w wieku przedszkolnym",
-    description: "Śpiew, ruch i twórcza zabawa rozwijające słuch muzyczny, rytm i wyobraźnię.",
-  },
-  {
-    number: "02",
-    title: "Junior Voice",
-    subtitle: "Grupowe lekcje śpiewu",
-    audience: "Dla dzieci w wieku przedszkolnym",
-    description: "Bezpieczne odkrywanie głosu, śpiew przy fortepianie i pierwsze doświadczenia sceniczne.",
-  },
-  {
-    number: "03",
-    title: "Studio Wokalne",
-    subtitle: "Indywidualne lekcje śpiewu",
-    audience: "Dla dzieci, młodzieży i dorosłych",
-    description: "Świadoma praca nad oddechem, emisją głosu, dykcją i interpretacją utworów.",
-  },
-];
+import { offers } from "../lib/offers";
 
 const benefits = [
   "Uwaga i tempo dopasowane do dziecka",
@@ -61,7 +38,7 @@ export default async function HomePage() {
           </a>
           <nav aria-label="Główna nawigacja">
             <a href="#o-mnie">O mnie</a>
-            <OfferModalLink>Oferta</OfferModalLink>
+            <a href="#oferta">Oferta</a>
             <a href="#blog">Artykuły</a>
             <a href="#kontakt">Kontakt</a>
           </nav>
@@ -85,7 +62,7 @@ export default async function HomePage() {
               </p>
               <div className="hero-actions">
                 <a className="button button-primary" href="#kontakt">Zapytaj o zajęcia</a>
-                <OfferModalLink className="text-link" href="#oferta">Poznaj ofertę <span aria-hidden="true">-&gt;</span></OfferModalLink>
+                <a className="text-link" href="#oferta">Sprawdź ofertę <span aria-hidden="true">-&gt;</span></a>
               </div>
               <p className="hero-note">Zajęcia grupowe dla przedszkolaków oraz indywidualne lekcje śpiewu</p>
             </div>
@@ -152,7 +129,7 @@ export default async function HomePage() {
                   <p className="offer-subtitle">{offer.subtitle}</p>
                   <p className="offer-audience">{offer.audience}</p>
                   <p>{offer.description}</p>
-                  <OfferModalLink>Więcej <span aria-hidden="true">-&gt;</span></OfferModalLink>
+                  <OfferModalLink aria-label={`Więcej o ${offer.title}`} offerId={offer.id}>Więcej <span aria-hidden="true">-&gt;</span></OfferModalLink>
                 </ScrollReveal>
               ))}
             </div>

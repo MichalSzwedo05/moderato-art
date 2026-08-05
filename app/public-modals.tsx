@@ -1,22 +1,26 @@
 "use client";
 
-import { useEffect, useId, useRef, useState, type ComponentPropsWithoutRef, type MouseEvent } from "react";
+import { useEffect, useId, useRef, useState, type ComponentPropsWithoutRef, type MouseEvent, type PointerEvent as ReactPointerEvent } from "react";
+import { offers, type OfferId } from "../lib/offers";
 
-function getModalFromLocation() {
-  return new URLSearchParams(window.location.search).get("modal") === "offers" ? "offers" : undefined;
+function isOfferId(value: string | null): value is OfferId {
+  return offers.some((offer) => offer.id === value);
 }
 
-type OfferModalLinkProps = Omit<ComponentPropsWithoutRef<"a">, "href"> & { href?: string };
+function getModalFromLocation() {
+  const modal = new URLSearchParams(window.location.search).get("modal");
+  return isOfferId(modal) ? modal : undefined;
+}
 
-export function OfferModalLink({ children, href = "#oferta", ...props }: OfferModalLinkProps) {
+type OfferModalLinkProps = Omit<ComponentPropsWithoutRef<"a">, "href"> & { href?: string; offerId: OfferId };
+
+export function OfferModalLink({ children, href = "#oferta", offerId, ...props }: OfferModalLinkProps) {
   function openModal(event: MouseEvent<HTMLAnchorElement>) {
     if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey
-      || typeof HTMLDialogElement === "undefined" || typeof HTMLDialogElement.prototype.showModal !== "function") {
-      return;
-    }
+      || typeof HTMLDialogElement === "undefined" || typeof HTMLDialogElement.prototype.showModal !== "function") return;
 
     event.preventDefault();
-    window.dispatchEvent(new Event("moderato:open-offers"));
+    window.dispatchEvent(new CustomEvent<OfferId>("moderato:open-offer", { detail: offerId }));
   }
 
   return <a aria-controls="offer-modal" aria-haspopup="dialog" href={href} onClick={openModal} {...props}>{children}</a>;
@@ -26,25 +30,28 @@ export function PublicModals() {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const openerRef = useRef<HTMLElement | null>(null);
   const titleId = useId();
-  const [modal, setModal] = useState<"offers">();
+  const [modal, setModal] = useState<OfferId>();
   const openedByUser = useRef(false);
+  const offer = offers.find((item) => item.id === modal);
 
   useEffect(() => {
     const fromLocation = () => { openedByUser.current = false; setModal(getModalFromLocation()); };
-    const fromTrigger = () => {
+    const fromTrigger = (event: Event) => {
+      const offerId = (event as CustomEvent<OfferId>).detail;
+      if (!isOfferId(offerId)) return;
       openerRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
       openedByUser.current = true;
       const url = new URL(window.location.href);
-      url.searchParams.set("modal", "offers");
+      url.searchParams.set("modal", offerId);
       window.history.pushState({}, "", url);
-      setModal("offers");
+      setModal(offerId);
     };
     fromLocation();
     window.addEventListener("popstate", fromLocation);
-    window.addEventListener("moderato:open-offers", fromTrigger);
+    window.addEventListener("moderato:open-offer", fromTrigger);
     return () => {
       window.removeEventListener("popstate", fromLocation);
-      window.removeEventListener("moderato:open-offers", fromTrigger);
+      window.removeEventListener("moderato:open-offer", fromTrigger);
     };
   }, []);
 
@@ -79,8 +86,13 @@ export function PublicModals() {
     else document.querySelector<HTMLButtonElement>(".mobile-menu-button")?.focus();
   }
 
-  return <dialog aria-labelledby={titleId} className="public-modal" id="offer-modal" onClose={() => { if (modal) close(); restoreFocus(); }} ref={dialogRef}>
+  function closeFromBackdrop(event: ReactPointerEvent<HTMLDialogElement>) {
+    const { bottom, left, right, top } = event.currentTarget.getBoundingClientRect();
+    if (event.clientX < left || event.clientX > right || event.clientY < top || event.clientY > bottom) event.currentTarget.close();
+  }
+
+  return <dialog aria-labelledby={titleId} className="public-modal" id="offer-modal" onClose={() => { if (modal) close(); restoreFocus(); }} onPointerDown={closeFromBackdrop} ref={dialogRef}>
     <button aria-label="Zamknij okno" className="public-modal-close" onClick={() => dialogRef.current?.close()} type="button">×</button>
-    {modal === "offers" && <section><p className="eyebrow">Oferta</p><h2 id={titleId}>Znajdź swój rytm i własny głos.</h2><ul className="public-modal-list"><li><strong>Rytmisolki</strong><span>Zajęcia muzyczno-rytmiczne dla przedszkolaków.</span></li><li><strong>Junior Voice</strong><span>Grupowe lekcje śpiewu dla dzieci.</span></li><li><strong>Studio Wokalne</strong><span>Indywidualna praca z głosem.</span></li></ul></section>}
+    {offer && <section><p className="eyebrow">{offer.subtitle}</p><h2 id={titleId}>{offer.title}</h2><p className="offer-audience">{offer.audience}</p><p>{offer.description}</p></section>}
   </dialog>;
 }
