@@ -18,13 +18,19 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
   if (!article?.publishedAt) notFound();
 
   return (
-    <main className="article-page site-shell">
-      <Link className="text-link" href="/">Wróć do strony głównej</Link>
-      <p className="eyebrow">{article.category}</p>
-      <h1>{article.title}</h1>
-      <time dateTime={article.publishedAt.toISOString()}>{new Intl.DateTimeFormat("pl-PL", { dateStyle: "long" }).format(article.publishedAt)}</time>
-      {article.imageUrl ? <Image alt="" height={600} src={article.imageUrl} unoptimized width={1200} /> : null}
-      <div className="article-markdown"><ReactMarkdown skipHtml>{article.content}</ReactMarkdown></div>
+    <main className="article-page">
+      <article className="article-shell site-shell">
+        <Link className="text-link article-back-link" href="/#blog">← Wróć do artykułów</Link>
+        <header className="article-header">
+          <p className="eyebrow">{article.category}</p>
+          <h1>{article.title}</h1>
+          <p className="article-lede">{article.excerpt}</p>
+          <time dateTime={article.publishedAt.toISOString()}>{new Intl.DateTimeFormat("pl-PL", { dateStyle: "long" }).format(article.publishedAt)}</time>
+        </header>
+        {article.imageUrl ? <figure className="article-cover"><Image alt="" height={720} src={article.imageUrl} unoptimized width={1280} /></figure> : null}
+        <div className="article-markdown article-body"><ReactMarkdown skipHtml>{article.content}</ReactMarkdown></div>
+        <footer className="article-footer"><Link className="text-link" href="/#kontakt">Porozmawiajmy o zajęciach →</Link></footer>
+      </article>
     </main>
   );
 }
