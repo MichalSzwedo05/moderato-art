@@ -100,12 +100,13 @@ export default async function HomePage() {
                 rehabilitantką zaburzeń głosu. W pracy z dziećmi łączy muzyczną
                 wrażliwość z wiedzą o świadomej, bezpiecznej pracy z głosem.
               </p>
-              <p>
-                Każde spotkanie jest dopasowane do wieku, możliwości i tempa
-                dziecka. Bez pośpiechu, za to z dużą dozą ciekawości, ruchu i
-                wspólnego muzykowania.
-              </p>
-                <a className="text-link" href="#kontakt">Dowiedz się więcej <span aria-hidden="true">-&gt;</span></a>
+              <details className="biography-details">
+                <summary>Dowiedz się więcej <span aria-hidden="true">↓</span></summary>
+                <div>
+                  <p>Każde spotkanie jest dopasowane do wieku, możliwości i tempa dziecka. Bez pośpiechu, za to z dużą dozą ciekawości, ruchu i wspólnego muzykowania.</p>
+                  <p>Najważniejsze są swoboda, radość z muzykowania i budowanie pewności siebie — krok po kroku, w bezpiecznej atmosferze.</p>
+                </div>
+              </details>
             </ScrollReveal>
           </div>
         </section>
@@ -156,6 +157,17 @@ export default async function HomePage() {
                 ))}
               </ul>
             </ScrollReveal>
+          </div>
+        </section>
+
+        <section className="testimonials-section" aria-labelledby="testimonials-title">
+          <div className="site-shell testimonials-grid">
+            <div>
+              <p className="eyebrow">Głosy rodziców</p>
+              <h2 id="testimonials-title">Dobre słowa zostają z nami na długo.</h2>
+              <p>Tu wkrótce pojawią się opinie osób, które poznały Moderato Art.</p>
+            </div>
+            <div className="testimonials-empty"><span aria-hidden="true">“</span><p>Przygotowujemy miejsce na pierwsze opinie rodziców i uczestników zajęć.</p></div>
           </div>
         </section>
 

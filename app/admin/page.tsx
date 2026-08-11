@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { createArticle, updateArticle } from "./actions";
+import { ArticleEditor } from "./article-editor";
+import { ArticleEditorDetails } from "./article-editor-details";
 import { getAdminAuthConfig, getAdminSession } from "@/lib/admin-auth";
 import { getPrisma } from "@/lib/prisma";
 
@@ -95,28 +97,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
         {params.article === "created" ? <p className="admin-success" role="status">Artykuł został zapisany.</p> : null}
         {params.article === "updated" ? <p className="admin-success" role="status">Artykuł został zaktualizowany.</p> : null}
         {params.article === "invalid" ? <p className="admin-notice" role="alert">Nie udało się zapisać artykułu. Sprawdź pola oraz unikalność slugu.</p> : null}
-        <form action={createArticle} className="admin-form admin-article-form">
-          <h2>Nowy artykuł</h2>
-          <label htmlFor="article-title">Tytuł</label>
-          <input id="article-title" maxLength={200} name="title" required />
-          <label htmlFor="article-slug">Slug</label>
-          <input id="article-slug" maxLength={220} name="slug" pattern="[a-z0-9]+(-[a-z0-9]+)*" required />
-          <label htmlFor="article-category">Kategoria</label>
-          <input id="article-category" maxLength={100} name="category" required />
-          <label htmlFor="article-excerpt">Krótki opis</label>
-          <textarea id="article-excerpt" maxLength={500} name="excerpt" required rows={3} />
-          <label htmlFor="article-image">Adres obrazka (opcjonalnie)</label>
-          <input id="article-image" maxLength={2048} name="imageUrl" type="url" />
-          <label htmlFor="article-status">Status</label>
-          <select defaultValue="DRAFT" id="article-status" name="status">
-            <option value="DRAFT">Szkic</option>
-            <option value="PUBLISHED">Opublikowany</option>
-            <option value="ARCHIVED">Zarchiwizowany</option>
-          </select>
-          <label htmlFor="article-content">Treść Markdown</label>
-          <textarea id="article-content" name="content" required rows={14} />
-          <button type="submit">Zapisz artykuł</button>
-        </form>
+        <ArticleEditor action={createArticle} />
         <section className="admin-article-list" aria-labelledby="articles-list-heading">
           <h2 id="articles-list-heading">Ostatnio zmienione</h2>
           {articles.length === 0 ? <p>Nie ma jeszcze artykułów.</p> : (
@@ -124,20 +105,8 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
               {articles.map((article) => (
                 <li key={article.id}>
                   <strong>{article.title}</strong>
-                  <span>{article.category} | {article.slug} | {article.status}</span>
-                  <details>
-                    <summary>Edytuj</summary>
-                    <form action={updateArticle.bind(null, article.id)} className="admin-form">
-                      <label>Tytuł<input defaultValue={article.title} maxLength={200} name="title" required /></label>
-                      <label>Slug<input defaultValue={article.slug} maxLength={220} name="slug" required /></label>
-                      <label>Kategoria<input defaultValue={article.category} maxLength={100} name="category" required /></label>
-                      <label>Krótki opis<textarea defaultValue={article.excerpt} maxLength={500} name="excerpt" required rows={3} /></label>
-                      <label>Adres obrazka<input defaultValue={article.imageUrl || ""} maxLength={2048} name="imageUrl" type="url" /></label>
-                      <label>Status<select defaultValue={article.status} name="status"><option value="DRAFT">Szkic</option><option value="PUBLISHED">Opublikowany</option><option value="ARCHIVED">Zarchiwizowany</option></select></label>
-                      <label>Treść Markdown<textarea defaultValue={article.content} name="content" required rows={12} /></label>
-                      <button type="submit">Zapisz zmiany</button>
-                    </form>
-                  </details>
+                  <span>{article.category} · /articles/{article.slug} · {article.status === "DRAFT" ? "Szkic" : article.status === "PUBLISHED" ? "Opublikowany" : "Archiwum"}</span>
+                  <ArticleEditorDetails action={updateArticle.bind(null, article.id)} article={article} />
                 </li>
               ))}
             </ul>
