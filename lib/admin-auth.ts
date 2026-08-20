@@ -18,6 +18,7 @@ const sessionLifetimeMs = 8 * 60 * 60 * 1000;
 const rateLimitLifetimeMs = 15 * 60 * 1000;
 const maxLoginRequestsPerWindow = 5;
 const maxPasswordLoginRequestsPerWindow = 20;
+const maxGalleryUploadRequestsPerWindow = 20;
 
 export const adminSessionCookieName = "__Host-moderato-admin-session";
 
@@ -82,6 +83,10 @@ export async function takeLoginRateLimit(clientAddress: string, config: AdminAut
 export async function takePasswordLoginRateLimit(clientAddress: string, config: AdminAuthConfig) {
   if (!(await takeLoginRateLimit(clientAddress, config))) return false;
   return takeRateLimit(createRateLimitIdentifier("admin-password-account", config.rateLimitSecret), maxPasswordLoginRequestsPerWindow);
+}
+
+export async function takeGalleryUploadRateLimit(clientAddress: string, config: AdminAuthConfig) {
+  return takeRateLimit(createRateLimitIdentifier(`gallery-upload:${clientAddress}`, config.rateLimitSecret), maxGalleryUploadRequestsPerWindow);
 }
 
 export async function createAndSendMagicLink(

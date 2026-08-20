@@ -49,6 +49,7 @@ RUN rm -rf /usr/local/lib/node_modules/corepack \
   /usr/local/bin/npx
 
 COPY --from=builder --chown=nextjs:nextjs /app/public ./public
+COPY --from=builder --chown=nextjs:nextjs /app/gallery-assets ./gallery-assets
 COPY --from=builder --chown=nextjs:nextjs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nextjs /app/.next/static ./.next/static
 

@@ -28,6 +28,12 @@ docker compose up --build
 
 The website will be available at `http://localhost:3000` and PostgreSQL at `localhost:5432`.
 
+After the first start, apply committed database migrations in the development container:
+
+```bash
+docker compose exec app npm run db:migrate:deploy
+```
+
 Stop local services with:
 
 ```bash
@@ -89,7 +95,7 @@ Vercel does not apply Prisma migrations automatically. Keep `CONTACT_FORM_ENABLE
 
 The CMS is an application-level `/admin` login, not Caddy browser Basic Auth. It is disabled by default and fails closed unless `ADMIN_CMS_ENABLED=true`. Set one explicit `ADMIN_AUTH_MODE`: `magic_link` for a Resend magic link sent to one exact email address, or `password` for one username and an Argon2id password hash. The login form and routes fail closed if settings for the selected mode are incomplete or credentials for both modes are present.
 
-Set these server-only variables only after applying all committed Prisma migrations, including `20260731120000_admin_cms` and `20260804150000_admin_password_sessions`:
+Set these server-only variables only after applying all committed Prisma migrations, including `20260731120000_admin_cms`, `20260804150000_admin_password_sessions`, and `20260820150000_gallery_photo_management`:
 
 | Variable | Requirement |
 | --- | --- |
@@ -108,6 +114,30 @@ Generate the password hash on a trusted machine using Argon2id with at least 64 
 The production Compose app is reachable only through Caddy. Caddy replaces `X-Forwarded-For` with the directly connected client address, so the app can use it for its database-backed, 15-minute login rate limit without storing raw IP addresses. Do not publish port 3000, bypass Caddy, or change Caddy to pass client-supplied forwarding headers. The admin session cookie is `__Host-` scoped, Secure, HttpOnly, SameSite=Lax, and has an eight-hour server-checked expiry; logout revokes it in the database. Switching modes invalidates sessions created through the other mode; delete outstanding magic links and revoke sessions when disabling the CMS.
 
 Articles are created as Markdown through `/admin`; only their metadata and Markdown source are stored. Public rendering remains a separate concern and must use `react-markdown` rather than injecting raw HTML.
+
+### Gallery Photo Management
+
+The authenticated `/admin` panel also manages the public gallery. An administrator can upload JPEG, PNG, or WebP files up to 8 MiB, provide Polish alternative text, and delete existing gallery photos. Uploaded files are sent directly to an S3-compatible object store through a short-lived presigned URL. The server validates the actual image, strips metadata, and stores optimized WebP full-size and thumbnail variants.
+
+Configure these server-only variables before enabling uploads:
+
+| Variable | Requirement |
+| --- | --- |
+| `GALLERY_STORAGE_ENDPOINT` | Optional S3-compatible endpoint; leave empty for AWS S3. Local HTTP is allowed only in development. |
+| `GALLERY_STORAGE_REGION` | Storage region, or the provider's required value such as `auto`. |
+| `GALLERY_STORAGE_BUCKET` | Dedicated bucket for the gallery. |
+| `GALLERY_STORAGE_ACCESS_KEY_ID` | Restricted key with access only to the gallery prefix. |
+| `GALLERY_STORAGE_SECRET_ACCESS_KEY` | Secret for the restricted storage key. |
+| `GALLERY_STORAGE_PUBLIC_URL` | Public HTTPS base URL for the bucket or CDN, without credentials. |
+| `GALLERY_STORAGE_FORCE_PATH_STYLE` | `true` for providers such as local MinIO; otherwise `false`. |
+| `GALLERY_STORAGE_PREFIX` | Object prefix, default `gallery`. |
+| `GALLERY_CLEANUP_SECRET` | Server-only bearer secret for the scheduled `POST /api/cron/gallery-cleanup` job. |
+
+The storage configuration fails closed: the CMS remains available for articles, but upload and deletion of object-backed photos return an unavailable response until all storage values are valid. Apply the committed Prisma migration before using the gallery CMS. Existing gallery photos are seeded as database records and served through a database-guarded route from `gallery-assets/`; deleting a seeded record also removes direct access to its bundled asset.
+
+Configure an external scheduler, for example a daily cron on the VPS, to call `POST /api/cron/gallery-cleanup` with `Authorization: Bearer $GALLERY_CLEANUP_SECRET`. Pending, processing, and failed-deletion records expire after bounded periods and are removed together with their private object keys. Configure a storage lifecycle rule to delete objects below `gallery/uploads/` after at most one day as a second cleanup boundary.
+
+The object store must allow `PUT` requests with the `Content-Type` and `If-None-Match` headers from the exact public site origin used by the CMS. Do not allow wildcard origins when the bucket is public. Keep `gallery/uploads/` private; only generated WebP objects should be public through the configured public URL or CDN.
 
 ## Contact Form and Database Staging
 
