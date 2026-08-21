@@ -77,7 +77,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
 
   const articles = await getArticles();
   const galleryPhotos = await getAdminGalleryPhotos();
-  if (!articles || !galleryPhotos) {
+  if (!articles) {
     return (
       <main className="admin-shell">
         <section className="admin-card"><p>Panel administracyjny jest chwilowo niedostępny.</p></section>
@@ -100,7 +100,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
         <section className="admin-gallery-section" aria-labelledby="gallery-section-heading">
           <h2 id="gallery-section-heading">Galeria zdjęć</h2>
           <p>Dodawaj zdjęcia przestrzeni i usuwaj te, których nie chcesz już pokazywać na stronie.</p>
-          <GalleryManager initialPhotos={galleryPhotos} />
+          {galleryPhotos ? <GalleryManager initialPhotos={galleryPhotos} /> : <p className="admin-notice" role="status">Galeria jest chwilowo niedostępna. Zarządzanie artykułami pozostaje dostępne.</p>}
         </section>
         {params.article === "created" ? <p className="admin-success" role="status">Artykuł został zapisany.</p> : null}
         {params.article === "updated" ? <p className="admin-success" role="status">Artykuł został zaktualizowany.</p> : null}
