@@ -9,7 +9,8 @@ vi.mock("resend", () => ({
   },
 }));
 
-import { POST, resetContactTestRateLimitForTests } from "./route";
+import { POST } from "./route";
+import { resetContactTestRateLimitForTests } from "../../../lib/contact-rate-limit";
 
 const request = (body = {}, token = testToken) => new Request("https://moderato-art.vercel.app/api/contact", {
   body: JSON.stringify(body),

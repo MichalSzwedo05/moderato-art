@@ -1,6 +1,3 @@
-// sharp 0.35 exposes its declarations through a path that TypeScript's
-// bundler resolver does not currently follow.
-// @ts-expect-error -- the runtime package is present and the API is unchanged.
 import sharp from "sharp";
 import {
   getImageMimeType,
