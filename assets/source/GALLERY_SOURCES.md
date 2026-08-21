@@ -4,7 +4,7 @@ The following illustrative stock photographs are local copies downloaded from Un
 
 | Local file | Unsplash asset URL | Downloaded |
 | --- | --- | --- |
-| `public/gallery/music-room.jpg` | https://images.unsplash.com/photo-1511379938547-c1f69419868d | 2026-07-24 |
-| `public/gallery/piano-keys.jpg` | https://images.unsplash.com/photo-1520523839897-bd0b52f945a0 | 2026-07-24 |
-| `public/gallery/stage-microphone.jpg` | https://images.unsplash.com/photo-1516280440614-37939bbacd81 | 2026-07-24 |
-| `public/gallery/music-studio.jpg` | https://images.unsplash.com/photo-1514320291840-2e0a9bf2a9ae | 2026-07-24 |
+| `gallery-assets/gallery/music-room.jpg` | https://images.unsplash.com/photo-1511379938547-c1f69419868d | 2026-07-24 |
+| `gallery-assets/gallery/piano-keys.jpg` | https://images.unsplash.com/photo-1520523839897-bd0b52f945a0 | 2026-07-24 |
+| `gallery-assets/gallery/stage-microphone.jpg` | https://images.unsplash.com/photo-1516280440614-37939bbacd81 | 2026-07-24 |
+| `gallery-assets/gallery/music-studio.jpg` | https://images.unsplash.com/photo-1514320291840-2e0a9bf2a9ae | 2026-07-24 |

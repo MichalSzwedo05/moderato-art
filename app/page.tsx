@@ -10,7 +10,7 @@ import { MobileNavigation } from "./mobile-navigation";
 import { ScrollReveal } from "./scroll-reveal";
 import { ThemeSwitcher } from "./theme-switcher";
 import { GalleryViewer } from "./gallery-viewer";
-import { galleryPhotos } from "../lib/gallery";
+import { getGalleryPhotos } from "../lib/gallery-data";
 import { offers } from "../lib/offers";
 
 const benefits = [
@@ -24,6 +24,7 @@ export default async function HomePage() {
   await connection();
   const contactFormTestEnabled = isContactTestEnabled();
   const articles = await getPublishedArticles();
+  const galleryPhotos = await getGalleryPhotos();
 
   return (
     <>
@@ -171,7 +172,7 @@ export default async function HomePage() {
           </div>
         </section>
 
-        <section className="gallery-section" id="galeria" aria-labelledby="gallery-title">
+        {galleryPhotos.length > 0 ? <section className="gallery-section" id="galeria" aria-labelledby="gallery-title">
           <div className="site-shell">
             <div className="section-heading compact-heading">
               <div>
@@ -180,9 +181,9 @@ export default async function HomePage() {
               </div>
               <a className="text-link" href="/galeria">Otwórz całą galerię</a>
             </div>
-            <GalleryViewer compact photos={galleryPhotos} />
+            <GalleryViewer compact photos={galleryPhotos.slice(0, 4)} />
           </div>
-        </section>
+        </section> : null}
 
         <section className="blog-section" id="blog" aria-labelledby="blog-title">
           <div className="site-shell">

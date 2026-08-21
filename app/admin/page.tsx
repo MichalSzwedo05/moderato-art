@@ -2,7 +2,9 @@ import type { Metadata } from "next";
 import { createArticle, updateArticle } from "./actions";
 import { ArticleEditor } from "./article-editor";
 import { ArticleEditorDetails } from "./article-editor-details";
+import { GalleryManager } from "./gallery-manager";
 import { getAdminAuthConfig, getAdminSession } from "@/lib/admin-auth";
+import { getAdminGalleryPhotos } from "@/lib/gallery-data";
 import { getPrisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
@@ -74,7 +76,8 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
   }
 
   const articles = await getArticles();
-  if (!articles) {
+  const galleryPhotos = await getAdminGalleryPhotos();
+  if (!articles || !galleryPhotos) {
     return (
       <main className="admin-shell">
         <section className="admin-card"><p>Panel administracyjny jest chwilowo niedostępny.</p></section>
@@ -88,12 +91,17 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
         <header className="admin-header">
           <div>
             <p className="admin-eyebrow">Moderato Art</p>
-            <h1>Artykuły</h1>
+            <h1>Panel administracyjny</h1>
           </div>
           <form action="/admin/auth/logout" method="post">
             <button className="admin-secondary-button" type="submit">Wyloguj</button>
           </form>
         </header>
+        <section className="admin-gallery-section" aria-labelledby="gallery-section-heading">
+          <h2 id="gallery-section-heading">Galeria zdjęć</h2>
+          <p>Dodawaj zdjęcia przestrzeni i usuwaj te, których nie chcesz już pokazywać na stronie.</p>
+          <GalleryManager initialPhotos={galleryPhotos} />
+        </section>
         {params.article === "created" ? <p className="admin-success" role="status">Artykuł został zapisany.</p> : null}
         {params.article === "updated" ? <p className="admin-success" role="status">Artykuł został zaktualizowany.</p> : null}
         {params.article === "invalid" ? <p className="admin-notice" role="alert">Nie udało się zapisać artykułu. Sprawdź pola oraz unikalność slugu.</p> : null}
