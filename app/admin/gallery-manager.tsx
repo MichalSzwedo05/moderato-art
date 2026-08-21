@@ -7,6 +7,17 @@ import { type GalleryPhoto } from "@/lib/gallery";
 import { maxGalleryUploadBytes, parseGalleryUploadRequest } from "@/lib/gallery-validation";
 
 type UploadPhase = "idle" | "preparing" | "uploading" | "processing";
+type PendingUpload = {
+  altText: string;
+  chunkCount: number;
+  chunkSize: number;
+  fileName: string;
+  fileSize: number;
+  fileType: string;
+  lastModified: number;
+  nextChunk: number;
+  photoId: string;
+};
 
 const gallerySizes = "(max-width: 760px) calc((100vw - 3.25rem) / 2), (max-width: 1184px) 33vw, 15rem";
 
@@ -14,12 +25,15 @@ function isExternalImage(source: string) {
   return source.startsWith("http://") || source.startsWith("https://") || source.startsWith("/gallery/");
 }
 
-async function getErrorMessage(response: Response, fallback: string) {
+async function getErrorDetails(response: Response, fallback: string) {
   try {
-    const body = await response.json() as { message?: unknown };
-    return typeof body.message === "string" ? body.message : fallback;
+    const body = await response.json() as { code?: unknown; message?: unknown };
+    return {
+      code: typeof body.code === "string" ? body.code : undefined,
+      message: typeof body.message === "string" ? body.message : fallback,
+    };
   } catch {
-    return fallback;
+    return { message: fallback };
   }
 }
 
@@ -31,6 +45,7 @@ export function GalleryManager({ initialPhotos }: { initialPhotos: readonly Gall
   const [altText, setAltText] = useState("");
   const [previewUrl, setPreviewUrl] = useState<string>();
   const [phase, setPhase] = useState<UploadPhase>("idle");
+  const [pendingUpload, setPendingUpload] = useState<PendingUpload>();
   const [deletingId, setDeletingId] = useState<string>();
   const [notice, setNotice] = useState("");
   const [error, setError] = useState("");
@@ -41,6 +56,13 @@ export function GalleryManager({ initialPhotos }: { initialPhotos: readonly Gall
 
   function selectFile(nextFile: File | undefined) {
     setFile(nextFile);
+    setPendingUpload((current) => current && nextFile
+      && current.fileName === nextFile.name
+      && current.fileSize === nextFile.size
+      && current.fileType === nextFile.type
+      && current.lastModified === nextFile.lastModified
+      ? current
+      : undefined);
     setPreviewUrl((currentUrl) => {
       if (currentUrl) URL.revokeObjectURL(currentUrl);
       return nextFile ? URL.createObjectURL(nextFile) : undefined;
@@ -63,31 +85,75 @@ export function GalleryManager({ initialPhotos }: { initialPhotos: readonly Gall
     }
 
     try {
-      setPhase("preparing");
-      const prepareResponse = await fetch("/api/admin/gallery", {
-        body: JSON.stringify(parsed.data),
-        headers: { "Content-Type": "application/json" },
-        method: "POST",
-      });
-      if (!prepareResponse.ok) throw new Error(await getErrorMessage(prepareResponse, "Nie udało się przygotować przesyłania."));
-      const prepared = await prepareResponse.json() as { photoId?: string; uploadUrl?: string };
-      if (!prepared.photoId || !prepared.uploadUrl) throw new Error("Serwer zwrócił nieprawidłowe dane przesyłania.");
+      let upload: PendingUpload;
+      const canResume = pendingUpload
+        && pendingUpload.fileName === file.name
+        && pendingUpload.fileSize === file.size
+        && pendingUpload.fileType === file.type
+        && pendingUpload.altText === altText
+        && pendingUpload.lastModified === file.lastModified;
+      if (canResume) {
+        upload = pendingUpload;
+      } else {
+        setPhase("preparing");
+        const prepareResponse = await fetch("/api/admin/gallery", {
+          body: JSON.stringify(parsed.data),
+          headers: { "Content-Type": "application/json" },
+          method: "POST",
+        });
+        if (!prepareResponse.ok) throw new Error((await getErrorDetails(prepareResponse, "Nie udało się przygotować przesyłania.")).message);
+        const prepared = await prepareResponse.json() as { chunkCount?: number; chunkSize?: number; photoId?: string };
+        if (!prepared.photoId || !prepared.chunkCount || !prepared.chunkSize
+          || !Number.isSafeInteger(prepared.chunkCount) || !Number.isSafeInteger(prepared.chunkSize)
+          || prepared.chunkSize <= 0 || prepared.chunkCount !== Math.ceil(file.size / prepared.chunkSize)) {
+          throw new Error("Serwer zwrócił nieprawidłowe dane przesyłania.");
+        }
+        upload = {
+          altText,
+          chunkCount: prepared.chunkCount,
+          chunkSize: prepared.chunkSize,
+          fileName: file.name,
+          fileSize: file.size,
+          fileType: file.type,
+          lastModified: file.lastModified,
+          nextChunk: 0,
+          photoId: prepared.photoId,
+        };
+        setPendingUpload(upload);
+      }
 
       setPhase("uploading");
-      const uploadResponse = await fetch(prepared.uploadUrl, {
-        body: file,
-        headers: { "Content-Type": file.type, "If-None-Match": "*" },
-        method: "PUT",
-      });
-      if (!uploadResponse.ok) throw new Error("Nie udało się przesłać pliku do magazynu zdjęć.");
+      for (let index = upload.nextChunk; index < upload.chunkCount; index += 1) {
+        const chunk = file.slice(index * upload.chunkSize, (index + 1) * upload.chunkSize);
+        const uploadResponse = await fetch(`/api/admin/gallery/${encodeURIComponent(upload.photoId)}/chunks/${index}`, {
+          body: chunk,
+          headers: { "Content-Type": "application/octet-stream" },
+          method: "PUT",
+        });
+        if (!uploadResponse.ok) {
+          if (uploadResponse.status === 400 || uploadResponse.status === 404 || uploadResponse.status === 409) setPendingUpload(undefined);
+          throw new Error((await getErrorDetails(uploadResponse, "Nie udało się przesłać fragmentu zdjęcia.")).message);
+        }
+        upload = { ...upload, nextChunk: index + 1 };
+        setPendingUpload(upload);
+      }
 
       setPhase("processing");
-      const completeResponse = await fetch(`/api/admin/gallery/${encodeURIComponent(prepared.photoId)}/complete`, {
+      const completeResponse = await fetch(`/api/admin/gallery/${encodeURIComponent(upload.photoId)}/complete`, {
         body: "{}",
         headers: { "Content-Type": "application/json" },
         method: "POST",
       });
-      if (!completeResponse.ok) throw new Error(await getErrorMessage(completeResponse, "Nie udało się przetworzyć zdjęcia."));
+      if (!completeResponse.ok) {
+        const details = await getErrorDetails(completeResponse, "Nie udało się przetworzyć zdjęcia.");
+        if (details.code === "MISSING_CHUNKS") {
+          upload = { ...upload, nextChunk: 0 };
+          setPendingUpload(upload);
+        } else if (completeResponse.status === 400 || completeResponse.status === 404) {
+          setPendingUpload(undefined);
+        }
+        throw new Error(details.message);
+      }
       const completed = await completeResponse.json() as { photo?: { alt: string; height: number; id: string; imageUrl: string; thumbnailUrl: string; width: number } };
       if (!completed.photo) throw new Error("Serwer nie zwrócił zapisanego zdjęcia.");
 
@@ -101,6 +167,7 @@ export function GalleryManager({ initialPhotos }: { initialPhotos: readonly Gall
         width: completed.photo.width,
       };
       setPhotos((current) => [addedPhoto, ...current]);
+      setPendingUpload(undefined);
       selectFile(undefined);
       setAltText("");
       if (fileInputRef.current) fileInputRef.current.value = "";
@@ -120,7 +187,7 @@ export function GalleryManager({ initialPhotos }: { initialPhotos: readonly Gall
     setDeletingId(photo.id);
     try {
       const response = await fetch(`/api/admin/gallery/${encodeURIComponent(photo.id)}`, { method: "DELETE" });
-      if (!response.ok) throw new Error(await getErrorMessage(response, "Nie udało się usunąć zdjęcia."));
+      if (!response.ok) throw new Error((await getErrorDetails(response, "Nie udało się usunąć zdjęcia.")).message);
       setPhotos((current) => current.filter((item) => item.id !== photo.id));
       setNotice("Zdjęcie zostało usunięte.");
       router.refresh();

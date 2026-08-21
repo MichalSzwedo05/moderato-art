@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
+  getGalleryUploadChunkCount,
   getImageMimeType,
+  galleryUploadChunkBytes,
   maxGalleryUploadBytes,
   parseGalleryUploadRequest,
 } from "./gallery-validation";
@@ -29,5 +31,11 @@ describe("gallery upload validation", () => {
     expect(getImageMimeType("png")).toBe("image/png");
     expect(getImageMimeType("webp")).toBe("image/webp");
     expect(getImageMimeType("svg")).toBeUndefined();
+  });
+
+  it("splits uploads into bounded chunks", () => {
+    expect(getGalleryUploadChunkCount(galleryUploadChunkBytes)).toBe(1);
+    expect(getGalleryUploadChunkCount(galleryUploadChunkBytes + 1)).toBe(2);
+    expect(getGalleryUploadChunkCount(maxGalleryUploadBytes)).toBe(8);
   });
 });

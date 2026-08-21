@@ -26,6 +26,11 @@ enum GalleryPhotoStatus {
   DELETING
 }
 
+enum GalleryPhotoVariant {
+  FULL
+  THUMBNAIL
+}
+
 model ContactSubmission {
   id                       String                  @id @default(cuid())
   parentName               String                  @db.VarChar(120)
@@ -65,9 +70,6 @@ model GalleryPhoto {
   altText            String            @db.VarChar(240)
   imageUrl           String?           @db.VarChar(2048)
   thumbnailUrl       String?           @db.VarChar(2048)
-  uploadObjectKey    String?           @db.VarChar(512)
-  objectKey          String?           @db.VarChar(512)
-  thumbnailObjectKey String?           @db.VarChar(512)
   width              Int?
   height             Int?
   mimeType           String?           @db.VarChar(50)
@@ -77,9 +79,36 @@ model GalleryPhoto {
   expiresAt          DateTime?
   createdAt          DateTime          @default(now())
   updatedAt          DateTime          @updatedAt
+  assets             GalleryPhotoAsset[]
+  uploadChunks       GalleryPhotoUploadChunk[]
 
   @@index([status, sortOrder])
   @@index([status, expiresAt])
+}
+
+model GalleryPhotoAsset {
+  photoId   String
+  variant   GalleryPhotoVariant
+  data      Bytes
+  sizeBytes Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  photo     GalleryPhoto @relation(fields: [photoId], references: [id], onDelete: Cascade)
+
+  @@id([photoId, variant])
+}
+
+model GalleryPhotoUploadChunk {
+  photoId    String
+  chunkIndex Int
+  data       Bytes
+  sizeBytes  Int
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  photo      GalleryPhoto @relation(fields: [photoId], references: [id], onDelete: Cascade)
+
+  @@id([photoId, chunkIndex])
+  @@index([photoId, chunkIndex])
 }
 
 model AdminMagicLink {
