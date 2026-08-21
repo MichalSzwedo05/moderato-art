@@ -1601,6 +1601,10 @@ h2 {
   margin-top: -.4rem;
 }
 
+.admin-gallery-section > .admin-notice {
+  margin-top: 1.5rem;
+}
+
 .admin-gallery-manager {
   border: 1px solid #e2dbcf;
   margin-top: 1.25rem;
