@@ -3,14 +3,12 @@ import { createHash, timingSafeEqual } from "node:crypto";
 import { Resend } from "resend";
 import { z } from "zod";
 import { isContactTestEnabled } from "../../../lib/contact-test";
+import { isContactRateLimited } from "../../../lib/contact-rate-limit";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
 const maxRequestBytes = 10_000;
-const rateLimitWindowMs = 10 * 60 * 1000;
-const maxRequestsPerWindow = 3;
-let testRequestWindow: { count: number; expiresAt: number } | undefined;
 
 const contactSubmissionSchema = z.object({
   parentName: z.string().trim().min(2).max(120),
@@ -43,22 +41,6 @@ function secretsMatch(received: string | null, expected: string | undefined) {
   const expectedHash = createHash("sha256").update(expected).digest();
 
   return timingSafeEqual(receivedHash, expectedHash);
-}
-
-function isRateLimited() {
-  const now = Date.now();
-
-  if (!testRequestWindow || testRequestWindow.expiresAt <= now) {
-    testRequestWindow = { count: 1, expiresAt: now + rateLimitWindowMs };
-    return false;
-  }
-
-  if (testRequestWindow.count >= maxRequestsPerWindow) {
-    return true;
-  }
-
-  testRequestWindow.count += 1;
-  return false;
 }
 
 async function parseJsonBody(request: Request) {
@@ -124,10 +106,6 @@ function formatEmailText(submission: ContactSubmission) {
   ].join("\n");
 }
 
-export function resetContactTestRateLimitForTests() {
-  testRequestWindow = undefined;
-}
-
 export async function POST(request: Request) {
   if (!isContactTestEnabled()) {
     return unavailableResponse();
@@ -137,7 +115,7 @@ export async function POST(request: Request) {
     return jsonResponse({ message: "Nieprawidłowy dostęp do testu formularza." }, 401);
   }
 
-  if (isRateLimited()) {
+  if (isContactRateLimited()) {
     return jsonResponse({ message: "Zbyt wiele prób. Spróbuj ponownie później." }, 429);
   }
 
