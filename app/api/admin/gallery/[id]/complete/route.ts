@@ -2,18 +2,10 @@ import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { getAdminAuthConfig, getAdminSession } from "@/lib/admin-auth";
 import { isSameAdminOrigin } from "@/lib/admin-security";
-import { galleryDeletingExpiryMs, galleryPendingExpiryMs, galleryProcessingExpiryMs } from "@/lib/gallery-cleanup";
-import { GalleryImageProcessingError, GalleryImageValidationError, processGalleryImage } from "@/lib/gallery-image";
-import {
-  GalleryStorageObjectValidationError,
-  deleteGalleryObjects,
-  getGalleryObject,
-  getGalleryStorageConfig,
-  makeGalleryPublicUrl,
-  makeGalleryStorageKey,
-  putGalleryObject,
-} from "@/lib/gallery-storage";
-import { maxGalleryUploadBytes } from "@/lib/gallery-validation";
+import { galleryPendingExpiryMs, galleryProcessingExpiryMs } from "@/lib/gallery-cleanup";
+import { GalleryImageValidationError, processGalleryImage } from "@/lib/gallery-image";
+import { getGalleryUploadChunkCount } from "@/lib/gallery-validation";
+import { toDatabaseBytes } from "@/lib/gallery-upload";
 import { getPrisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
@@ -30,6 +22,15 @@ async function isAuthorized(request: Request) {
     && await getAdminSession());
 }
 
+async function resetPending(prisma: ReturnType<typeof getPrisma>, id: string) {
+  await prisma.galleryPhoto.updateMany({
+    data: { expiresAt: new Date(Date.now() + galleryPendingExpiryMs), status: "PENDING" },
+    where: { id, status: "PROCESSING" },
+  }).catch((error) => {
+    console.error("Gallery photo processing state reset failed", { error, id });
+  });
+}
+
 type CompleteRouteContext = { params: Promise<{ id: string }> };
 
 export async function POST(request: Request, context: CompleteRouteContext) {
@@ -42,118 +43,131 @@ export async function POST(request: Request, context: CompleteRouteContext) {
     return json({ message: "Nie znaleziono zdjęcia." }, 404);
   }
 
-  const storage = getGalleryStorageConfig();
-  if (!storage) {
-    return json({ message: "Przechowywanie zdjęć nie jest jeszcze skonfigurowane." }, 503);
-  }
-
   const prisma = getPrisma();
-  const pendingPhoto = await prisma.galleryPhoto.findFirst({ where: { id, status: "PENDING" } });
-  if (!pendingPhoto || !pendingPhoto.uploadObjectKey || !pendingPhoto.mimeType) {
-    return json({ message: "Zdjęcie nie oczekuje na przetworzenie." }, 409);
+  const existingPhoto = await prisma.galleryPhoto.findUnique({
+    select: {
+      altText: true,
+      height: true,
+      id: true,
+      imageUrl: true,
+      mimeType: true,
+      sizeBytes: true,
+      status: true,
+      thumbnailUrl: true,
+      width: true,
+    },
+    where: { id },
+  });
+  if (!existingPhoto) return json({ message: "Nie znaleziono zdjęcia." }, 404);
+
+  if (existingPhoto.status === "ACTIVE" && existingPhoto.imageUrl && existingPhoto.thumbnailUrl) {
+    return json({ photo: {
+      alt: existingPhoto.altText,
+      height: existingPhoto.height ?? 0,
+      id: existingPhoto.id,
+      imageUrl: existingPhoto.imageUrl,
+      thumbnailUrl: existingPhoto.thumbnailUrl,
+      width: existingPhoto.width ?? 0,
+    } }, 200);
   }
-  const claimed = await prisma.galleryPhoto.updateMany({ data: { expiresAt: new Date(Date.now() + galleryProcessingExpiryMs), status: "PROCESSING" }, where: { id, status: "PENDING" } });
+  if (existingPhoto.status !== "PENDING" || !existingPhoto.mimeType || !existingPhoto.sizeBytes) {
+    return json({ code: "PROCESSING", message: "Zdjęcie nie oczekuje na przetworzenie." }, 409);
+  }
+  const totalSize = existingPhoto.sizeBytes;
+
+  const claimed = await prisma.galleryPhoto.updateMany({
+    data: { expiresAt: new Date(Date.now() + galleryProcessingExpiryMs), status: "PROCESSING" },
+    where: { id, status: "PENDING" },
+  });
   if (claimed.count !== 1) {
-    return json({ message: "Zdjęcie jest już przetwarzane." }, 409);
+    return json({ code: "PROCESSING", message: "Zdjęcie jest już przetwarzane." }, 409);
   }
 
-  let source: Buffer;
+  const expectedChunkCount = getGalleryUploadChunkCount(totalSize);
+  let chunks;
   try {
-    source = await getGalleryObject(storage, pendingPhoto.uploadObjectKey, maxGalleryUploadBytes, pendingPhoto.sizeBytes ?? undefined);
+    chunks = await prisma.galleryPhotoUploadChunk.findMany({
+      orderBy: { chunkIndex: "asc" },
+      select: { chunkIndex: true, data: true, sizeBytes: true },
+      where: { photoId: id },
+    });
   } catch (error) {
-    if (!(error instanceof GalleryStorageObjectValidationError)) {
-      await prisma.galleryPhoto.updateMany({ data: { expiresAt: new Date(Date.now() + galleryPendingExpiryMs), status: "PENDING" }, where: { id, status: "PROCESSING" } }).catch((resetError) => {
-        console.error("Gallery photo processing state reset failed", { error: resetError, id });
-      });
-      console.error("Gallery source object could not be read", { error, id });
-      return json({ message: "Magazyn zdjęć jest chwilowo niedostępny. Spróbuj ponownie." }, 503);
-    }
-
-    try {
-      await deleteGalleryObjects(storage, [pendingPhoto.uploadObjectKey]);
-      await prisma.galleryPhoto.deleteMany({ where: { id, status: "PROCESSING" } });
-    } catch (cleanupError) {
-      console.error("Invalid gallery upload cleanup failed", { error: cleanupError, id });
-    }
-    return json({ message: "Zdjęcie ma nieprawidłowy format lub przekracza dopuszczalne wymiary." }, 400);
+    await resetPending(prisma, id);
+    console.error("Gallery upload chunks could not be read", { error, id });
+    return json({ message: "Nie udało się odczytać zdjęcia. Spróbuj ponownie." }, 503);
   }
 
+  const chunksAreValid = chunks.length === expectedChunkCount
+    && chunks.every((chunk, index) => {
+      const expectedSize = index === expectedChunkCount - 1
+        ? totalSize - index * 1_048_576
+        : 1_048_576;
+      return chunk.chunkIndex === index && chunk.sizeBytes === expectedSize && chunk.data.byteLength === expectedSize;
+    });
+  if (!chunksAreValid) {
+    await resetPending(prisma, id);
+    return json({ code: "MISSING_CHUNKS", message: "Nie przesłano wszystkich fragmentów zdjęcia." }, 409);
+  }
+
+  const source = Buffer.concat(chunks.map((chunk) => Buffer.from(chunk.data)), totalSize);
   let processed;
   try {
-    processed = await processGalleryImage(source, pendingPhoto.mimeType);
+    processed = await processGalleryImage(source, existingPhoto.mimeType);
   } catch (error) {
-    if (error instanceof GalleryImageProcessingError || !(error instanceof GalleryImageValidationError)) {
-      await prisma.galleryPhoto.updateMany({ data: { expiresAt: new Date(Date.now() + galleryPendingExpiryMs), status: "PENDING" }, where: { id, status: "PROCESSING" } }).catch((resetError) => {
-        console.error("Gallery photo processing state reset failed", { error: resetError, id });
-      });
-      console.error("Gallery source image could not be processed", { error, id });
-      return json({ message: "Przetwarzanie zdjęcia jest chwilowo niedostępne. Spróbuj ponownie." }, 503);
-    }
-
-    try {
-      await deleteGalleryObjects(storage, [pendingPhoto.uploadObjectKey]);
+    if (error instanceof GalleryImageValidationError) {
       await prisma.galleryPhoto.deleteMany({ where: { id, status: "PROCESSING" } });
-    } catch (cleanupError) {
-      console.error("Invalid gallery upload cleanup failed", { error: cleanupError, id });
+      return json({ message: "Zdjęcie ma nieprawidłowy format lub przekracza dopuszczalne wymiary." }, 400);
     }
-    return json({ message: "Zdjęcie ma nieprawidłowy format lub przekracza dopuszczalne wymiary." }, 400);
+    await resetPending(prisma, id);
+    console.error("Gallery source image could not be processed", { error, id });
+    return json({ message: "Przetwarzanie zdjęcia jest chwilowo niedostępne. Spróbuj ponownie." }, 503);
   }
 
-  const objectKey = makeGalleryStorageKey(storage, id, "full.webp");
-  const thumbnailObjectKey = makeGalleryStorageKey(storage, id, "thumbnail.webp");
-  const imageUrl = makeGalleryPublicUrl(storage, objectKey);
-  const thumbnailUrl = makeGalleryPublicUrl(storage, thumbnailObjectKey);
-
+  const imageUrl = `/gallery/${id}`;
+  const thumbnailUrl = `/gallery/${id}?variant=thumbnail`;
   try {
-    const prepared = await prisma.galleryPhoto.updateMany({
-      data: { expiresAt: new Date(Date.now() + galleryProcessingExpiryMs), imageUrl, objectKey, thumbnailObjectKey, thumbnailUrl },
-      where: { id, status: "PROCESSING" },
-    });
-    if (prepared.count !== 1) return json({ message: "Zdjęcie jest już przetwarzane." }, 409);
-    await putGalleryObject(storage, objectKey, processed.full);
-    await putGalleryObject(storage, thumbnailObjectKey, processed.thumbnail);
-
     const firstActivePhoto = await prisma.galleryPhoto.findFirst({
       orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
       select: { sortOrder: true },
       where: { status: "ACTIVE" },
     });
-    const updated = await prisma.galleryPhoto.updateMany({
-      data: {
-        height: processed.height,
-        imageUrl,
-        mimeType: processed.mimeType,
-        objectKey,
-        expiresAt: new Date(Date.now() + galleryDeletingExpiryMs),
-        sizeBytes: processed.full.byteLength,
-        sortOrder: (firstActivePhoto?.sortOrder ?? 0) - 1,
-        status: "ACTIVE",
-        thumbnailObjectKey,
-        thumbnailUrl,
-        width: processed.width,
-      },
-      where: { id, status: "PROCESSING" },
-    });
-    if (updated.count !== 1) throw new Error("Gallery photo was changed while processing.");
-
-    // Keep the private upload object tracked until the cleanup job removes it.
-    // The presigned If-None-Match URL cannot overwrite this existing object.
-  } catch {
-    try {
-      await prisma.galleryPhoto.updateMany({
-        data: { expiresAt: new Date(Date.now() + galleryDeletingExpiryMs), status: "DELETING" },
+    await prisma.$transaction(async (transaction) => {
+      const updated = await transaction.galleryPhoto.updateMany({
+        data: {
+          height: processed.height,
+          imageUrl,
+          mimeType: processed.mimeType,
+          expiresAt: null,
+          sizeBytes: processed.full.byteLength,
+          sortOrder: (firstActivePhoto?.sortOrder ?? 0) - 1,
+          status: "ACTIVE",
+          thumbnailUrl,
+          width: processed.width,
+        },
         where: { id, status: "PROCESSING" },
       });
-      await deleteGalleryObjects(storage, [pendingPhoto.uploadObjectKey, objectKey, thumbnailObjectKey]);
-      await prisma.galleryPhoto.deleteMany({ where: { id, status: "DELETING" } });
-    } catch (cleanupError) {
-      console.error("Processed gallery object cleanup failed", { error: cleanupError, id });
-    }
-    return json({ message: "Magazyn zdjęć jest chwilowo niedostępny. Spróbuj ponownie." }, 503);
+      if (updated.count !== 1) throw new Error("Gallery photo changed while processing.");
+
+      await transaction.galleryPhotoAsset.upsert({
+        create: { data: toDatabaseBytes(processed.full), photoId: id, sizeBytes: processed.full.byteLength, variant: "FULL" },
+        update: { data: toDatabaseBytes(processed.full), sizeBytes: processed.full.byteLength },
+        where: { photoId_variant: { photoId: id, variant: "FULL" } },
+      });
+      await transaction.galleryPhotoAsset.upsert({
+        create: { data: toDatabaseBytes(processed.thumbnail), photoId: id, sizeBytes: processed.thumbnail.byteLength, variant: "THUMBNAIL" },
+        update: { data: toDatabaseBytes(processed.thumbnail), sizeBytes: processed.thumbnail.byteLength },
+        where: { photoId_variant: { photoId: id, variant: "THUMBNAIL" } },
+      });
+      await transaction.galleryPhotoUploadChunk.deleteMany({ where: { photoId: id } });
+    });
+  } catch (error) {
+    await resetPending(prisma, id);
+    console.error("Gallery photo assets could not be persisted", { error, id });
+    return json({ message: "Nie udało się zapisać zdjęcia. Spróbuj ponownie." }, 503);
   }
 
   revalidatePath("/");
   revalidatePath("/galeria");
   revalidatePath("/admin");
-  return json({ photo: { alt: pendingPhoto.altText, height: processed.height, id, imageUrl, thumbnailUrl, width: processed.width } }, 200);
+  return json({ photo: { alt: existingPhoto.altText, height: processed.height, id, imageUrl, thumbnailUrl, width: processed.width } }, 200);
 }

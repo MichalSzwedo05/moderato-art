@@ -3,7 +3,6 @@ import { revalidatePath } from "next/cache";
 import { getAdminAuthConfig, getAdminSession } from "@/lib/admin-auth";
 import { isSameAdminOrigin } from "@/lib/admin-security";
 import { galleryDeletingExpiryMs } from "@/lib/gallery-cleanup";
-import { deleteGalleryObjects, getGalleryStorageConfig } from "@/lib/gallery-storage";
 import { getPrisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
@@ -36,22 +35,15 @@ export async function DELETE(request: Request, context: DeleteRouteContext) {
   const photo = await prisma.galleryPhoto.findUnique({ where: { id } });
   if (!photo) return json({ message: "Nie znaleziono zdjęcia." }, 404);
 
-  const objectKeys = [photo.uploadObjectKey, photo.objectKey, photo.thumbnailObjectKey];
-  const storage = getGalleryStorageConfig();
-  if (objectKeys.some(Boolean) && !storage) {
-    return json({ message: "Przechowywanie zdjęć nie jest jeszcze skonfigurowane." }, 503);
-  }
-
   await prisma.galleryPhoto.updateMany({ data: { expiresAt: new Date(Date.now() + galleryDeletingExpiryMs), status: "DELETING" }, where: { id } });
   try {
-    if (storage) await deleteGalleryObjects(storage, objectKeys);
     await prisma.galleryPhoto.deleteMany({ where: { id, status: "DELETING" } });
   } catch (error) {
     console.error("Gallery photo deletion failed", { error, id });
     return json({ message: "Nie udało się usunąć zdjęcia. Zostało ukryte i wymaga ponownego sprzątnięcia." }, 503);
   }
 
-  console.info("Gallery photo deleted", { id, objectBacked: objectKeys.some(Boolean) });
+  console.info("Gallery photo deleted", { id });
   revalidatePath("/");
   revalidatePath("/galeria");
   revalidatePath("/admin");

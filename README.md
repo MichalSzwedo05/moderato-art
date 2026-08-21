@@ -95,7 +95,7 @@ Vercel does not apply Prisma migrations automatically. Keep `CONTACT_FORM_ENABLE
 
 The CMS is an application-level `/admin` login, not Caddy browser Basic Auth. It is disabled by default and fails closed unless `ADMIN_CMS_ENABLED=true`. Set one explicit `ADMIN_AUTH_MODE`: `magic_link` for a Resend magic link sent to one exact email address, or `password` for one username and an Argon2id password hash. The login form and routes fail closed if settings for the selected mode are incomplete or credentials for both modes are present.
 
-Set these server-only variables only after applying all committed Prisma migrations, including `20260731120000_admin_cms`, `20260804150000_admin_password_sessions`, and `20260820150000_gallery_photo_management`:
+Set these server-only variables only after applying all committed Prisma migrations, including `20260731120000_admin_cms`, `20260804150000_admin_password_sessions`, `20260820150000_gallery_photo_management`, `20260821170000_neon_gallery_assets`, and `20260821171000_remove_gallery_object_keys`:
 
 | Variable | Requirement |
 | --- | --- |
@@ -117,27 +117,19 @@ Articles are created as Markdown through `/admin`; only their metadata and Markd
 
 ### Gallery Photo Management
 
-The authenticated `/admin` panel also manages the public gallery. An administrator can upload JPEG, PNG, or WebP files up to 8 MiB, provide Polish alternative text, and delete existing gallery photos. Uploaded files are sent directly to an S3-compatible object store through a short-lived presigned URL. The server validates the actual image, strips metadata, and stores optimized WebP full-size and thumbnail variants.
+The authenticated `/admin` panel also manages the public gallery. An administrator can upload JPEG, PNG, or WebP files up to 8 MiB, provide Polish alternative text, and delete existing gallery photos. The browser sends the file as authenticated 1 MiB chunks to the application, and Neon stores the optimized WebP full-size and thumbnail variants as PostgreSQL `bytea` values. The server validates the actual image and strips metadata before publication.
 
-Configure these server-only variables before enabling uploads:
+Configure this server-only variable before enabling uploads:
 
 | Variable | Requirement |
 | --- | --- |
-| `GALLERY_STORAGE_ENDPOINT` | Optional S3-compatible endpoint; leave empty for AWS S3. Local HTTP is allowed only in development. |
-| `GALLERY_STORAGE_REGION` | Storage region, or the provider's required value such as `auto`. |
-| `GALLERY_STORAGE_BUCKET` | Dedicated bucket for the gallery. |
-| `GALLERY_STORAGE_ACCESS_KEY_ID` | Restricted key with access only to the gallery prefix. |
-| `GALLERY_STORAGE_SECRET_ACCESS_KEY` | Secret for the restricted storage key. |
-| `GALLERY_STORAGE_PUBLIC_URL` | Public HTTPS base URL for the bucket or CDN, without credentials. |
-| `GALLERY_STORAGE_FORCE_PATH_STYLE` | `true` for providers such as local MinIO; otherwise `false`. |
-| `GALLERY_STORAGE_PREFIX` | Object prefix, default `gallery`. |
 | `GALLERY_CLEANUP_SECRET` | Server-only bearer secret for the scheduled `POST /api/cron/gallery-cleanup` job. |
 
-The storage configuration fails closed: the CMS remains available for articles, but upload and deletion of object-backed photos return an unavailable response until all storage values are valid. Apply the committed Prisma migration before using the gallery CMS. Existing gallery photos are seeded as database records and served through a database-guarded route from `gallery-assets/`; deleting a seeded record also removes direct access to its bundled asset.
+Apply the committed Prisma migrations, including `20260821170000_neon_gallery_assets`, before using the gallery CMS. Existing gallery photos are seeded as database records and served through a database-guarded route from `gallery-assets/`; new and processed photos are served from Neon through the same route. Generated full-size variants are limited to 4 MiB and thumbnails to 1 MiB to stay below serverless response limits. Deleting a photo removes its database assets and any unfinished upload chunks through cascading deletes.
 
-Configure an external scheduler, for example a daily cron on the VPS, to call `POST /api/cron/gallery-cleanup` with `Authorization: Bearer $GALLERY_CLEANUP_SECRET`. Pending, processing, and failed-deletion records expire after bounded periods and are removed together with their private object keys. Configure a storage lifecycle rule to delete objects below `gallery/uploads/` after at most one day as a second cleanup boundary.
+Configure an external scheduler, for example a daily cron on the VPS, to call `POST /api/cron/gallery-cleanup` with `Authorization: Bearer $GALLERY_CLEANUP_SECRET`. Pending, processing, and failed-deletion records expire after bounded periods and their database rows (including chunks) are removed.
 
-The object store must allow `PUT` requests with the `Content-Type` and `If-None-Match` headers from the exact public site origin used by the CMS. Do not allow wildcard origins when the bucket is public. Keep `gallery/uploads/` private; only generated WebP objects should be public through the configured public URL or CDN.
+The Neon-only implementation is intended for the small Vercel/Neon test gallery. PostgreSQL storage and serverless bandwidth grow with every image request; move the asset layer to an S3-compatible provider such as Hetzner Object Storage before a large production gallery.
 
 ## Contact Form and Database Staging
 

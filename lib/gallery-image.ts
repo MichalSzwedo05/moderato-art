@@ -6,6 +6,8 @@ import {
   getImageMimeType,
   isGalleryImageContentType,
   maxGalleryInputPixels,
+  maxGalleryFullBytes,
+  maxGalleryThumbnailBytes,
   maxGalleryUploadBytes,
 } from "./gallery-validation";
 
@@ -38,6 +40,18 @@ const sharpOptions = {
   limitInputPixels: maxGalleryInputPixels,
 };
 
+async function renderWebpVariant(input: Buffer, options: { effort: number; height: number; quality: number; width: number }[], maxBytes: number) {
+  for (const option of options) {
+    const result = await sharp(input, sharpOptions)
+      .rotate()
+      .resize({ fit: "inside", height: option.height, withoutEnlargement: true, width: option.width })
+      .webp({ effort: option.effort, quality: option.quality })
+      .toBuffer({ resolveWithObject: true });
+    if (result.data.byteLength <= maxBytes) return result;
+  }
+  throw new GalleryImageValidationError("Processed gallery image exceeds the configured storage limit.");
+}
+
 export async function processGalleryImage(input: Buffer, declaredContentType: string): Promise<ProcessedGalleryImage> {
   if (input.byteLength === 0 || input.byteLength > maxGalleryUploadBytes) {
     throw new GalleryImageValidationError("Gallery image exceeds the configured upload limit.");
@@ -47,7 +61,7 @@ export async function processGalleryImage(input: Buffer, declaredContentType: st
   try {
     metadata = await sharp(input, sharpOptions).metadata();
   } catch {
-    throw new GalleryImageProcessingError("Gallery image could not be decoded safely.");
+    throw new GalleryImageValidationError("Gallery image could not be decoded safely.");
   }
   const originalMimeType = getImageMimeType(metadata.format);
   if (!originalMimeType || !isGalleryImageContentType(declaredContentType) || originalMimeType !== declaredContentType) {
@@ -58,20 +72,32 @@ export async function processGalleryImage(input: Buffer, declaredContentType: st
     throw new GalleryImageValidationError("Gallery image dimensions are not allowed.");
   }
 
+  try {
+    await sharp(input, sharpOptions)
+      .rotate()
+      .resize({ fit: "inside", height: 1, withoutEnlargement: true, width: 1 })
+      .raw()
+      .toBuffer();
+  } catch {
+    throw new GalleryImageValidationError("Gallery image could not be decoded safely.");
+  }
+
   let fullResult;
   let thumbnail;
   try {
-    fullResult = await sharp(input, sharpOptions)
-      .rotate()
-      .resize({ fit: "inside", height: 2400, withoutEnlargement: true, width: 2400 })
-      .webp({ effort: 4, quality: 84 })
-      .toBuffer({ resolveWithObject: true });
-    thumbnail = await sharp(input, sharpOptions)
-      .rotate()
-      .resize({ fit: "inside", height: 900, withoutEnlargement: true, width: 900 })
-      .webp({ effort: 3, quality: 80 })
-      .toBuffer();
-  } catch {
+    fullResult = await renderWebpVariant(input, [
+      { effort: 4, height: 2400, quality: 84, width: 2400 },
+      { effort: 4, height: 2400, quality: 76, width: 2400 },
+      { effort: 4, height: 2000, quality: 74, width: 2000 },
+      { effort: 4, height: 1600, quality: 70, width: 1600 },
+    ], maxGalleryFullBytes);
+    thumbnail = (await renderWebpVariant(input, [
+      { effort: 3, height: 900, quality: 80, width: 900 },
+      { effort: 3, height: 800, quality: 72, width: 800 },
+      { effort: 3, height: 640, quality: 68, width: 640 },
+    ], maxGalleryThumbnailBytes)).data;
+  } catch (error) {
+    if (error instanceof GalleryImageValidationError) throw error;
     throw new GalleryImageProcessingError("Gallery image could not be processed.");
   }
 

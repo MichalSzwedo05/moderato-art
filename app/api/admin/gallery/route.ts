@@ -3,13 +3,9 @@ import { NextResponse } from "next/server";
 import { getAdminAuthConfig, getAdminSession, getTrustedClientAddress, takeGalleryUploadRateLimit } from "@/lib/admin-auth";
 import { isSameAdminOrigin } from "@/lib/admin-security";
 import { galleryPendingExpiryMs } from "@/lib/gallery-cleanup";
+import { GalleryUploadBodyError, readGalleryUploadBody } from "@/lib/gallery-upload";
 import { getPrisma } from "@/lib/prisma";
-import {
-  createGalleryUploadUrl,
-  getGalleryStorageConfig,
-  makeGalleryStorageKey,
-} from "@/lib/gallery-storage";
-import { parseGalleryUploadRequest } from "@/lib/gallery-validation";
+import { getGalleryUploadChunkCount, galleryUploadChunkBytes, parseGalleryUploadRequest } from "@/lib/gallery-validation";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -40,15 +36,12 @@ export async function POST(request: Request) {
     return json({ message: "Nieprawidłowe dane zdjęcia." }, 413);
   }
 
-  const storage = getGalleryStorageConfig();
-  if (!storage) {
-    return json({ message: "Przechowywanie zdjęć nie jest jeszcze skonfigurowane." }, 503);
-  }
-
   let parsed;
   try {
-    parsed = parseGalleryUploadRequest(await request.json());
-  } catch {
+    const body = await readGalleryUploadBody(request, 20_000);
+    parsed = parseGalleryUploadRequest(JSON.parse(body.toString("utf8")));
+  } catch (error) {
+    if (error instanceof GalleryUploadBodyError) return json({ message: "Nieprawidłowe dane zdjęcia." }, 413);
     return json({ message: "Nieprawidłowe dane zdjęcia." }, 400);
   }
   if (!parsed.success) {
@@ -56,7 +49,7 @@ export async function POST(request: Request) {
   }
 
   const id = randomUUID();
-  const uploadObjectKey = makeGalleryStorageKey(storage, "uploads", id);
+  const chunkCount = getGalleryUploadChunkCount(parsed.data.size);
   const prisma = getPrisma();
 
   try {
@@ -68,12 +61,10 @@ export async function POST(request: Request) {
         mimeType: parsed.data.contentType,
         sizeBytes: parsed.data.size,
         status: "PENDING",
-        uploadObjectKey,
       },
     });
 
-    const uploadUrl = await createGalleryUploadUrl(storage, uploadObjectKey, parsed.data.contentType);
-    return json({ photoId: id, uploadUrl }, 201);
+    return json({ chunkCount, chunkSize: galleryUploadChunkBytes, photoId: id }, 201);
   } catch {
     await prisma.galleryPhoto.deleteMany({ where: { id, status: "PENDING" } }).catch(() => undefined);
     return json({ message: "Nie udało się przygotować przesyłania zdjęcia." }, 500);

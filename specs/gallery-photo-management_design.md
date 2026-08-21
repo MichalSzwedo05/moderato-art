@@ -2,10 +2,10 @@
 
 ## Requirements
 
-- While an authenticated administrator is in `/admin`, when they select a JPEG, PNG, or WebP image and provide alternative text, the system shall validate the metadata, upload the original through a short-lived presigned URL, process it on the server, and publish optimized WebP variants in the gallery.
-- While a gallery photo is active, when an authenticated administrator confirms deletion, the system shall hide it immediately, remove its stored objects when applicable, and remove its database record after successful cleanup.
+- While an authenticated administrator is in `/admin`, when they select a JPEG, PNG, or WebP image and provide alternative text, the system shall validate the metadata, upload the file through authenticated 1 MiB chunks, process it on the server, and publish optimized WebP variants in the gallery.
+- While a gallery photo is active, when an authenticated administrator confirms deletion, the system shall hide it immediately and remove its database assets, upload chunks, and parent record.
 - While a visitor opens `/` or `/galeria`, the system shall display only active gallery photos and shall use the optimized thumbnail in grids and the full-size variant in the lightbox.
-- When storage configuration is missing or invalid, upload and object-backed deletion shall fail closed without exposing credentials or falling back to a writable local filesystem.
+- When the database is unavailable or an upload is incomplete, the gallery shall fail closed without falling back to a writable local filesystem.
 
 ## Architecture
 
@@ -18,32 +18,31 @@
 
 ### Backend
 
-- PostgreSQL/Prisma gains a `GalleryPhoto` model and `GalleryPhotoStatus` enum.
-- `POST /api/admin/gallery/upload` validates upload metadata and returns a ten-minute presigned S3-compatible PUT URL for a pending photo.
-- `POST /api/admin/gallery/[id]/complete` claims the pending object, reads it, validates and transforms it with `sharp`, stores full and thumbnail WebP objects, and activates the database record. The processing state prevents concurrent finalization from deleting another request's output.
-- `DELETE /api/admin/gallery/[id]` marks the record as deleting, removes its storage objects, and removes the record. Static seed photos have no object keys and are hidden by deleting their database rows.
-- Non-active records carry an expiry deadline. `POST /api/cron/gallery-cleanup` removes expired pending, processing, and deleting records and their private objects; an external scheduler must call it with `GALLERY_CLEANUP_SECRET`.
-- After activation, the private upload object remains tracked until the cleanup job removes it; the presigned upload uses `If-None-Match: *` so the URL cannot overwrite it after activation.
+- PostgreSQL/Prisma gains `GalleryPhotoAsset`, `GalleryPhotoUploadChunk`, `GalleryPhotoVariant`, and the existing `GalleryPhotoStatus` enum. WebP bytes are stored as bounded PostgreSQL `bytea` values.
+- `POST /api/admin/gallery` validates upload metadata and returns a chunk size/count for a pending photo. `PUT /api/admin/gallery/[id]/chunks/[index]` accepts one authenticated 1 MiB chunk and makes retries idempotent.
+- `POST /api/admin/gallery/[id]/complete` claims the pending chunks, validates and transforms the assembled image with `sharp`, stores full and thumbnail WebP bytes, and activates the database record. The processing state prevents concurrent finalization.
+- `DELETE /api/admin/gallery/[id]` marks the record as deleting and removes the parent; PostgreSQL cascades the asset and chunk rows. Static seed photos have no asset rows and are hidden by deleting their database rows.
+- Non-active records carry an expiry deadline. `POST /api/cron/gallery-cleanup` removes expired pending, processing, and deleting records and their database chunks; an external scheduler must call it with `GALLERY_CLEANUP_SECRET`.
 - `lib/gallery-data.ts` queries active records and returns an empty gallery when the database is unavailable. It never falls back to static files, so a deleted seeded photo cannot reappear during an outage.
 - Existing four static photos are seeded as database records by the PostgreSQL migration and are served through a database-guarded route from `gallery-assets/`. They are not exposed as unconditional public files, so deleting a seeded row also removes direct access.
-- `lib/gallery-storage.ts` is provider-agnostic over S3-compatible storage through server-only environment variables.
+- `app/gallery/[id]/route.ts` serves a selected full or thumbnail WebP asset only for an active database row and retains the database-guarded static fallback for seeded photos.
 
 ### Security
 
 - Every mutation requires the existing admin configuration, authenticated admin session, and exact trusted `Origin` check.
-- Credentials remain server-only; the browser receives only a short-lived, object-specific presigned URL.
+- The browser never receives database credentials; every chunk route requires the existing admin session and exact trusted `Origin` check.
 - Upload preparation is limited to 20 requests per trusted client address per 15 minutes using the existing HMAC-backed database limiter.
-- Storage reads bind the GET to the HEAD ETag and cap streamed buffering, preventing a replacement object from bypassing the upload limit between checks.
+- Chunk bodies are bounded to 1 MiB and completion verifies contiguous indexes, declared sizes, and the total 8 MiB limit.
 - The server validates declared metadata and the downloaded object itself. Only JPEG, PNG, and WebP are accepted, with an 8 MiB request limit and a 40 megapixel processing limit.
 - `sharp` decodes, auto-orients, resizes, and re-encodes images, removing EXIF/GPS and other metadata by default. Original filenames are never used as object keys.
-- Public responses expose only safe display fields. Cache headers are immutable for generated objects and `no-store` for mutation responses.
+- Public responses expose only safe display fields. Image responses include an explicit content type, length, `nosniff`, and `no-store` headers.
 - Failed deletion leaves a non-public `DELETING` tombstone for later cleanup rather than returning the image to public queries.
 
 ## Implementation Plan
 
 - [x] Define the storage, persistence, and security approach.
-- [x] Add the Prisma model, migration, and storage configuration examples.
-- [x] Implement validation, S3-compatible storage helpers, and protected upload/finalize/delete routes.
+- [x] Add the Prisma models, migration, and Neon storage configuration example.
+- [x] Implement validation, chunked upload, database asset persistence, and protected upload/finalize/delete routes.
 - [x] Replace the static public gallery reads with active database-backed data.
 - [x] Add the authenticated admin upload/delete UI and styles.
 - [x] Add unit/component/route coverage and update documentation.

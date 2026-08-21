@@ -273,7 +273,7 @@ The following foundation is implemented and verified locally:
 - versioned Docker images published to GitHub Container Registry
 - Dependabot updates for npm, Docker, and GitHub Actions
 
-The website design and core content sections are implemented, including a public `/galeria` page with an accessible photo viewer. The CMS is implemented: `/admin` supports either a one-email Resend magic link or a single username with an Argon2id password hash, and an authenticated administrator can create, edit, draft, publish, unpublish, and archive Markdown articles. It also supports authenticated gallery photo upload and deletion through S3-compatible storage when storage configuration is present. Public article cards and `/articles/[slug]` pages expose only published articles. The contact form and API remain staged fail-closed. Prisma migrations are committed but have not been applied to a hosted database.
+The website design and core content sections are implemented, including a public `/galeria` page with an accessible photo viewer. The CMS is implemented: `/admin` supports either a one-email Resend magic link or a single username with an Argon2id password hash, and an authenticated administrator can create, edit, draft, publish, unpublish, and archive Markdown articles. It also supports authenticated gallery photo upload and deletion through chunked Neon/PostgreSQL storage. Public article cards and `/articles/[slug]` pages expose only published articles. The contact form and API remain staged fail-closed. The gallery migrations are applied to the hosted Neon test database.
 
 ## Technology Rationale
 

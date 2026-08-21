@@ -2,6 +2,9 @@ import { z } from "zod";
 
 export const galleryImageContentTypes = ["image/jpeg", "image/png", "image/webp"] as const;
 export const maxGalleryUploadBytes = 8 * 1024 * 1024;
+export const galleryUploadChunkBytes = 1 * 1024 * 1024;
+export const maxGalleryFullBytes = 4 * 1024 * 1024;
+export const maxGalleryThumbnailBytes = 1 * 1024 * 1024;
 export const maxGalleryInputPixels = 40_000_000;
 export const maxGalleryAltTextLength = 240;
 
@@ -15,6 +18,10 @@ const galleryUploadRequestSchema = z.object({
 });
 
 export type GalleryUploadRequest = z.infer<typeof galleryUploadRequestSchema>;
+
+export function getGalleryUploadChunkCount(size: number) {
+  return Math.ceil(size / galleryUploadChunkBytes);
+}
 
 export function parseGalleryUploadRequest(input: unknown) {
   return galleryUploadRequestSchema.safeParse(input);
