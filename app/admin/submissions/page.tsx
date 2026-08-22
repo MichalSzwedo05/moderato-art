@@ -1,0 +1,136 @@
+import type { Metadata } from "next";
+import Link from "next/link";
+import { redirect } from "next/navigation";
+import {
+  contactSubmissionFilters,
+  getContactSubmissions,
+  parseContactSubmissionQuery,
+  type ContactSubmissionFilter,
+  type ContactSubmissionRow,
+} from "@/lib/contact-submissions";
+import { getAdminAuthConfig, getAdminSession } from "@/lib/admin-auth";
+
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
+
+export const metadata: Metadata = {
+  robots: { follow: false, index: false },
+  title: "Zgłoszenia kontaktowe · Panel administracyjny",
+};
+
+type SubmissionsPageProps = {
+  searchParams: Promise<{ page?: string; status?: string }>;
+};
+
+const statusLabels: Record<Exclude<ContactSubmissionFilter, "ALL">, string> = {
+  ARCHIVED: "Zarchiwizowane",
+  CONTACTED: "Skontaktowano się",
+  NEW: "Nowe",
+};
+
+const lessonLabels: Record<string, string> = {
+  "junior-voice": "Junior Voice",
+  rytmika: "Rytmisolki",
+  "studio-wokalne": "Studio Wokalne",
+};
+
+const ageLabels: Record<string, string> = {
+  "10-15": "10–15 lat",
+  "16-plus": "16 lat lub więcej",
+  "3-5": "3–5 lat",
+  "6-9": "6–9 lat",
+};
+
+function formatDate(value: Date) {
+  return new Intl.DateTimeFormat("pl-PL", {
+    dateStyle: "medium",
+    timeStyle: "short",
+    timeZone: "Europe/Warsaw",
+  }).format(value);
+}
+
+function statusLabel(status: ContactSubmissionRow["status"]) {
+  return statusLabels[status];
+}
+
+function pageHref(status: ContactSubmissionFilter, page: number) {
+  const params = new URLSearchParams();
+  if (status !== "ALL") params.set("status", status);
+  if (page > 1) params.set("page", String(page));
+  const query = params.toString();
+  return query ? `/admin/submissions?${query}` : "/admin/submissions";
+}
+
+function SubmissionCard({ submission }: { submission: ContactSubmissionRow }) {
+  return <article className="admin-submission-card">
+    <header className="admin-submission-card-header">
+      <div>
+        <h2>{submission.parentName}</h2>
+        <p>{formatDate(submission.createdAt)}</p>
+      </div>
+      <span className={`admin-status admin-status-${submission.status.toLowerCase()}`}>{statusLabel(submission.status)}</span>
+    </header>
+    <dl className="admin-submission-details">
+      <div><dt>E-mail</dt><dd><a href={`mailto:${submission.email}`}>{submission.email}</a></dd></div>
+      {submission.phone ? <div><dt>Telefon</dt><dd><a href={`tel:${submission.phone}`}>{submission.phone}</a></dd></div> : null}
+      {submission.lessonType ? <div><dt>Zajęcia</dt><dd>{lessonLabels[submission.lessonType] || submission.lessonType}</dd></div> : null}
+      {submission.childAgeRange ? <div><dt>Wiek dziecka</dt><dd>{ageLabels[submission.childAgeRange] || submission.childAgeRange}</dd></div> : null}
+    </dl>
+    <div className="admin-submission-message">
+      <h3>Wiadomość</h3>
+      <p>{submission.message}</p>
+    </div>
+    <p className={submission.deleteAfter ? "admin-submission-retention" : "admin-submission-retention admin-submission-retention-warning"}>
+      {submission.deleteAfter ? `Planowane usunięcie: ${formatDate(submission.deleteAfter)}` : "Brak ustawionego terminu retencji — wymaga decyzji administratora."}
+    </p>
+  </article>;
+}
+
+export default async function SubmissionsPage({ searchParams }: SubmissionsPageProps) {
+  const config = getAdminAuthConfig();
+  if (!config) {
+    return <main className="admin-shell"><section className="admin-card"><p>Panel administracyjny jest chwilowo niedostępny.</p></section></main>;
+  }
+  if (!(await getAdminSession())) {
+    redirect("/admin");
+  }
+
+  const query = parseContactSubmissionQuery(await searchParams);
+  const result = await getContactSubmissions(query);
+
+  return <main className="admin-shell">
+    <section className="admin-card admin-content-card">
+      <header className="admin-header">
+        <div>
+          <p className="admin-eyebrow">Moderato Art</p>
+          <h1>Zgłoszenia kontaktowe</h1>
+        </div>
+        <div className="admin-header-actions">
+          <Link className="admin-secondary-button" href="/admin">Wróć do panelu</Link>
+          <form action="/admin/auth/logout" method="post">
+            <button className="admin-secondary-button" type="submit">Wyloguj</button>
+          </form>
+        </div>
+      </header>
+      <p className="admin-submissions-intro">Widoczne są tylko zgłoszenia zapisane w bazie. Ta skrzynka jest tylko do odczytu.</p>
+      <form className="admin-submissions-filter admin-form" method="get">
+        <label htmlFor="submission-status">Status zgłoszenia
+          <select defaultValue={query.status} id="submission-status" name="status">
+            {contactSubmissionFilters.map((status) => <option key={status} value={status}>{status === "ALL" ? "Wszystkie" : statusLabels[status]}</option>)}
+          </select>
+        </label>
+        <button type="submit">Filtruj</button>
+      </form>
+      {result === undefined ? <p className="admin-notice" role="alert">Nie udało się wczytać zgłoszeń kontaktowych.</p> : result.submissions.length === 0 ? <p className="admin-submissions-empty">Brak zgłoszeń dla wybranego filtra.</p> : (
+        <div aria-live="polite" className="admin-submissions-list">
+          {result.submissions.map((submission) => <SubmissionCard key={submission.id} submission={submission} />)}
+        </div>
+      )}
+      <nav aria-label="Paginacja zgłoszeń" className="admin-submissions-pagination">
+        {query.page > 1 ? <Link href={pageHref(query.status, query.page - 1)}>← Nowsze</Link> : <span aria-disabled="true">← Nowsze</span>}
+        <span>Strona {query.page}</span>
+        {result?.hasNext ? <Link href={pageHref(query.status, query.page + 1)}>Starsze →</Link> : <span aria-disabled="true">Starsze →</span>}
+      </nav>
+    </section>
+  </main>;
+}

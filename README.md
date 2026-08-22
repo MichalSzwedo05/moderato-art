@@ -95,7 +95,7 @@ Vercel does not apply Prisma migrations automatically. Keep `CONTACT_FORM_ENABLE
 
 The CMS is an application-level `/admin` login, not Caddy browser Basic Auth. It is disabled by default and fails closed unless `ADMIN_CMS_ENABLED=true`. Set one explicit `ADMIN_AUTH_MODE`: `magic_link` for a Resend magic link sent to one exact email address, or `password` for one username and an Argon2id password hash. The login form and routes fail closed if settings for the selected mode are incomplete or credentials for both modes are present.
 
-Set these server-only variables only after applying all committed Prisma migrations, including `20260731120000_admin_cms`, `20260804150000_admin_password_sessions`, `20260820150000_gallery_photo_management`, `20260821170000_neon_gallery_assets`, and `20260821171000_remove_gallery_object_keys`:
+Set these server-only variables only after applying all committed Prisma migrations, including `20260731120000_admin_cms`, `20260804150000_admin_password_sessions`, `20260820150000_gallery_photo_management`, `20260821170000_neon_gallery_assets`, `20260821171000_remove_gallery_object_keys`, and `20260822180000_contact_submission_inbox_indexes`:
 
 | Variable | Requirement |
 | --- | --- |
@@ -155,6 +155,10 @@ To run it, set these **Production-only**, server-side variables in Vercel (or th
 - `CONTACT_FORM_RECIPIENT` to the Resend account owner's address
 
 Resend's `onboarding@resend.dev` sender can only deliver these test emails to the account owner. Use fictitious data only, redeploy after changing variables, and immediately set both form flags back to `false` and redeploy after the test. This exception does not activate production data collection or replace the requirements above.
+
+### CMS Submission Inbox
+
+Authenticated administrators can open `/admin/submissions` to view existing `ContactSubmission` records. The inbox is read-only, paginated, filtered by the existing status, and renders message content as plain text. It does not activate public form collection: the public form and `POST /api/contact` remain disabled or test-only until the separate privacy, retention, abuse-protection, cleanup, and production-storage review is complete.
 
 Security updates from Dependabot remain immediate and are exempt from the one-open-PR limit. Version updates are grouped into one weekly PR per npm, Docker, and GitHub Actions ecosystem; PostgreSQL major updates remain isolated for a reviewed database-upgrade procedure.
 
