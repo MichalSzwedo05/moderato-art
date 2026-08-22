@@ -4,6 +4,7 @@ import {
   getImageMimeType,
   galleryUploadChunkBytes,
   maxGalleryUploadBytes,
+  parseGalleryOrderRequest,
   parseGalleryUploadRequest,
 } from "./gallery-validation";
 
@@ -37,5 +38,13 @@ describe("gallery upload validation", () => {
     expect(getGalleryUploadChunkCount(galleryUploadChunkBytes)).toBe(1);
     expect(getGalleryUploadChunkCount(galleryUploadChunkBytes + 1)).toBe(2);
     expect(getGalleryUploadChunkCount(maxGalleryUploadBytes)).toBe(8);
+  });
+
+  it("accepts a unique gallery order and rejects malformed or duplicated IDs", () => {
+    expect(parseGalleryOrderRequest({ basePhotoIds: ["first", "second"], photoIds: ["first", "second"] }).success).toBe(true);
+    expect(parseGalleryOrderRequest({ basePhotoIds: [], photoIds: [] }).success).toBe(true);
+    expect(parseGalleryOrderRequest({ basePhotoIds: ["first", "second"], photoIds: ["first", "first"] }).success).toBe(false);
+    expect(parseGalleryOrderRequest({ basePhotoIds: ["photo with spaces"], photoIds: ["photo"] }).success).toBe(false);
+    expect(parseGalleryOrderRequest({ basePhotoIds: ["first"], photoIds: ["first"], extra: true }).success).toBe(false);
   });
 });

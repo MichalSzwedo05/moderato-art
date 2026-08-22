@@ -20,4 +20,16 @@ describe("gallery data", () => {
 
     await expect(getGalleryPhotos()).resolves.toEqual([expect.objectContaining({ alt: "Mikrofon", id: "photo", src: "https://cdn/full.webp", thumbnailSrc: "https://cdn/thumb.webp" })]);
   });
+
+  it("reads active photos in their persisted order", async () => {
+    findMany.mockResolvedValue([]);
+
+    await getGalleryPhotos();
+
+    expect(findMany).toHaveBeenCalledWith(expect.objectContaining({
+      orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
+      take: 200,
+      where: { status: "ACTIVE" },
+    }));
+  });
 });

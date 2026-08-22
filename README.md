@@ -117,7 +117,7 @@ Articles are created as Markdown through `/admin`; only their metadata and Markd
 
 ### Gallery Photo Management
 
-The authenticated `/admin` panel also manages the public gallery. An administrator can upload JPEG, PNG, or WebP files up to 8 MiB, provide Polish alternative text, and delete existing gallery photos. The browser sends the file as authenticated 1 MiB chunks to the application, and Neon stores the optimized WebP full-size and thumbnail variants as PostgreSQL `bytea` values. The server validates the actual image and strips metadata before publication.
+The authenticated `/admin` panel also manages the public gallery. An administrator can upload JPEG, PNG, or WebP files up to 8 MiB, provide Polish alternative text, delete existing gallery photos, preview the homepage mosaic and full gallery layout, and change the photo order with the move buttons. The gallery supports up to 200 active photos. The browser sends the file as authenticated 1 MiB chunks to the application, and Neon stores the optimized WebP full-size and thumbnail variants as PostgreSQL `bytea` values. The server validates the actual image and strips metadata before publication. Order changes are saved explicitly through a protected, conflict-safe transaction.
 
 Configure this server-only variable before enabling uploads:
 
