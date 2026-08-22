@@ -5,7 +5,6 @@ const mocks = vi.hoisted(() => ({
   chunkDeleteMany: vi.fn(),
   chunksFindMany: vi.fn(),
   deleteMany: vi.fn(),
-  findFirst: vi.fn(),
   findUnique: vi.fn(),
   getAdminAuthConfig: vi.fn(),
   getAdminSession: vi.fn(),
@@ -13,6 +12,8 @@ const mocks = vi.hoisted(() => ({
   isSameAdminOrigin: vi.fn(),
   processGalleryImage: vi.fn(),
   transaction: vi.fn(),
+  transactionPhotoCount: vi.fn(),
+  transactionPhotoFindFirst: vi.fn(),
   transactionPhotoUpdateMany: vi.fn(),
   updateMany: vi.fn(),
 }));
@@ -24,7 +25,7 @@ vi.mock("@/lib/gallery-image", () => ({ GalleryImageValidationError: mocks.Galle
 vi.mock("@/lib/prisma", () => ({
   getPrisma: () => ({
     $transaction: mocks.transaction,
-    galleryPhoto: { deleteMany: mocks.deleteMany, findFirst: mocks.findFirst, findUnique: mocks.findUnique, updateMany: mocks.updateMany },
+    galleryPhoto: { deleteMany: mocks.deleteMany, findUnique: mocks.findUnique, updateMany: mocks.updateMany },
     galleryPhotoUploadChunk: { findMany: mocks.chunksFindMany },
   }),
 }));
@@ -64,14 +65,15 @@ describe("POST /api/admin/gallery/[id]/complete", () => {
     mocks.isSameAdminOrigin.mockReturnValue(true);
     mocks.findUnique.mockResolvedValue(pendingPhoto);
     mocks.chunksFindMany.mockResolvedValue([{ chunkIndex: 0, data: Buffer.from("source"), sizeBytes: 6 }]);
-    mocks.findFirst.mockResolvedValue({ sortOrder: 0 });
+    mocks.transactionPhotoCount.mockResolvedValue(0);
+    mocks.transactionPhotoFindFirst.mockResolvedValue({ sortOrder: 0 });
     mocks.updateMany.mockResolvedValue({ count: 1 });
     mocks.transactionPhotoUpdateMany.mockResolvedValue({ count: 1 });
     mocks.assetUpsert.mockResolvedValue({});
     mocks.chunkDeleteMany.mockResolvedValue({ count: 1 });
     mocks.deleteMany.mockResolvedValue({ count: 1 });
     mocks.transaction.mockImplementation(async (callback: (transaction: unknown) => Promise<unknown>) => callback({
-      galleryPhoto: { updateMany: mocks.transactionPhotoUpdateMany },
+      galleryPhoto: { count: mocks.transactionPhotoCount, findFirst: mocks.transactionPhotoFindFirst, updateMany: mocks.transactionPhotoUpdateMany },
       galleryPhotoAsset: { upsert: mocks.assetUpsert },
       galleryPhotoUploadChunk: { deleteMany: mocks.chunkDeleteMany },
     }));
@@ -124,5 +126,27 @@ describe("POST /api/admin/gallery/[id]/complete", () => {
 
     expect(response.status).toBe(200);
     expect(mocks.processGalleryImage).not.toHaveBeenCalled();
+  });
+
+  it("rejects the 201st active photo and cleans up the processing row", async () => {
+    mocks.transactionPhotoCount.mockResolvedValue(200);
+
+    const response = await POST(request(), context());
+
+    expect(response.status).toBe(409);
+    await expect(response.json()).resolves.toEqual({ code: "GALLERY_LIMIT_REACHED", message: "Galeria osiągnęła maksymalną liczbę zdjęć." });
+    expect(mocks.deleteMany).toHaveBeenCalledWith({ where: { id: "photo-id", status: "PROCESSING" } });
+    expect(mocks.transactionPhotoUpdateMany).not.toHaveBeenCalled();
+  });
+
+  it("recounts after a serializable activation conflict before enforcing the limit", async () => {
+    mocks.transactionPhotoCount.mockResolvedValue(200);
+    mocks.transaction.mockRejectedValueOnce({ code: "P2034" });
+
+    const response = await POST(request(), context());
+
+    expect(response.status).toBe(409);
+    expect(mocks.transaction).toHaveBeenCalledTimes(2);
+    expect(mocks.deleteMany).toHaveBeenCalledWith({ where: { id: "photo-id", status: "PROCESSING" } });
   });
 });

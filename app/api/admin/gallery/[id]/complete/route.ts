@@ -1,18 +1,26 @@
 import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
+import { Prisma } from "@/generated/prisma/client";
 import { getAdminAuthConfig, getAdminSession } from "@/lib/admin-auth";
 import { isSameAdminOrigin } from "@/lib/admin-security";
 import { galleryPendingExpiryMs, galleryProcessingExpiryMs } from "@/lib/gallery-cleanup";
 import { GalleryImageValidationError, processGalleryImage } from "@/lib/gallery-image";
-import { getGalleryUploadChunkCount } from "@/lib/gallery-validation";
+import { getGalleryUploadChunkCount, maxGalleryPhotos } from "@/lib/gallery-validation";
 import { toDatabaseBytes } from "@/lib/gallery-upload";
 import { getPrisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
+const galleryActivationTransactionRetries = 3;
+
 function json(body: object, status: number) {
   return NextResponse.json(body, { headers: { "Cache-Control": "no-store" }, status });
+}
+
+function isTransactionConflict(error: unknown) {
+  if (error instanceof Prisma.PrismaClientKnownRequestError) return error.code === "P2034";
+  return Boolean(error && typeof error === "object" && "code" in error && error.code === "P2034");
 }
 
 async function isAuthorized(request: Request) {
@@ -29,6 +37,13 @@ async function resetPending(prisma: ReturnType<typeof getPrisma>, id: string) {
   }).catch((error) => {
     console.error("Gallery photo processing state reset failed", { error, id });
   });
+}
+
+class GalleryPhotoLimitError extends Error {
+  constructor() {
+    super("The gallery photo limit has been reached.");
+    this.name = "GalleryPhotoLimitError";
+  }
 }
 
 type CompleteRouteContext = { params: Promise<{ id: string }> };
@@ -126,41 +141,57 @@ export async function POST(request: Request, context: CompleteRouteContext) {
   const imageUrl = `/gallery/${id}`;
   const thumbnailUrl = `/gallery/${id}?variant=thumbnail`;
   try {
-    const firstActivePhoto = await prisma.galleryPhoto.findFirst({
-      orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
-      select: { sortOrder: true },
-      where: { status: "ACTIVE" },
-    });
-    await prisma.$transaction(async (transaction) => {
-      const updated = await transaction.galleryPhoto.updateMany({
-        data: {
-          height: processed.height,
-          imageUrl,
-          mimeType: processed.mimeType,
-          expiresAt: null,
-          sizeBytes: processed.full.byteLength,
-          sortOrder: (firstActivePhoto?.sortOrder ?? 0) - 1,
-          status: "ACTIVE",
-          thumbnailUrl,
-          width: processed.width,
-        },
-        where: { id, status: "PROCESSING" },
-      });
-      if (updated.count !== 1) throw new Error("Gallery photo changed while processing.");
+    for (let attempt = 0; attempt < galleryActivationTransactionRetries; attempt += 1) {
+      try {
+        await prisma.$transaction(async (transaction) => {
+          const activeCount = await transaction.galleryPhoto.count({ where: { status: "ACTIVE" } });
+          if (activeCount >= maxGalleryPhotos) throw new GalleryPhotoLimitError();
 
-      await transaction.galleryPhotoAsset.upsert({
-        create: { data: toDatabaseBytes(processed.full), photoId: id, sizeBytes: processed.full.byteLength, variant: "FULL" },
-        update: { data: toDatabaseBytes(processed.full), sizeBytes: processed.full.byteLength },
-        where: { photoId_variant: { photoId: id, variant: "FULL" } },
-      });
-      await transaction.galleryPhotoAsset.upsert({
-        create: { data: toDatabaseBytes(processed.thumbnail), photoId: id, sizeBytes: processed.thumbnail.byteLength, variant: "THUMBNAIL" },
-        update: { data: toDatabaseBytes(processed.thumbnail), sizeBytes: processed.thumbnail.byteLength },
-        where: { photoId_variant: { photoId: id, variant: "THUMBNAIL" } },
-      });
-      await transaction.galleryPhotoUploadChunk.deleteMany({ where: { photoId: id } });
-    });
+          const firstActivePhoto = await transaction.galleryPhoto.findFirst({
+            orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
+            select: { sortOrder: true },
+            where: { status: "ACTIVE" },
+          });
+          const updated = await transaction.galleryPhoto.updateMany({
+            data: {
+              height: processed.height,
+              imageUrl,
+              mimeType: processed.mimeType,
+              expiresAt: null,
+              sizeBytes: processed.full.byteLength,
+              sortOrder: (firstActivePhoto?.sortOrder ?? 0) - 1,
+              status: "ACTIVE",
+              thumbnailUrl,
+              width: processed.width,
+            },
+            where: { id, status: "PROCESSING" },
+          });
+          if (updated.count !== 1) throw new Error("Gallery photo changed while processing.");
+
+          await transaction.galleryPhotoAsset.upsert({
+            create: { data: toDatabaseBytes(processed.full), photoId: id, sizeBytes: processed.full.byteLength, variant: "FULL" },
+            update: { data: toDatabaseBytes(processed.full), sizeBytes: processed.full.byteLength },
+            where: { photoId_variant: { photoId: id, variant: "FULL" } },
+          });
+          await transaction.galleryPhotoAsset.upsert({
+            create: { data: toDatabaseBytes(processed.thumbnail), photoId: id, sizeBytes: processed.thumbnail.byteLength, variant: "THUMBNAIL" },
+            update: { data: toDatabaseBytes(processed.thumbnail), sizeBytes: processed.thumbnail.byteLength },
+            where: { photoId_variant: { photoId: id, variant: "THUMBNAIL" } },
+          });
+          await transaction.galleryPhotoUploadChunk.deleteMany({ where: { photoId: id } });
+        }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
+        break;
+      } catch (error) {
+        if (!isTransactionConflict(error) || attempt === galleryActivationTransactionRetries - 1) throw error;
+      }
+    }
   } catch (error) {
+    if (error instanceof GalleryPhotoLimitError) {
+      await prisma.galleryPhoto.deleteMany({ where: { id, status: "PROCESSING" } }).catch((cleanupError) => {
+        console.error("Gallery photo at-limit cleanup failed", { cleanupError, id });
+      });
+      return json({ code: "GALLERY_LIMIT_REACHED", message: "Galeria osiągnęła maksymalną liczbę zdjęć." }, 409);
+    }
     await resetPending(prisma, id);
     console.error("Gallery photo assets could not be persisted", { error, id });
     return json({ message: "Nie udało się zapisać zdjęcia. Spróbuj ponownie." }, 503);

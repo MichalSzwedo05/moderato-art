@@ -1,5 +1,6 @@
 import { getPrisma } from "./prisma";
 import type { GalleryPhoto } from "./gallery";
+import { maxGalleryPhotos } from "./gallery-validation";
 
 const gallerySizes = "(max-width: 760px) calc((100vw - 3.25rem) / 2), (max-width: 1184px) 33vw, 24rem";
 
@@ -35,7 +36,7 @@ async function queryGalleryPhotos() {
       width: true,
     },
     where: { status: "ACTIVE" },
-    take: 200,
+    take: maxGalleryPhotos,
   });
 }
 
