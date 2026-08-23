@@ -25,6 +25,8 @@ const submission = {
   message: "<script>alert(1)</script> & wiadomość",
   parentName: "Anna & Jan",
   phone: null,
+  privacyNoticeAcknowledgedAt: new Date("2026-08-22T12:00:00.000Z"),
+  privacyNoticeVersion: "draft-db-only-2026-08-23",
   retentionAnchorAt: new Date("2026-08-22T12:00:00.000Z"),
   status: "NEW",
   updatedAt: new Date("2026-08-22T12:00:00.000Z"),

@@ -38,10 +38,12 @@ describe("SubmissionsPage", () => {
         email: "anna@example.com",
         id: "submission",
         lessonType: "rytmika",
-        message: "<script>alert(1)</script>\nProszę o kontakt.",
-        parentName: "Anna Kowalska",
-        phone: null,
-        status: "NEW",
+         message: "<script>alert(1)</script>\nProszę o kontakt.",
+         parentName: "Anna Kowalska",
+         phone: null,
+         privacyNoticeAcknowledgedAt: new Date("2026-08-22T12:00:00.000Z"),
+         privacyNoticeVersion: "draft-db-only-2026-08-23",
+         status: "NEW",
       }],
     });
 
@@ -51,6 +53,7 @@ describe("SubmissionsPage", () => {
     expect(screen.getByText("Anna Kowalska")).toBeInTheDocument();
     expect(screen.getByText("Nowe", { selector: "span.admin-status" })).toBeInTheDocument();
     expect(screen.getByText("22 sie 2026, 14:00")).toBeInTheDocument();
+    expect(screen.getByText("draft-db-only-2026-08-23 · potwierdzono 22 sie 2026, 14:00")).toBeInTheDocument();
     expect(screen.getByText((_, element) => element?.tagName === "P" && element.textContent === "<script>alert(1)</script>\nProszę o kontakt.")).toBeInTheDocument();
     expect(screen.getByText(/Brak ustawionego terminu retencji/)).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Wróć do panelu" })).toHaveAttribute("href", "/admin");

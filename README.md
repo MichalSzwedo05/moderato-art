@@ -6,7 +6,7 @@ Moderato Art is a Polish-language website for children's singing, music, and rhy
 
 The current Vercel deployment is available at [https://moderato-art.vercel.app](https://moderato-art.vercel.app).
 
-The contact form is intentionally unavailable in this preview and remains fail-closed until the legal notice, production database, retention process, and submission-handling workflow are approved.
+The contact form implementation is available as a non-commercial draft. The privacy page remains visibly marked as a draft with placeholders; the form can be enabled explicitly for this non-commercial stage and stores submissions in Neon for 12 months. E-mail notification through Resend is optional.
 
 ## Technology
 
@@ -131,34 +131,30 @@ Configure an external scheduler, for example a daily cron on the VPS, to call `P
 
 The Neon-only implementation is intended for the small Vercel/Neon test gallery. PostgreSQL storage and serverless bandwidth grow with every image request; move the asset layer to an S3-compatible provider such as Hetzner Object Storage before a large production gallery.
 
-## Contact Form and Database Staging
+## Contact Form and Draft Privacy Mode
 
-Prisma schema and the initial PostgreSQL migration are present for `ContactSubmission` and `Article`. The public contact form and `POST /api/contact` intentionally return an unavailable state and do not read, validate, log, or store request data.
+The implementation for `POST /api/contact` validates input, requires same-origin requests and a privacy acknowledgement, applies a bounded best-effort per-runtime rate limit, and stores submissions in Neon. Optional Resend configuration adds an identifier-only notification; collection is intended only for the non-commercial draft stage while the policy contains placeholders.
 
-`CONTACT_FORM_ENABLED` defaults to `false` in local and production Compose configuration. Do not enable data collection until a separately reviewed release provides:
+Configure these server-only variables in Vercel or the equivalent runtime:
 
-- an approved privacy notice with the legal controller identity, processing basis, recipients, data-subject rights, and policy version;
-- a production PostgreSQL host, encrypted backup and restore process, and a scheduled verified deletion process;
-- abuse protection, restricted authorised access to submissions, and a documented handling workflow;
-- a production migration job that applies and verifies `prisma migrate deploy` before the application rollout.
+- `CONTACT_FORM_ENABLED=true` only for the explicitly non-commercial draft stage after the database migration and cleanup scheduler are verified
+- `RESEND_API_KEY`, `CONTACT_FORM_RECIPIENT`, and `CONTACT_FORM_RESEND_FROM` are optional and must either all be configured or all be empty
+- `CONTACT_RATE_LIMIT_SECRET` with a random value of at least 32 characters
+- `CRON_SECRET` for the daily retention cleanup job
 
-### Restricted Resend Test
+Submissions are assigned a 12-month deletion deadline. On Vercel, the committed `vercel.json` schedule calls the cleanup route daily and removes expired submissions, expired admin links/sessions, and expired login rate-limit records. The Docker/VPS deployment does not include a scheduler; leave `CONTACT_FORM_ENABLED=false` there until a protected daily host cron is configured, for example:
 
-The production contact form remains unavailable by default. A short, synthetic-data-only Resend test is the sole exception: it sends a plain-text test message to the Resend account owner and does not write the payload to PostgreSQL.
+```bash
+curl --fail --silent --show-error -X POST \
+  -H "Authorization: Bearer ${CRON_SECRET}" \
+  https://moderato-art.pl/api/cron/contact-cleanup
+```
 
-To run it, set these **Production-only**, server-side variables in Vercel (or the equivalent restricted VPS environment):
-
-- `CONTACT_FORM_ENABLED=true`
-- `CONTACT_FORM_TEST_ENABLED=true`
-- `CONTACT_FORM_TEST_TOKEN` to a unique random value of at least 32 characters
-- `RESEND_API_KEY` to a restricted Resend sending key
-- `CONTACT_FORM_RECIPIENT` to the Resend account owner's address
-
-Resend's `onboarding@resend.dev` sender can only deliver these test emails to the account owner. Use fictitious data only, redeploy after changing variables, and immediately set both form flags back to `false` and redeploy after the test. This exception does not activate production data collection or replace the requirements above.
+Apply the committed privacy-notice migration before enabling the form against any hosted database.
 
 ### CMS Submission Inbox
 
-Authenticated administrators can open `/admin/submissions` to view existing `ContactSubmission` records or download all currently stored records as one XML file. The inbox is read-only, paginated, filtered by the existing status, and renders message content as plain text. XML exports are limited to 1,000 records/4 MiB, contain personal data, and must be stored and deleted securely. This does not activate public form collection: the public form and `POST /api/contact` remain disabled or test-only until the separate privacy, retention, abuse-protection, cleanup, and production-storage review is complete.
+Authenticated administrators can open `/admin/submissions` to view existing `ContactSubmission` records or download all currently stored records as one XML file. The inbox is read-only, paginated, filtered by the existing status, and renders message content as plain text. XML exports are limited to 1,000 records/4 MiB, contain personal data, and must be stored and deleted securely.
 
 Security updates from Dependabot remain immediate and are exempt from the one-open-PR limit. Version updates are grouped into one weekly PR per npm, Docker, and GitHub Actions ecosystem; PostgreSQL major updates remain isolated for a reviewed database-upgrade procedure.
 
@@ -275,6 +271,6 @@ curl --fail https://moderato-art.pl/health
 
 Before storing contact form data in production, configure an encrypted daily PostgreSQL backup outside the VPS. Test restoration at least once before accepting real submissions.
 
-## Planned Database Activation
+## Database Activation Notes
 
-The initial Prisma migration is committed but has not been applied because Docker Desktop is unavailable in the current development environment. The VPS Compose topology contains a provisional in-stack PostgreSQL service, while the Vercel preview has no production database. Before enabling the form, select the production topology, apply the migration to an isolated PostgreSQL instance, verify it from an empty database, and add a dedicated migration image/job to production deployment.
+The committed privacy-notice migration has been applied to the configured Neon database used by the current Vercel implementation. A separate VPS deployment uses the in-stack PostgreSQL service and must run the migration profile before accepting submissions. Run the migration image/job against the VPS database, verify it from an empty database, and keep the form disabled until both the migration and a daily cleanup scheduler are confirmed.

@@ -35,7 +35,7 @@ describe("PublicModals", () => {
     ["junior-voice", "Junior Voice", "junior-voice"],
     ["studio-wokalne", "Studio Wokalne", "studio-wokalne"],
   ] as const)("shows a form for %s with the offer fixed", (offerId, title, lessonType) => {
-    render(<><OfferModalLink offerId={offerId}>Otwórz {title}</OfferModalLink><PublicModals contactFormTestEnabled /></>);
+    render(<><OfferModalLink offerId={offerId}>Otwórz {title}</OfferModalLink><PublicModals contactFormEnabled /></>);
 
     fireEvent.click(screen.getByRole("link", { name: `Otwórz ${title}` }));
 
@@ -47,7 +47,7 @@ describe("PublicModals", () => {
   });
 
   it("shows only contact details for Rytmisolki", () => {
-    render(<><OfferModalLink offerId="rytmisolki">Otwórz Rytmisolki</OfferModalLink><PublicModals contactFormTestEnabled /></>);
+    render(<><OfferModalLink offerId="rytmisolki">Otwórz Rytmisolki</OfferModalLink><PublicModals contactFormEnabled /></>);
 
     fireEvent.click(screen.getByRole("link", { name: "Otwórz Rytmisolki" }));
 

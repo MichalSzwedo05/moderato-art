@@ -4,22 +4,20 @@ import { useId, useState, type FormEvent } from "react";
 import type { ContactLessonType } from "../lib/offers";
 
 type ContactFormProps = {
+  enabled?: boolean;
   lessonTitle: string;
   lessonType: ContactLessonType;
-  testEnabled?: boolean;
 };
 
-export function ContactForm({ lessonTitle, lessonType, testEnabled = false }: ContactFormProps) {
+export function ContactForm({ enabled = false, lessonTitle, lessonType }: ContactFormProps) {
   const statusId = useId();
   const [status, setStatus] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  async function submitTestForm(event: FormEvent<HTMLFormElement>) {
+  async function submitForm(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = event.currentTarget;
     const formData = new FormData(form);
-    const testToken = String(formData.get("testToken") || "");
-
     setIsSubmitting(true);
     setStatus("");
 
@@ -28,7 +26,6 @@ export function ContactForm({ lessonTitle, lessonType, testEnabled = false }: Co
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "X-Contact-Test-Token": testToken,
         },
         body: JSON.stringify({
           parentName: formData.get("parentName"),
@@ -38,37 +35,29 @@ export function ContactForm({ lessonTitle, lessonType, testEnabled = false }: Co
           childAgeRange: formData.get("childAgeRange") || undefined,
           message: formData.get("message"),
           website: formData.get("website") || undefined,
+          privacyNoticeAcknowledged: formData.get("privacyNoticeAcknowledged") === "true",
         }),
       });
       const body = await response.json() as { message?: string };
 
       if (!response.ok) {
-        setStatus(body.message || "Nie udało się wysłać wiadomości testowej.");
+        setStatus(body.message || "Nie udało się przesłać zgłoszenia.");
         return;
       }
 
       form.reset();
-      setStatus(body.message || "Wiadomość testowa została wysłana.");
+      setStatus(body.message || "Zgłoszenie zostało przyjęte.");
     } catch {
-      setStatus("Nie udało się połączyć z usługą wysyłki wiadomości.");
+      setStatus("Nie udało się przesłać zgłoszenia.");
     } finally {
       setIsSubmitting(false);
     }
   }
 
   return (
-    <form className="contact-form" aria-describedby={statusId} onSubmit={testEnabled ? submitTestForm : undefined}>
-      <fieldset disabled={!testEnabled}>
+    <form className="contact-form" aria-describedby={statusId} onSubmit={enabled ? submitForm : undefined}>
+      <fieldset disabled={!enabled}>
         <legend>Formularz kontaktowy</legend>
-        {testEnabled && (
-          <>
-            <p className="contact-form-test-notice">Tryb testowy: używaj wyłącznie fikcyjnych danych. Wiadomość nie jest zapisywana w bazie.</p>
-            <label>
-              Kod dostępu do testu
-              <input autoComplete="off" name="testToken" required type="password" />
-            </label>
-          </>
-        )}
         <label>
           Imię i nazwisko rodzica lub opiekuna
           <input autoComplete="name" name="parentName" placeholder="Np. Anna Kowalska" required type="text" />
@@ -104,13 +93,17 @@ export function ContactForm({ lessonTitle, lessonType, testEnabled = false }: Co
           Strona internetowa
           <input autoComplete="off" name="website" tabIndex={-1} type="text" />
         </label>
+        <label className="contact-form-consent">
+          <input name="privacyNoticeAcknowledged" required type="checkbox" value="true" />
+          <span>Potwierdzam zapoznanie się z <a href="/polityka-prywatnosci" rel="noreferrer" target="_blank">polityką prywatności</a>. Nie jest to zgoda na marketing.</span>
+        </label>
         <button className="button button-primary" disabled={isSubmitting} type="submit">
-          {testEnabled ? (isSubmitting ? "Wysyłanie..." : "Wyślij wiadomość testową") : "Formularz chwilowo niedostępny"}
+          {enabled ? (isSubmitting ? "Przesyłanie..." : "Wyślij zgłoszenie") : "Formularz chwilowo niedostępny"}
         </button>
       </fieldset>
       <small aria-live="polite" id={statusId}>
-        {status || (testEnabled
-          ? "Test jest chroniony kodem dostępu i wysyła wiadomości wyłącznie na konto Resend właściciela."
+        {status || (enabled
+          ? "Zgłoszenie zostanie zapisane w bezpiecznej bazie. Nie podawaj danych wrażliwych dziecka."
           : "Formularz zostanie aktywowany po zatwierdzeniu zasad przetwarzania danych i infrastruktury.")}
       </small>
     </form>

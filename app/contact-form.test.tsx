@@ -22,23 +22,22 @@ describe("ContactForm", () => {
     expect(screen.getByText(/formularz zostanie aktywowany/i)).toBeInTheDocument();
   });
 
-  it("shows a visible synthetic-data warning when the restricted test mode is enabled", () => {
-    render(<ContactForm lessonTitle="Studio Wokalne" lessonType="studio-wokalne" testEnabled />);
+  it("shows the privacy acknowledgement when the form is enabled", () => {
+    render(<ContactForm enabled lessonTitle="Studio Wokalne" lessonType="studio-wokalne" />);
 
     expect(screen.getByRole("group")).not.toBeDisabled();
-    expect(screen.getByText(/używaj wyłącznie fikcyjnych danych/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/kod dostępu do testu/i)).toHaveAttribute("type", "password");
+    expect(screen.getByLabelText(/polityką prywatności/i)).toBeRequired();
   });
 
   it.each([
     ["Junior Voice", "junior-voice"],
     ["Studio Wokalne", "studio-wokalne"],
   ] as const)("submits the fixed lesson type for %s", async (lessonTitle, lessonType) => {
-    render(<ContactForm lessonTitle={lessonTitle} lessonType={lessonType} testEnabled />);
-    fireEvent.change(screen.getByLabelText(/kod dostępu do testu/i), { target: { value: "test-token" } });
+    render(<ContactForm enabled lessonTitle={lessonTitle} lessonType={lessonType} />);
     fireEvent.change(screen.getByLabelText(/imię i nazwisko/i), { target: { value: "Anna Kowalska" } });
     fireEvent.change(screen.getByLabelText(/adres e-mail/i), { target: { value: "anna@example.com" } });
     fireEvent.change(screen.getByLabelText(/wiadomość/i), { target: { value: "Proszę o kontakt." } });
+    fireEvent.click(screen.getByLabelText(/polityką prywatności/i));
     fireEvent.submit(screen.getByRole("group").closest("form")!);
 
     await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));

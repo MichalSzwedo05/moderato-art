@@ -22,6 +22,8 @@ export type ContactSubmissionRow = {
   message: string;
   parentName: string;
   phone: string | null;
+  privacyNoticeAcknowledgedAt: Date | null;
+  privacyNoticeVersion: string | null;
   status: ContactSubmissionStatus;
 };
 
@@ -35,6 +37,46 @@ export class ContactSubmissionExportLimitError extends Error {
     super(message);
     this.name = "ContactSubmissionExportLimitError";
   }
+}
+
+export type CreateContactSubmissionInput = {
+  childAgeRange?: string;
+  email: string;
+  lessonType?: string;
+  message: string;
+  parentName: string;
+  phone?: string;
+  privacyNoticeAcknowledgedAt: Date;
+  privacyNoticeVersion: string;
+};
+
+export function addContactRetentionPeriod(value: Date) {
+  const result = new Date(value);
+  const day = result.getUTCDate();
+  result.setUTCDate(1);
+  result.setUTCMonth(result.getUTCMonth() + 12);
+  const lastDay = new Date(Date.UTC(result.getUTCFullYear(), result.getUTCMonth() + 1, 0)).getUTCDate();
+  result.setUTCDate(Math.min(day, lastDay));
+  return result;
+}
+
+export async function createContactSubmission(input: CreateContactSubmissionInput) {
+  const now = new Date();
+  return getPrisma().contactSubmission.create({
+    data: {
+      childAgeRange: input.childAgeRange,
+      deleteAfter: addContactRetentionPeriod(now),
+      email: input.email,
+      lessonType: input.lessonType,
+      message: input.message,
+      parentName: input.parentName,
+      phone: input.phone,
+      privacyNoticeAcknowledgedAt: input.privacyNoticeAcknowledgedAt,
+      privacyNoticeVersion: input.privacyNoticeVersion,
+      retentionAnchorAt: now,
+    },
+    select: { id: true },
+  });
 }
 
 export function parseContactSubmissionQuery(input: { page?: string; status?: string }) {
@@ -60,6 +102,8 @@ export async function getContactSubmissions({ page, status }: { page: number; st
         message: true,
         parentName: true,
         phone: true,
+        privacyNoticeAcknowledgedAt: true,
+        privacyNoticeVersion: true,
         status: true,
       },
       skip: (page - 1) * contactSubmissionPageSize,
@@ -104,6 +148,8 @@ export async function getContactSubmissionExportRows() {
       message: true,
       parentName: true,
       phone: true,
+      privacyNoticeAcknowledgedAt: true,
+      privacyNoticeVersion: true,
       retentionAnchorAt: true,
       status: true,
       updatedAt: true,
@@ -152,6 +198,8 @@ export function buildContactSubmissionsXml(rows: readonly ContactSubmissionExpor
     `    ${xmlElement("lessonType", row.lessonType)}`,
     `    ${xmlElement("childAgeRange", row.childAgeRange)}`,
     `    ${xmlElement("message", row.message)}`,
+    `    ${xmlElement("privacyNoticeVersion", row.privacyNoticeVersion)}`,
+    `    ${xmlElement("privacyNoticeAcknowledgedAt", row.privacyNoticeAcknowledgedAt)}`,
     `    ${xmlElement("status", row.status)}`,
     `    ${xmlElement("retentionAnchorAt", row.retentionAnchorAt)}`,
     `    ${xmlElement("deleteAfter", row.deleteAfter)}`,

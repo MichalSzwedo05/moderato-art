@@ -10,7 +10,7 @@ The website will be available at:
 
 Business owner and data-controller identity:
 
-To be confirmed before the public contact form is activated.
+Placeholder in the non-commercial draft privacy notice; must be confirmed before commercial use.
 
 The website will act as a business profile, portfolio, and contact point for parents and guardians who want to enrol a child in music classes.
 
@@ -273,7 +273,7 @@ The following foundation is implemented and verified locally:
 - versioned Docker images published to GitHub Container Registry
 - Dependabot updates for npm, Docker, and GitHub Actions
 
-The website design and core content sections are implemented, including a public `/galeria` page with an accessible photo viewer. The CMS is implemented: `/admin` supports either a one-email Resend magic link or a single username with an Argon2id password hash, and an authenticated administrator can create, edit, draft, publish, unpublish, and archive Markdown articles. It also supports authenticated gallery photo upload and deletion through chunked Neon/PostgreSQL storage. Public article cards and `/articles/[slug]` pages expose only published articles. The contact form and API remain staged fail-closed. The gallery migrations are applied to the hosted Neon test database.
+The website design and core content sections are implemented, including a public `/galeria` page with an accessible photo viewer. The CMS is implemented: `/admin` supports either a one-email Resend magic link or a single username with an Argon2id password hash, and an authenticated administrator can create, edit, draft, publish, unpublish, and archive Markdown articles. It also supports authenticated gallery photo upload and deletion through chunked Neon/PostgreSQL storage. Public article cards and `/articles/[slug]` pages expose only published articles. The contact form now has a non-commercial draft mode with Neon storage, Resend notification, a draft privacy policy, and scheduled 12-month retention cleanup. The gallery migrations are applied to the hosted Neon test database.
 
 ## Technology Rationale
 
@@ -580,7 +580,7 @@ Tasks:
 
 ### Phase 6: Contact Form
 
-Status: partially implemented; fail-closed pending legal and production approval. It must remain disabled during CMS Preview and initial CMS-only production rollout.
+Status: draft mode implemented; the form may be enabled for non-commercial testing after applying the privacy-notice migration and configuring Resend/cron secrets. Replace policy placeholders and complete legal/operational review before commercial use.
 
 Tasks:
 
@@ -588,13 +588,13 @@ Tasks:
 - add client-side validation
 - add error messages
 - add a success message
-- add Privacy Policy acknowledgement
+- add Privacy Policy acknowledgement and link
 - add a Privacy Policy link
 - create the API endpoint
 
 ### Phase 7: Database
 
-Status: partially implemented; schema and migrations for contact submissions, articles, CMS sessions, magic links, and rate limiting are committed, but not applied to a hosted database. A read-only authenticated inbox is available at `/admin/submissions` for existing `ContactSubmission` records; it does not activate public collection.
+Status: draft public collection is implemented; apply the privacy-notice migration before using hosted Neon. A read-only authenticated inbox is available at `/admin/submissions` for `ContactSubmission` records.
 
 Tasks:
 
@@ -603,7 +603,8 @@ Tasks:
 - create the `ContactSubmission` model
 - create the `Article` model
 - prepare a migration
-- connect the form to the database
+- connect the form to the database and assign a 12-month deletion deadline
+- run daily cleanup for expired submissions and authentication records
 - test data persistence
 
 ### Phase 8: Blog and Article Management
@@ -669,7 +670,7 @@ Deployment gates:
 - use a temporary staging hostname and separate non-production database before directing `moderato-art.pl` traffic to the VPS; lower DNS TTL before cutover and retain Vercel as a rollback option
 - configure a database/CMS readiness check in addition to the process liveness endpoint at `/health`
 - verify Resend sender-domain ownership (SPF/DKIM/DMARC), use a dedicated restricted CMS key, and set `ADMIN_AUTH_URL` to the exact canonical HTTPS origin
-- keep `CONTACT_FORM_ENABLED=false` and `CONTACT_FORM_TEST_ENABLED=false` until the legal controller identity, Privacy Policy, retention/deletion process, abuse protection, and submission-handling process are approved
+- keep the draft policy clearly marked until the controller identity, contact details, retention/deletion process, abuse protection, and submission-handling process are approved for commercial use
 - define an owner, observation window, alert/log review, and rollback trigger for the cutover
 
 #### CMS test on Vercel Preview
@@ -678,7 +679,7 @@ This is permitted only as an isolated test, not as production activation. Before
 
 1. Create a dedicated preview branch and a disposable Neon database branch; never connect a Preview deployment to the production database.
 2. Verify that the pooled `DATABASE_URL` and direct `DIRECT_URL` refer to the same disposable Neon branch. Apply `prisma migrate deploy` through a controlled migration command using `DIRECT_URL`; do not add `DIRECT_URL` to Vercel runtime variables.
-3. Configure the Preview-only, branch-scoped server variables: `DATABASE_URL` (pooled Neon URL), `ADMIN_CMS_ENABLED=true`, `ADMIN_EMAIL`, `ADMIN_AUTH_RESEND_FROM`, `ADMIN_AUTH_RESEND_KEY`, a unique `ADMIN_RATE_LIMIT_SECRET` of at least 32 characters, `CONTACT_FORM_ENABLED=false`, and `CONTACT_FORM_TEST_ENABLED=false`.
+3. Configure the Preview-only, branch-scoped server variables: `DATABASE_URL` (pooled Neon URL), `ADMIN_CMS_ENABLED=true`, `ADMIN_EMAIL`, `ADMIN_AUTH_RESEND_FROM`, `ADMIN_AUTH_RESEND_KEY`, a unique `ADMIN_RATE_LIMIT_SECRET` of at least 32 characters, and the draft contact-form variables.
 4. Set `ADMIN_AUTH_URL` to the stable HTTPS Vercel branch URL for that preview. It must exactly match the browser origin used for `/admin`; it cannot be the production URL or an expiring deployment URL.
 5. Verify that Vercel Preview is not protected in a way that prevents the administrator from opening the magic-link callback. Request the link only from the configured `ADMIN_EMAIL` and use a Resend-verified sender domain.
 6. Perform the Phase 10 CMS test sequence. For each draft, published, unpublished, and archived state, verify the homepage listing, `/articles/<slug>`, and `/api/articles/<slug>`; withdrawn content must return the expected unavailable result. Confirm the persisted database row/status directly or in a fresh deployment/session.

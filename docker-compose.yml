@@ -6,7 +6,12 @@ services:
     command: npm run dev
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER:-moderato}:${POSTGRES_PASSWORD:-moderato_dev_password}@db:5432/${POSTGRES_DB:-moderato}?schema=public
-      CONTACT_FORM_ENABLED: ${CONTACT_FORM_ENABLED:-false}
+      CONTACT_FORM_ENABLED: ${CONTACT_FORM_ENABLED:-true}
+      RESEND_API_KEY: ${RESEND_API_KEY:-}
+      CONTACT_FORM_RECIPIENT: ${CONTACT_FORM_RECIPIENT:-}
+      CONTACT_FORM_RESEND_FROM: ${CONTACT_FORM_RESEND_FROM:-}
+      CONTACT_RATE_LIMIT_SECRET: ${CONTACT_RATE_LIMIT_SECRET:-}
+      CRON_SECRET: ${CRON_SECRET:-}
       ADMIN_CMS_ENABLED: ${ADMIN_CMS_ENABLED:-false}
       ADMIN_AUTH_MODE: ${ADMIN_AUTH_MODE:-magic_link}
       ADMIN_EMAIL: ${ADMIN_EMAIL:-}
