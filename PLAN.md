@@ -161,7 +161,7 @@ If no testimonials are available at launch, this section can be added later.
 
 ### 8. Contact Form
 
-The form will allow parents and guardians to submit enquiries.
+The form will allow parents and guardians to submit enquiries from the modal for the selected offer. Rytmisolki opens a contact-only modal without the form.
 
 Planned form fields:
 
@@ -185,7 +185,7 @@ The contact section should include:
 
 - phone number
 - email address
-- contact form
+- a prompt to choose an offer and open its contact modal
 - optional social media links
 - information that class details are arranged individually
 
@@ -219,7 +219,7 @@ Key requirements for the mobile view:
 - short blocks of text
 - large buttons
 - quick access to the phone number
-- quick access to the contact form
+- quick access to the offer contact modals
 - no content overload
 - lightweight images
 - smooth scrolling

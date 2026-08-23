@@ -1,7 +1,9 @@
 "use client";
 
-import { useEffect, useId, useRef, useState, type ComponentPropsWithoutRef, type MouseEvent, type PointerEvent as ReactPointerEvent } from "react";
+import { useEffect, useId, useRef, useState, type ComponentPropsWithoutRef, type MouseEvent, type PointerEvent as ReactPointerEvent, type SyntheticEvent } from "react";
 import { offers, type OfferId } from "../lib/offers";
+import { ContactDetails } from "./contact-details";
+import { ContactForm } from "./contact-form";
 
 function isOfferId(value: string | null): value is OfferId {
   return offers.some((offer) => offer.id === value);
@@ -26,8 +28,13 @@ export function OfferModalLink({ children, href = "#oferta", offerId, ...props }
   return <a aria-controls="offer-modal" aria-haspopup="dialog" href={href} onClick={openModal} {...props}>{children}</a>;
 }
 
-export function PublicModals() {
+type PublicModalsProps = {
+  contactFormTestEnabled?: boolean;
+};
+
+export function PublicModals({ contactFormTestEnabled = false }: PublicModalsProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
   const openerRef = useRef<HTMLElement | null>(null);
   const titleId = useId();
   const [modal, setModal] = useState<OfferId>();
@@ -66,6 +73,7 @@ export function PublicModals() {
       return;
     }
     if (modal && !dialog.open) dialog.showModal();
+    if (modal) closeButtonRef.current?.focus();
     if (!modal && dialog.open) dialog.close();
   }, [modal]);
 
@@ -91,8 +99,16 @@ export function PublicModals() {
     if (event.clientX < left || event.clientX > right || event.clientY < top || event.clientY > bottom) event.currentTarget.close();
   }
 
-  return <dialog aria-labelledby={titleId} className="public-modal" id="offer-modal" onClose={() => { if (modal) close(); restoreFocus(); }} onPointerDown={closeFromBackdrop} ref={dialogRef}>
-    <button aria-label="Zamknij okno" className="public-modal-close" onClick={() => dialogRef.current?.close()} type="button">×</button>
-    {offer && <section><p className="eyebrow">{offer.subtitle}</p><h2 id={titleId}>{offer.title}</h2><p className="offer-audience">{offer.audience}</p><p>{offer.description}</p></section>}
+  function closeFromCancel(event: SyntheticEvent<HTMLDialogElement>) {
+    event.preventDefault();
+    dialogRef.current?.close();
+  }
+
+  return <dialog aria-labelledby={titleId} className="public-modal" id="offer-modal" onCancel={closeFromCancel} onClose={() => { if (modal) close(); restoreFocus(); }} onPointerDown={closeFromBackdrop} ref={dialogRef}>
+    <button aria-label="Zamknij okno" className="public-modal-close" onClick={() => dialogRef.current?.close()} ref={closeButtonRef} type="button">×</button>
+    {offer && <>
+      <section><p className="eyebrow">{offer.subtitle}</p><h2 id={titleId}>{offer.title}</h2><p className="offer-audience">{offer.audience}</p><p>{offer.description}</p></section>
+      {offer.contactMode === "form" ? <ContactForm key={offer.id} lessonTitle={offer.title} lessonType={offer.lessonType} testEnabled={contactFormTestEnabled} /> : <ContactDetails />}
+    </>}
   </dialog>;
 }
