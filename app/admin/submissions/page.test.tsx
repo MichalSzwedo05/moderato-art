@@ -54,6 +54,7 @@ describe("SubmissionsPage", () => {
     expect(screen.getByText((_, element) => element?.tagName === "P" && element.textContent === "<script>alert(1)</script>\nProszę o kontakt.")).toBeInTheDocument();
     expect(screen.getByText(/Brak ustawionego terminu retencji/)).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Wróć do panelu" })).toHaveAttribute("href", "/admin");
+    expect(screen.getByRole("button", { name: "Pobierz XML" }).closest("form")).toHaveAttribute("action", "/api/admin/submissions/export");
   });
 
   it("renders every workflow status, optional contact fields, and pagination links", async () => {
