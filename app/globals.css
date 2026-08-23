@@ -598,12 +598,17 @@ h2 {
 }
 
 .intro-grid,
-.benefits-grid,
-.contact-grid {
+.benefits-grid {
   display: grid;
   grid-template-columns: minmax(16rem, 0.83fr) minmax(0, 1.17fr);
   align-items: center;
   gap: clamp(2.5rem, 7vw, 7rem);
+}
+
+.contact-grid {
+  display: grid;
+  max-width: 48rem;
+  gap: 2rem;
 }
 
 .portrait {
@@ -997,7 +1002,7 @@ h2 {
 .article-body code { overflow-wrap: anywhere; }
 .article-footer { max-width: 46rem; margin: 3rem auto 0; padding-top: 2rem; border-top: 1px solid var(--border-color); }
 
-.public-modal { width: min(42rem, calc(100% - 2rem)); max-height: calc(100dvh - 2rem); padding: clamp(2rem, 6vw, 4rem); color: var(--gray-text); background: var(--surface); border: 0; border-radius: 1.25rem; box-shadow: 0 2rem 5rem rgb(16 15 62 / 30%); }
+.public-modal { width: min(42rem, calc(100% - 2rem)); max-height: calc(100dvh - 2rem); overflow-y: auto; padding: clamp(2rem, 6vw, 4rem); color: var(--gray-text); background: var(--surface); border: 0; border-radius: 1.25rem; box-shadow: 0 2rem 5rem rgb(16 15 62 / 30%); }
 .public-modal::backdrop { background: rgb(16 15 62 / 66%); backdrop-filter: blur(4px); }
 .public-modal h2 { margin-top: 0; color: var(--dark-blue); font-size: clamp(2rem, 6vw, 3.5rem); line-height: 1; }
 .public-modal p { line-height: 1.7; }
@@ -1006,6 +1011,8 @@ h2 {
 .public-modal-list li { display: grid; gap: .3rem; padding: 1rem; background: var(--cream); border-radius: .75rem; }
 .public-modal-list a, .public-modal-list strong { color: var(--dark-blue); font-weight: 900; }
 .public-modal-list span { color: var(--gray-light); font-size: .9rem; line-height: 1.45; }
+.public-modal .contact-form { margin-top: 2rem; }
+.public-modal .contact-details { margin-top: 2rem; }
 
 .contact-section {
   background: var(--contact-background);
@@ -1020,6 +1027,52 @@ h2 {
   color: var(--green-hover) !important;
   font-size: 0.82rem !important;
   font-weight: 800;
+}
+
+.contact-details {
+  display: grid;
+  gap: 0.65rem;
+  padding: 1.25rem;
+  background: var(--surface);
+  border: 1px solid var(--border-color);
+  border-radius: 1rem;
+}
+
+.contact-details .eyebrow,
+.contact-details p {
+  margin-bottom: 0;
+}
+
+.contact-details .eyebrow {
+  color: var(--green-hover);
+  font-size: 0.69rem;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.contact-details .contact-placeholder {
+  margin-top: 0;
+}
+
+.contact-form-offer-label {
+  color: var(--gray-light);
+  font-size: 0.7rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.contact-form-offer {
+  display: grid;
+  gap: 0.45rem;
+  padding: 0.75rem;
+  background: var(--cream);
+  border-radius: 0.65rem;
+}
+
+.contact-form-offer-value {
+  color: var(--dark-blue);
+  font-size: 1rem;
 }
 
 .contact-form {
@@ -1214,8 +1267,7 @@ h2 {
 @media (max-width: 900px) {
   .hero-grid,
   .intro-grid,
-  .benefits-grid,
-  .contact-grid {
+  .benefits-grid {
     grid-template-columns: 1fr;
   }
 

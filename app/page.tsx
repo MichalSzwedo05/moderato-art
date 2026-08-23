@@ -4,7 +4,7 @@ import { isContactTestEnabled } from "../lib/contact-test";
 import { getPublishedArticles } from "../lib/public-articles";
 import { ArticleLibrary } from "./article-library";
 import { OfferModalLink, PublicModals } from "./public-modals";
-import { ContactForm } from "./contact-form";
+import { ContactDetails } from "./contact-details";
 import { CurrentYear } from "./current-year";
 import { MobileNavigation } from "./mobile-navigation";
 import { ScrollReveal } from "./scroll-reveal";
@@ -45,7 +45,7 @@ export default async function HomePage() {
           </nav>
           <ThemeSwitcher />
           <MobileNavigation />
-          <a className="header-action" href="#kontakt">Zapytaj o zajęcia</a>
+          <a className="header-action" href="#oferta">Zapytaj o zajęcia</a>
         </div>
       </header>
 
@@ -62,7 +62,7 @@ export default async function HomePage() {
                 praca z głosem dla dzieci, młodzieży i dorosłych.
               </p>
               <div className="hero-actions">
-                <a className="button button-primary" href="#kontakt">Zapytaj o zajęcia</a>
+                <a className="button button-primary" href="#oferta">Zapytaj o zajęcia</a>
                 <a className="text-link" href="#oferta">Sprawdź ofertę <span aria-hidden="true">-&gt;</span></a>
               </div>
               <p className="hero-note">Zajęcia grupowe dla przedszkolaków oraz indywidualne lekcje śpiewu</p>
@@ -204,20 +204,15 @@ export default async function HomePage() {
               <p className="eyebrow">Porozmawiajmy</p>
               <h2 id="contact-title">Znajdźmy zajęcia dla Ciebie lub Twojego dziecka.</h2>
               <p>
-                Napisz kilka słów o tym, czego szukasz. Odpowiem i wspólnie
-                ustalimy najlepszą formę pierwszego spotkania.
+                Wybierz ofertę, aby zobaczyć szczegóły i skontaktować się w
+                sprawie zajęć.
               </p>
-              <p className="contact-placeholder">
-                Dane kontaktowe zostaną uzupełnione przed publikacją strony.
-              </p>
-            </ScrollReveal>
-            <ScrollReveal as="div" delay={120} variant="scale">
-              <ContactForm testEnabled={contactFormTestEnabled} />
+              <ContactDetails />
             </ScrollReveal>
           </div>
         </section>
       </main>
-      <PublicModals />
+      <PublicModals contactFormTestEnabled={contactFormTestEnabled} />
 
       <footer className="site-footer">
         <div className="site-shell footer-content">

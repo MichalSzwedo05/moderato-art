@@ -27,7 +27,7 @@ Create a professional, warm, and modern Polish-language website for Moderato Art
 5. Benefits section explaining the individual approach, learning through play, musical development, and welcoming atmosphere.
 6. Gallery placeholder for class, thematic, and promotional images.
 7. Blog preview that links to published articles.
-8. Contact section with phone number, email address, contact form, and optional social links.
+8. Contact section with phone number, email address, and a prompt to open the contact modal for a selected offer; the Rytmisolki modal is contact-only and has no form.
 9. Footer with contact information and legal links.
 
 ## Visual Direction
@@ -48,6 +48,8 @@ Create a professional, warm, and modern Polish-language website for Moderato Art
 ## Contact Form
 
 - Target parents and guardians.
+- Render the form inside the modal for the selected offer, not as a permanent form at the bottom of the homepage.
+- Show only contact details in the Rytmisolki modal.
 - Include name, email, phone number, class type, child's age, message, and Privacy Policy acknowledgement.
 - Provide clear validation and success or error messages in Polish.
 - Do not expose technical errors to visitors.

@@ -1,12 +1,15 @@
 "use client";
 
-import { FormEvent, useId, useState } from "react";
+import { useId, useState, type FormEvent } from "react";
+import type { ContactLessonType } from "../lib/offers";
 
 type ContactFormProps = {
+  lessonTitle: string;
+  lessonType: ContactLessonType;
   testEnabled?: boolean;
 };
 
-export function ContactForm({ testEnabled = false }: ContactFormProps) {
+export function ContactForm({ lessonTitle, lessonType, testEnabled = false }: ContactFormProps) {
   const statusId = useId();
   const [status, setStatus] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -78,15 +81,11 @@ export function ContactForm({ testEnabled = false }: ContactFormProps) {
           Numer telefonu
           <input autoComplete="tel" name="phone" placeholder="Np. 500 000 000" type="tel" />
         </label>
-        <label>
-          Rodzaj zajęć
-          <select defaultValue="" name="lessonType">
-            <option disabled value="">Wybierz zajęcia</option>
-            <option value="rytmika">Rytmisolki</option>
-            <option value="junior-voice">Junior Voice</option>
-            <option value="studio-wokalne">Studio Wokalne</option>
-          </select>
-        </label>
+        <div className="contact-form-offer">
+          <span className="contact-form-offer-label">Wybrane zajęcia</span>
+          <strong className="contact-form-offer-value">{lessonTitle}</strong>
+        </div>
+        <input name="lessonType" type="hidden" value={lessonType} />
         <label>
           Wiek dziecka
           <select defaultValue="" name="childAgeRange">
