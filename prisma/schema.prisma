@@ -46,6 +46,8 @@ model ContactSubmission {
   updatedAt                DateTime                @updatedAt
 
   @@index([deleteAfter])
+  @@index([createdAt, id])
+  @@index([status, createdAt, id])
 }
 
 model Article {

@@ -594,7 +594,7 @@ Tasks:
 
 ### Phase 7: Database
 
-Status: partially implemented; schema and migrations for contact submissions, articles, CMS sessions, magic links, and rate limiting are committed, but not applied to a hosted database.
+Status: partially implemented; schema and migrations for contact submissions, articles, CMS sessions, magic links, and rate limiting are committed, but not applied to a hosted database. A read-only authenticated inbox is available at `/admin/submissions` for existing `ContactSubmission` records; it does not activate public collection.
 
 Tasks:
 

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { createArticle, updateArticle } from "./actions";
 import { ArticleEditor } from "./article-editor";
 import { ArticleEditorDetails } from "./article-editor-details";
@@ -93,9 +94,12 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
             <p className="admin-eyebrow">Moderato Art</p>
             <h1>Panel administracyjny</h1>
           </div>
-          <form action="/admin/auth/logout" method="post">
-            <button className="admin-secondary-button" type="submit">Wyloguj</button>
-          </form>
+          <div className="admin-header-actions">
+            <Link className="admin-secondary-button" href="/admin/submissions">Zgłoszenia kontaktowe</Link>
+            <form action="/admin/auth/logout" method="post">
+              <button className="admin-secondary-button" type="submit">Wyloguj</button>
+            </form>
+          </div>
         </header>
         <section className="admin-gallery-section" aria-labelledby="gallery-section-heading">
           <h2 id="gallery-section-heading">Galeria zdjęć</h2>
