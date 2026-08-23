@@ -107,12 +107,15 @@ export default async function SubmissionsPage({ searchParams }: SubmissionsPageP
         </div>
         <div className="admin-header-actions">
           <Link className="admin-secondary-button" href="/admin">Wróć do panelu</Link>
+          <form action="/api/admin/submissions/export" method="post">
+            <button className="admin-secondary-button" type="submit">Pobierz XML</button>
+          </form>
           <form action="/admin/auth/logout" method="post">
             <button className="admin-secondary-button" type="submit">Wyloguj</button>
           </form>
         </div>
       </header>
-      <p className="admin-submissions-intro">Widoczne są tylko zgłoszenia zapisane w bazie. Ta skrzynka jest tylko do odczytu.</p>
+      <p className="admin-submissions-intro">Widoczne są tylko zgłoszenia zapisane w bazie. Ta skrzynka jest tylko do odczytu. Eksport XML zawiera dane osobowe — przechowuj go i usuwaj bezpiecznie.</p>
       <form className="admin-submissions-filter admin-form" method="get">
         <label htmlFor="submission-status">Status zgłoszenia
           <select defaultValue={query.status} id="submission-status" name="status">

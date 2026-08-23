@@ -1,20 +1,45 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const findMany = vi.fn();
-vi.mock("./prisma", () => ({ getPrisma: () => ({ contactSubmission: { findMany } }) }));
+const queryRaw = vi.fn();
+vi.mock("./prisma", () => ({ getPrisma: () => ({ $queryRaw: queryRaw, contactSubmission: { findMany } }) }));
 
 const consoleError = vi.spyOn(console, "error").mockImplementation(() => undefined);
 
 import {
+  buildContactSubmissionsXml,
   contactSubmissionPageSize,
+  contactSubmissionExportMaxBytes,
+  encodeContactSubmissionsXml,
+  getContactSubmissionExportRows,
   getContactSubmissions,
   parseContactSubmissionQuery,
 } from "./contact-submissions";
+import type { ContactSubmissionExportRow } from "./contact-submissions";
+
+function exportRow(overrides: Partial<ContactSubmissionExportRow> = {}): ContactSubmissionExportRow {
+  return {
+    childAgeRange: "6-9",
+    createdAt: new Date("2026-08-22T12:00:00.000Z"),
+    deleteAfter: null,
+    email: "anna@example.com",
+    id: "submission",
+    lessonType: "rytmika",
+    message: "Wiadomość",
+    parentName: "Anna Kowalska",
+    phone: null,
+    retentionAnchorAt: new Date("2026-08-22T12:00:00.000Z"),
+    status: "NEW",
+    updatedAt: new Date("2026-08-22T12:00:00.000Z"),
+    ...overrides,
+  };
+}
 
 describe("contact submissions", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     consoleError.mockClear();
+    queryRaw.mockResolvedValue([{ count: 1 }]);
   });
 
   it("normalizes invalid filters and page numbers", () => {
@@ -58,11 +83,62 @@ describe("contact submissions", () => {
     expect(result?.submissions).toHaveLength(contactSubmissionPageSize);
   });
 
+  it("preflights and fetches all export fields without a status filter", async () => {
+    findMany.mockResolvedValue([exportRow()]);
+
+    await expect(getContactSubmissionExportRows()).resolves.toHaveLength(1);
+    expect(queryRaw).toHaveBeenCalledTimes(1);
+    expect(findMany).toHaveBeenCalledWith(expect.objectContaining({
+      orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+      take: 1_001,
+    }));
+    expect(findMany.mock.calls[0][0].select).toEqual({
+      childAgeRange: true,
+      createdAt: true,
+      deleteAfter: true,
+      email: true,
+      id: true,
+      lessonType: true,
+      message: true,
+      parentName: true,
+      phone: true,
+      retentionAnchorAt: true,
+      status: true,
+      updatedAt: true,
+    });
+  });
+
   it("fails closed when the database query fails", async () => {
     findMany.mockRejectedValue(new Error("database password and host leaked"));
 
     await expect(getContactSubmissions({ page: 1, status: "ALL" })).resolves.toBeUndefined();
     expect(consoleError).toHaveBeenCalledWith("Contact submissions query failed");
     expect(consoleError).not.toHaveBeenCalledWith(expect.stringContaining("database password"));
+  });
+
+  it("creates well-formed escaped XML with UTF-8 data and explicit nulls", () => {
+    const xml = buildContactSubmissionsXml([exportRow({
+      message: "<script>alert(1)</script> & \u0001 Zażółć 😀",
+      parentName: "Anna & Jan",
+    })], new Date("2026-08-23T12:34:56.000Z"));
+    const document = new DOMParser().parseFromString(xml, "application/xml");
+
+    expect(document.querySelector("parsererror")).toBeNull();
+    expect(document.documentElement.getAttribute("count")).toBe("1");
+    expect(document.querySelector("parentName")?.textContent).toBe("Anna & Jan");
+    expect(document.querySelector("message")?.textContent).toBe("<script>alert(1)</script> & \ufffd Zażółć 😀");
+    expect(document.querySelector("phone")?.getAttribute("xsi:nil")).toBe("true");
+    expect(xml).toContain('exportedAt="2026-08-23T12:34:56.000Z"');
+    expect(xml).not.toContain("<!DOCTYPE");
+  });
+
+  it("rejects an XML payload over the byte limit instead of truncating it", () => {
+    expect(() => encodeContactSubmissionsXml([exportRow({ message: "x".repeat(4_200_000) })])).toThrow("too large");
+  });
+
+  it("uses the actual encoded size instead of a worst-case text-size estimate", () => {
+    const bytes = encodeContactSubmissionsXml([exportRow({ message: "x".repeat(700_000) })]);
+
+    expect(bytes.byteLength).toBeLessThan(contactSubmissionExportMaxBytes);
   });
 });
