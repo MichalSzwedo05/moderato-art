@@ -5,7 +5,7 @@
 - An authenticated administrator can open `/admin/submissions` and inspect existing `ContactSubmission` records.
 - The view supports bounded pagination and filtering by the existing `NEW`, `CONTACTED`, and `ARCHIVED` statuses.
 - The view provides a single authenticated XML download containing all currently stored submissions, independent of the visible page or status filter.
-- This feature is read-only. It does not activate public data collection, change retention policy, or add status mutation actions.
+- This feature is read-only. Public collection and retention are implemented separately in the draft contact-form feature.
 
 ## Architecture
 
@@ -23,7 +23,7 @@
 - Database failures produce a generic administrator message. Logs contain no submission fields.
 - A missing `deleteAfter` value is shown as a retention warning rather than treated as an ordinary completed record.
 - The export response is private and uncached, and the downloaded file is explicitly treated as sensitive personal data.
-- The public contact form remains disabled or test-only until the separate data-collection, privacy-policy, retention, abuse-protection, and cleanup review is approved.
+- The public contact form is a non-commercial draft and is linked to the draft privacy notice; commercial use still requires replacing placeholders and completing legal/provider review.
 
 ## Validation
 

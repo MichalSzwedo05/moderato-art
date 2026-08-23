@@ -1,6 +1,7 @@
 import Image from "next/image";
+import Link from "next/link";
 import { connection } from "next/server";
-import { isContactTestEnabled } from "../lib/contact-test";
+import { isContactFormConfigured } from "../lib/contact-config";
 import { getPublishedArticles } from "../lib/public-articles";
 import { ArticleLibrary } from "./article-library";
 import { OfferModalLink, PublicModals } from "./public-modals";
@@ -22,7 +23,7 @@ const benefits = [
 
 export default async function HomePage() {
   await connection();
-  const contactFormTestEnabled = isContactTestEnabled();
+  const contactFormEnabled = isContactFormConfigured();
   const articles = await getPublishedArticles();
   const galleryPhotos = await getGalleryPhotos();
 
@@ -212,7 +213,7 @@ export default async function HomePage() {
           </div>
         </section>
       </main>
-      <PublicModals contactFormTestEnabled={contactFormTestEnabled} />
+      <PublicModals contactFormEnabled={contactFormEnabled} />
 
       <footer className="site-footer">
         <div className="site-shell footer-content">
@@ -221,6 +222,7 @@ export default async function HomePage() {
             <span className="brand-tagline">Muzyczna Kraina Malucha</span>
           </a>
           <p>Muzyka i śpiew dla dzieci.</p>
+          <Link className="footer-legal-link" href="/polityka-prywatnosci">Polityka prywatności</Link>
           <p>© <CurrentYear /> Moderato Art</p>
         </div>
       </footer>

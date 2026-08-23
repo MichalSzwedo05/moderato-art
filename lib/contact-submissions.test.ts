@@ -2,14 +2,17 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const findMany = vi.fn();
 const queryRaw = vi.fn();
-vi.mock("./prisma", () => ({ getPrisma: () => ({ $queryRaw: queryRaw, contactSubmission: { findMany } }) }));
+const create = vi.fn();
+vi.mock("./prisma", () => ({ getPrisma: () => ({ $queryRaw: queryRaw, contactSubmission: { create, findMany } }) }));
 
 const consoleError = vi.spyOn(console, "error").mockImplementation(() => undefined);
 
 import {
   buildContactSubmissionsXml,
+  createContactSubmission,
   contactSubmissionPageSize,
   contactSubmissionExportMaxBytes,
+  addContactRetentionPeriod,
   encodeContactSubmissionsXml,
   getContactSubmissionExportRows,
   getContactSubmissions,
@@ -28,6 +31,8 @@ function exportRow(overrides: Partial<ContactSubmissionExportRow> = {}): Contact
     message: "Wiadomość",
     parentName: "Anna Kowalska",
     phone: null,
+    privacyNoticeAcknowledgedAt: new Date("2026-08-22T12:00:00.000Z"),
+    privacyNoticeVersion: "draft-db-only-2026-08-23",
     retentionAnchorAt: new Date("2026-08-22T12:00:00.000Z"),
     status: "NEW",
     updatedAt: new Date("2026-08-22T12:00:00.000Z"),
@@ -40,6 +45,7 @@ describe("contact submissions", () => {
     vi.clearAllMocks();
     consoleError.mockClear();
     queryRaw.mockResolvedValue([{ count: 1 }]);
+    create.mockResolvedValue({ id: "submission" });
   });
 
   it("normalizes invalid filters and page numbers", () => {
@@ -68,9 +74,11 @@ describe("contact submissions", () => {
       id: true,
       lessonType: true,
       message: true,
-      parentName: true,
-      phone: true,
-      status: true,
+       parentName: true,
+       phone: true,
+       privacyNoticeAcknowledgedAt: true,
+       privacyNoticeVersion: true,
+       status: true,
     });
   });
 
@@ -100,12 +108,40 @@ describe("contact submissions", () => {
       id: true,
       lessonType: true,
       message: true,
-      parentName: true,
-      phone: true,
-      retentionAnchorAt: true,
+       parentName: true,
+       phone: true,
+       privacyNoticeAcknowledgedAt: true,
+       privacyNoticeVersion: true,
+       retentionAnchorAt: true,
       status: true,
       updatedAt: true,
     });
+  });
+
+  it("sets the draft notice audit fields and twelve-month deletion deadline", async () => {
+    const acknowledgedAt = new Date("2026-08-23T12:00:00.000Z");
+
+    await expect(createContactSubmission({
+      email: "anna@example.com",
+      message: "Proszę o informacje o zajęciach.",
+      parentName: "Anna Kowalska",
+      privacyNoticeAcknowledgedAt: acknowledgedAt,
+      privacyNoticeVersion: "draft-2026-08-23",
+    })).resolves.toEqual({ id: "submission" });
+
+    expect(create).toHaveBeenCalledWith(expect.objectContaining({
+      data: expect.objectContaining({
+        deleteAfter: expect.any(Date),
+        privacyNoticeAcknowledgedAt: acknowledgedAt,
+        privacyNoticeVersion: "draft-2026-08-23",
+      }),
+      select: { id: true },
+    }));
+  });
+
+  it("adds twelve calendar months without overflowing month ends", () => {
+    expect(addContactRetentionPeriod(new Date("2028-02-29T12:00:00.000Z")).toISOString()).toBe("2029-02-28T12:00:00.000Z");
+    expect(addContactRetentionPeriod(new Date("2026-01-31T12:00:00.000Z")).toISOString()).toBe("2027-01-31T12:00:00.000Z");
   });
 
   it("fails closed when the database query fails", async () => {
@@ -128,6 +164,8 @@ describe("contact submissions", () => {
     expect(document.querySelector("parentName")?.textContent).toBe("Anna & Jan");
     expect(document.querySelector("message")?.textContent).toBe("<script>alert(1)</script> & \ufffd Zażółć 😀");
     expect(document.querySelector("phone")?.getAttribute("xsi:nil")).toBe("true");
+    expect(document.querySelector("privacyNoticeVersion")?.textContent).toBe("draft-db-only-2026-08-23");
+    expect(document.querySelector("privacyNoticeAcknowledgedAt")?.textContent).toBe("2026-08-22T12:00:00.000Z");
     expect(xml).toContain('exportedAt="2026-08-23T12:34:56.000Z"');
     expect(xml).not.toContain("<!DOCTYPE");
   });

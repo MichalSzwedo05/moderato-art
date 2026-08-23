@@ -39,6 +39,8 @@ model ContactSubmission {
   lessonType               String?                 @db.VarChar(80)
   childAgeRange            String?                 @db.VarChar(40)
   message                  String                  @db.Text
+  privacyNoticeVersion     String?                 @db.VarChar(40)
+  privacyNoticeAcknowledgedAt DateTime?
   status                   ContactSubmissionStatus @default(NEW)
   retentionAnchorAt        DateTime                @default(now())
   deleteAfter              DateTime?

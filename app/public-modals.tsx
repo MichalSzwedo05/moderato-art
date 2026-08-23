@@ -29,10 +29,10 @@ export function OfferModalLink({ children, href = "#oferta", offerId, ...props }
 }
 
 type PublicModalsProps = {
-  contactFormTestEnabled?: boolean;
+  contactFormEnabled?: boolean;
 };
 
-export function PublicModals({ contactFormTestEnabled = false }: PublicModalsProps) {
+export function PublicModals({ contactFormEnabled = false }: PublicModalsProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const openerRef = useRef<HTMLElement | null>(null);
@@ -108,7 +108,7 @@ export function PublicModals({ contactFormTestEnabled = false }: PublicModalsPro
     <button aria-label="Zamknij okno" className="public-modal-close" onClick={() => dialogRef.current?.close()} ref={closeButtonRef} type="button">×</button>
     {offer && <>
       <section><p className="eyebrow">{offer.subtitle}</p><h2 id={titleId}>{offer.title}</h2><p className="offer-audience">{offer.audience}</p><p>{offer.description}</p></section>
-      {offer.contactMode === "form" ? <ContactForm key={offer.id} lessonTitle={offer.title} lessonType={offer.lessonType} testEnabled={contactFormTestEnabled} /> : <ContactDetails />}
+      {offer.contactMode === "form" ? <ContactForm enabled={contactFormEnabled} key={offer.id} lessonTitle={offer.title} lessonType={offer.lessonType} /> : <ContactDetails />}
     </>}
   </dialog>;
 }

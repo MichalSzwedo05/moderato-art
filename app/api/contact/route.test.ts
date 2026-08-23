@@ -1,51 +1,65 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-const { sendEmail } = vi.hoisted(() => ({ sendEmail: vi.fn() }));
-const testToken = "test-token-that-is-longer-than-thirty-two-chars";
+const { createSubmission, sendEmail } = vi.hoisted(() => ({ createSubmission: vi.fn(), sendEmail: vi.fn() }));
 
 vi.mock("resend", () => ({
   Resend: class {
     emails = { send: sendEmail };
   },
 }));
+vi.mock("../../../lib/contact-submissions", () => ({ createContactSubmission: createSubmission }));
+vi.mock("../../../lib/privacy-policy", () => ({ privacyNoticeVersion: "draft-2026-08-23", privacyPolicy: { status: "published" } }));
 
 import { POST } from "./route";
-import { resetContactTestRateLimitForTests } from "../../../lib/contact-rate-limit";
+import { resetContactRateLimitForTests } from "../../../lib/contact-rate-limit";
 
-const request = (body = {}, token = testToken) => new Request("https://moderato-art.vercel.app/api/contact", {
+const request = (body = {}) => new Request("https://moderato-art.vercel.app/api/contact", {
   body: JSON.stringify(body),
   headers: {
     "content-type": "application/json",
-    "origin": "https://moderato-art.vercel.app",
-    "x-contact-test-token": token,
+    origin: "https://moderato-art.vercel.app",
   },
   method: "POST",
 });
 
 describe("POST /api/contact", () => {
-  beforeEach(() => {
-    delete process.env.CONTACT_FORM_ENABLED;
-    delete process.env.CONTACT_FORM_TEST_ENABLED;
-    delete process.env.CONTACT_FORM_TEST_TOKEN;
-    delete process.env.RESEND_API_KEY;
-    delete process.env.CONTACT_FORM_RECIPIENT;
-    sendEmail.mockReset();
-    resetContactTestRateLimitForTests();
+  afterEach(() => {
+    vi.useRealTimers();
   });
 
-  function enableTestMode() {
+  beforeEach(() => {
+    delete process.env.CONTACT_FORM_ENABLED;
+    delete process.env.RESEND_API_KEY;
+    delete process.env.CONTACT_FORM_RECIPIENT;
+    delete process.env.CONTACT_RATE_LIMIT_SECRET;
+    delete process.env.CONTACT_FORM_RESEND_FROM;
+    delete process.env.DATABASE_URL;
+    delete process.env.CRON_SECRET;
+    createSubmission.mockReset();
+    createSubmission.mockResolvedValue({ id: "submission-id" });
+    sendEmail.mockReset();
+    resetContactRateLimitForTests();
+  });
+
+  function enableForm() {
     process.env.CONTACT_FORM_ENABLED = "true";
-    process.env.CONTACT_FORM_TEST_ENABLED = "true";
-    process.env.CONTACT_FORM_TEST_TOKEN = testToken;
-    process.env.RESEND_API_KEY = "re_test";
-    process.env.CONTACT_FORM_RECIPIENT = "owner@example.com";
+    process.env.CONTACT_RATE_LIMIT_SECRET = "a-contact-rate-limit-secret-that-is-long-enough";
+    process.env.DATABASE_URL = "postgresql://moderato:password@db:5432/moderato";
+    process.env.CRON_SECRET = "a-cron-secret-that-is-long-enough";
+  }
+
+  function enableNotifications() {
+    process.env.RESEND_API_KEY = "re_test-key-that-is-long-enough-for-tests";
+    process.env.CONTACT_FORM_RECIPIENT = "owner@moderato-art.pl";
+    process.env.CONTACT_FORM_RESEND_FROM = "Moderato Art <kontakt@moderato-art.pl>";
   }
 
   const validSubmission = {
     email: "anna@example.com",
     lessonType: "rytmika",
-    message: "To jest syntetyczna wiadomość testowa.",
+    message: "Proszę o informacje o zajęciach.",
     parentName: "Anna Kowalska",
+    privacyNoticeAcknowledged: true,
   };
 
   it("fails closed without reading or sending the request payload", async () => {
@@ -54,34 +68,74 @@ describe("POST /api/contact", () => {
     expect(response.status).toBe(503);
     expect(response.headers.get("Cache-Control")).toBe("no-store");
     await expect(response.json()).resolves.toEqual({ message: "Formularz kontaktowy jest chwilowo niedostępny." });
+    expect(createSubmission).not.toHaveBeenCalled();
     expect(sendEmail).not.toHaveBeenCalled();
   });
 
-  it("sends a validated synthetic test message only with both flags and the test token", async () => {
-    enableTestMode();
+  it("sends a validated submission without a test password", async () => {
+    enableForm();
+    enableNotifications();
     sendEmail.mockResolvedValue({ data: { id: "email-id" }, error: null });
 
     const response = await POST(request(validSubmission));
 
     expect(response.status).toBe(200);
-    await expect(response.json()).resolves.toEqual({ message: "Wiadomość testowa została wysłana." });
-    expect(sendEmail).toHaveBeenCalledWith(expect.objectContaining({
-      from: "Moderato Art test <onboarding@resend.dev>",
-      to: ["owner@example.com"],
+    await expect(response.json()).resolves.toEqual({ message: "Zgłoszenie zostało przyjęte." });
+    expect(createSubmission).toHaveBeenCalledWith(expect.objectContaining({
+      privacyNoticeAcknowledgedAt: expect.any(Date),
+      privacyNoticeVersion: expect.any(String),
     }));
+    expect(sendEmail).toHaveBeenCalledWith(expect.objectContaining({
+      from: "Moderato Art <kontakt@moderato-art.pl>",
+      to: ["owner@moderato-art.pl"],
+    }));
+    const notification = sendEmail.mock.calls[0][0] as { replyTo?: string; text: string };
+    expect(notification.replyTo).toBeUndefined();
+    expect(notification.text).toContain("submission-id");
+    expect(notification.text).not.toContain("Anna Kowalska");
+    expect(notification.text).not.toContain("anna@example.com");
+    expect(notification.text).not.toContain("Proszę o informacje");
   });
 
-  it("rejects an invalid test token before parsing or sending a message", async () => {
-    enableTestMode();
+  it("requires the privacy acknowledgement before saving or sending", async () => {
+    enableForm();
 
-    const response = await POST(request({}, "wrong-token"));
+    const response = await POST(request({ ...validSubmission, privacyNoticeAcknowledged: false }));
 
-    expect(response.status).toBe(401);
+    expect(response.status).toBe(400);
+    expect(createSubmission).not.toHaveBeenCalled();
     expect(sendEmail).not.toHaveBeenCalled();
   });
 
+  it("keeps the saved submission accepted when notification delivery fails", async () => {
+    enableForm();
+    enableNotifications();
+    sendEmail.mockResolvedValue({ data: null, error: { name: "provider_error" } });
+
+    const response = await POST(request(validSubmission));
+
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toEqual({ message: "Zgłoszenie zostało przyjęte." });
+    expect(createSubmission).toHaveBeenCalledTimes(1);
+  });
+
+  it("keeps the saved submission accepted when notification delivery times out", async () => {
+    enableForm();
+    enableNotifications();
+    vi.useFakeTimers();
+    sendEmail.mockReturnValue(new Promise(() => undefined));
+
+    const responsePromise = POST(request(validSubmission));
+    await vi.advanceTimersByTimeAsync(5_000);
+    const response = await responsePromise;
+
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toEqual({ message: "Zgłoszenie zostało przyjęte." });
+    expect(createSubmission).toHaveBeenCalledTimes(1);
+  });
+
   it("rejects a cross-origin request and an oversized body", async () => {
-    enableTestMode();
+    enableForm();
     const crossOriginRequest = request(validSubmission);
     const crossOriginResponse = await POST(new Request(crossOriginRequest, {
       headers: {
@@ -101,16 +155,26 @@ describe("POST /api/contact", () => {
     expect(sendEmail).not.toHaveBeenCalled();
   });
 
-  it("fails without Resend configuration and limits repeated authorized attempts", async () => {
-    enableTestMode();
-    delete process.env.RESEND_API_KEY;
-    const unavailableResponse = await POST(request(validSubmission));
+  it("treats a filled honeypot as a successful no-op", async () => {
+    enableForm();
 
-    expect(unavailableResponse.status).toBe(503);
+    const response = await POST(request({ ...validSubmission, website: "https://spam.example" }));
 
-    resetContactTestRateLimitForTests();
-    process.env.RESEND_API_KEY = "re_test";
-    sendEmail.mockResolvedValue({ data: { id: "email-id" }, error: null });
+    expect(response.status).toBe(200);
+    expect(createSubmission).not.toHaveBeenCalled();
+    expect(sendEmail).not.toHaveBeenCalled();
+  });
+
+  it("stores submissions without Resend and limits repeated authorized attempts", async () => {
+    enableForm();
+    const databaseOnlyResponse = await POST(request(validSubmission));
+
+    expect(databaseOnlyResponse.status).toBe(200);
+    await expect(databaseOnlyResponse.json()).resolves.toEqual({ message: "Zgłoszenie zostało przyjęte." });
+    expect(createSubmission).toHaveBeenCalledTimes(1);
+    expect(sendEmail).not.toHaveBeenCalled();
+
+    resetContactRateLimitForTests();
     await POST(request(validSubmission));
     await POST(request(validSubmission));
     await POST(request(validSubmission));

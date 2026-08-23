@@ -75,6 +75,7 @@ function SubmissionCard({ submission }: { submission: ContactSubmissionRow }) {
       {submission.phone ? <div><dt>Telefon</dt><dd><a href={`tel:${submission.phone}`}>{submission.phone}</a></dd></div> : null}
       {submission.lessonType ? <div><dt>Zajęcia</dt><dd>{lessonLabels[submission.lessonType] || submission.lessonType}</dd></div> : null}
       {submission.childAgeRange ? <div><dt>Wiek dziecka</dt><dd>{ageLabels[submission.childAgeRange] || submission.childAgeRange}</dd></div> : null}
+      <div><dt>Informacja prywatności</dt><dd>{submission.privacyNoticeVersion || "Brak zapisanej wersji"}{submission.privacyNoticeAcknowledgedAt ? ` · potwierdzono ${formatDate(submission.privacyNoticeAcknowledgedAt)}` : ""}</dd></div>
     </dl>
     <div className="admin-submission-message">
       <h3>Wiadomość</h3>

@@ -1161,6 +1161,28 @@ h2 {
   white-space: nowrap;
 }
 
+.contact-form-consent {
+  display: flex !important;
+  align-items: flex-start;
+  gap: 0.65rem !important;
+  color: var(--gray-light) !important;
+  font-size: 0.72rem !important;
+  font-weight: 700 !important;
+  line-height: 1.45;
+}
+
+.contact-form-consent input {
+  width: 1rem;
+  min-width: 1rem;
+  height: 1rem;
+  margin-top: 0.1rem;
+  accent-color: var(--green);
+}
+
+.contact-form-consent a {
+  color: var(--green-hover);
+}
+
 .site-footer {
   padding-block: 2.2rem;
   color: rgb(255 255 255 / 56%);
@@ -1182,6 +1204,99 @@ h2 {
   margin: 0;
   font-size: 0.76rem;
   font-weight: 700;
+}
+
+.footer-legal-link {
+  color: rgb(255 255 255 / 78%);
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.footer-legal-link:hover,
+.footer-legal-link:focus-visible {
+  color: #fff;
+}
+
+.legal-page {
+  min-height: 100vh;
+  padding-block: clamp(3rem, 8vw, 7rem);
+  background: linear-gradient(180deg, var(--cream-deep), var(--cream) 34rem);
+}
+
+.legal-shell {
+  max-width: 58rem;
+}
+
+.legal-back-link {
+  margin-bottom: clamp(2.5rem, 6vw, 4rem);
+}
+
+.legal-content {
+  max-width: 52rem;
+  color: var(--gray-text);
+  line-height: 1.75;
+}
+
+.legal-content h1 {
+  max-width: 16ch;
+  margin-bottom: 1.5rem;
+}
+
+.legal-content h2 {
+  max-width: none;
+  margin-top: 3rem;
+  margin-bottom: 0.9rem;
+  font-size: clamp(1.55rem, 3vw, 2.3rem);
+}
+
+.legal-content p {
+  max-width: 48rem;
+}
+
+.legal-content section + section {
+  border-top: 1px solid var(--border-color);
+}
+
+.legal-meta {
+  color: var(--gray-light);
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.legal-draft-warning {
+  margin: 1.5rem 0;
+  padding: 1rem 1.15rem;
+  color: var(--dark-blue);
+  background: color-mix(in srgb, var(--golden) 24%, var(--surface));
+  border: 1px solid color-mix(in srgb, var(--golden) 60%, var(--border-color));
+  border-radius: 0.85rem;
+  font-weight: 800;
+}
+
+.legal-details {
+  display: grid;
+  gap: 0.75rem;
+  margin: 1.25rem 0 0;
+}
+
+.legal-details div {
+  display: grid;
+  grid-template-columns: minmax(10rem, 0.45fr) 1fr;
+  gap: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.legal-details dt {
+  color: var(--gray-light);
+  font-weight: 800;
+}
+
+.legal-details dd {
+  margin: 0;
+  overflow-wrap: anywhere;
 }
 
 .reveal {
@@ -1491,6 +1606,11 @@ h2 {
 
   .section-heading {
     gap: 1rem;
+  }
+
+  .legal-details div {
+    grid-template-columns: 1fr;
+    gap: 0.2rem;
   }
 
   .offer-grid,
