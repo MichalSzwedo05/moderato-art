@@ -1849,8 +1849,58 @@ h2 {
   margin-top: 1.5rem;
 }
 
+.admin-submissions-status {
+  margin-top: 1.25rem;
+  outline: none;
+}
+
 .admin-submission-card {
   border: 1px solid #e2dbcf;
+  overflow: hidden;
+  padding: 0;
+}
+
+.admin-submission-summary {
+  align-items: center;
+  cursor: pointer;
+  display: flex;
+  gap: .75rem;
+  list-style: none;
+  min-height: 3.5rem;
+  padding: .9rem 1rem;
+}
+
+.admin-submission-summary::-webkit-details-marker {
+  display: none;
+}
+
+.admin-submission-summary::before {
+  color: #756b60;
+  content: "+";
+  flex: 0 0 1rem;
+  font-size: 1.25rem;
+  font-weight: 400;
+  line-height: 1;
+  text-align: center;
+}
+
+.admin-submission-card[open] > .admin-submission-summary::before {
+  content: "−";
+}
+
+.admin-submission-summary-name {
+  color: #28241e;
+  font-weight: 800;
+  overflow-wrap: anywhere;
+}
+
+.admin-submission-summary:hover,
+.admin-submission-summary:focus-visible {
+  background: #f6f1e8;
+}
+
+.admin-submission-expanded {
+  border-top: 1px solid #e2dbcf;
   padding: 1rem;
 }
 
@@ -1933,6 +1983,38 @@ h2 {
   border-left: .25rem solid #9d5f2d;
   color: #8b3f35;
   padding-left: .65rem;
+}
+
+.admin-submission-actions {
+  align-items: center;
+  border-top: 1px solid #e2dbcf;
+  display: flex;
+  flex-wrap: wrap;
+  gap: .75rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
+}
+
+.admin-submission-actions .admin-notice,
+.admin-submission-actions .admin-success {
+  margin: 0;
+}
+
+.admin-destructive-button {
+  background: #8b3f35;
+  border: 1px solid #8b3f35;
+  color: #fff;
+}
+
+.admin-destructive-button:hover,
+.admin-destructive-button:focus-visible {
+  background: #6e2f29;
+  border-color: #6e2f29;
+}
+
+.admin-destructive-button:disabled {
+  cursor: wait;
+  opacity: .65;
 }
 
 .admin-submissions-empty {

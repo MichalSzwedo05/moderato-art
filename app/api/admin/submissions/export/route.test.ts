@@ -22,7 +22,7 @@ const submission = {
   email: "anna@example.com",
   id: "submission",
   lessonType: "rytmika",
-  message: "<script>alert(1)</script> & wiadomość",
+  message: "<script>alert(1)</script> & wiadomość\nDruga linia",
   parentName: "Anna & Jan",
   phone: null,
   privacyNoticeAcknowledgedAt: new Date("2026-08-22T12:00:00.000Z"),
@@ -80,20 +80,25 @@ describe("POST /api/admin/submissions/export", () => {
 
   it("returns one UTF-8 XML attachment with private no-store headers", async () => {
     const response = await POST(request());
-    const xml = new TextDecoder().decode(await response.arrayBuffer());
+    const bytes = new Uint8Array(await response.arrayBuffer());
+    const xml = new TextDecoder().decode(bytes);
 
     expect(response.status).toBe(200);
     expect(response.headers.get("content-type")).toBe("application/xml; charset=utf-8");
     expect(response.headers.get("content-disposition")).toMatch(/^attachment; filename="moderato-art-contact-submissions-\d{8}T\d{6}Z\.xml"$/);
     expect(response.headers.get("cache-control")).toBe("private, no-store, max-age=0");
-    expect(response.headers.get("content-length")).toBe(String(new TextEncoder().encode(xml).byteLength));
+    expect(response.headers.get("content-length")).toBe(String(bytes.byteLength));
     expect(response.headers.get("cross-origin-resource-policy")).toBe("same-origin");
     expect(response.headers.get("pragma")).toBe("no-cache");
     expect(response.headers.get("x-content-type-options")).toBe("nosniff");
     expect(xml).toContain('<?xml version="1.0" encoding="UTF-8"?>');
     expect(xml).toContain("Anna &amp; Jan");
     expect(xml).toContain("&lt;script&gt;alert(1)&lt;/script&gt; &amp; wiadomość");
+    expect(xml).toContain("wiadomość\nDruga linia");
     expect(xml).toContain('count="1"');
+    expect(Array.from(bytes.slice(0, 3))).toEqual([0xef, 0xbb, 0xbf]);
+    expect(xml).toMatch(/\r\n$/);
+    expect(xml.replace("wiadomość\nDruga linia", "wiadomośćDruga linia").replaceAll("\r\n", "")).not.toContain("\n");
   });
 
   it("returns a bounded error instead of truncating an oversized export", async () => {

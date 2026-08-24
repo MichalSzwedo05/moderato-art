@@ -11,6 +11,9 @@ const mocks = vi.hoisted(() => ({
 
 vi.mock("next/link", () => ({ default: ({ children, href, ...props }: { children: React.ReactNode; href: string }) => <a href={href} {...props}>{children}</a> }));
 vi.mock("next/navigation", () => ({ redirect: mocks.redirect }));
+vi.mock("./delete-submission-button", () => ({
+  DeleteSubmissionButton: ({ parentName }: { parentName: string }) => <button type="button">Usuń zgłoszenie {parentName}</button>,
+}));
 vi.mock("@/lib/admin-auth", () => ({ getAdminAuthConfig: mocks.getAdminAuthConfig, getAdminSession: mocks.getAdminSession }));
 vi.mock("@/lib/contact-submissions", () => ({
   contactSubmissionFilters: ["ALL", "NEW", "CONTACTED", "ARCHIVED"],
@@ -51,6 +54,8 @@ describe("SubmissionsPage", () => {
 
     expect(screen.getByRole("heading", { name: "Zgłoszenia kontaktowe" })).toBeInTheDocument();
     expect(screen.getByText("Anna Kowalska")).toBeInTheDocument();
+    expect(screen.getByText("Anna Kowalska").closest("details")).not.toHaveAttribute("open");
+    expect(screen.getByRole("button", { name: "Usuń zgłoszenie Anna Kowalska" })).toBeInTheDocument();
     expect(screen.getByText("Nowe", { selector: "span.admin-status" })).toBeInTheDocument();
     expect(screen.getByText("22 sie 2026, 14:00")).toBeInTheDocument();
     expect(screen.getByText("Wiek uczestnika")).toBeInTheDocument();

@@ -9,6 +9,8 @@ import {
   type ContactSubmissionRow,
 } from "@/lib/contact-submissions";
 import { getAdminAuthConfig, getAdminSession } from "@/lib/admin-auth";
+import { DeleteSubmissionButton } from "./delete-submission-button";
+import { SubmissionList } from "./submission-list";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -62,29 +64,32 @@ function pageHref(status: ContactSubmissionFilter, page: number) {
 }
 
 function SubmissionCard({ submission }: { submission: ContactSubmissionRow }) {
-  return <article className="admin-submission-card">
-    <header className="admin-submission-card-header">
-      <div>
-        <h2>{submission.parentName}</h2>
+  return <details className="admin-submission-card">
+    <summary className="admin-submission-summary">
+      <span className="admin-submission-summary-name">{submission.parentName}</span>
+    </summary>
+    <div className="admin-submission-expanded">
+      <header className="admin-submission-card-header">
         <p>{formatDate(submission.createdAt)}</p>
+        <span className={`admin-status admin-status-${submission.status.toLowerCase()}`}>{statusLabel(submission.status)}</span>
+      </header>
+      <dl className="admin-submission-details">
+        <div><dt>E-mail</dt><dd><a href={`mailto:${submission.email}`}>{submission.email}</a></dd></div>
+        {submission.phone ? <div><dt>Telefon</dt><dd><a href={`tel:${submission.phone}`}>{submission.phone}</a></dd></div> : null}
+        {submission.lessonType ? <div><dt>Zajęcia</dt><dd>{lessonLabels[submission.lessonType] || submission.lessonType}</dd></div> : null}
+        {submission.childAgeRange ? <div><dt>Wiek uczestnika</dt><dd>{ageLabels[submission.childAgeRange] || submission.childAgeRange}</dd></div> : null}
+        <div><dt>Informacja prywatności</dt><dd>{submission.privacyNoticeVersion || "Brak zapisanej wersji"}{submission.privacyNoticeAcknowledgedAt ? ` · potwierdzono ${formatDate(submission.privacyNoticeAcknowledgedAt)}` : ""}</dd></div>
+      </dl>
+      <div className="admin-submission-message">
+        <h3>Wiadomość</h3>
+        <p>{submission.message}</p>
       </div>
-      <span className={`admin-status admin-status-${submission.status.toLowerCase()}`}>{statusLabel(submission.status)}</span>
-    </header>
-    <dl className="admin-submission-details">
-      <div><dt>E-mail</dt><dd><a href={`mailto:${submission.email}`}>{submission.email}</a></dd></div>
-      {submission.phone ? <div><dt>Telefon</dt><dd><a href={`tel:${submission.phone}`}>{submission.phone}</a></dd></div> : null}
-      {submission.lessonType ? <div><dt>Zajęcia</dt><dd>{lessonLabels[submission.lessonType] || submission.lessonType}</dd></div> : null}
-      {submission.childAgeRange ? <div><dt>Wiek uczestnika</dt><dd>{ageLabels[submission.childAgeRange] || submission.childAgeRange}</dd></div> : null}
-      <div><dt>Informacja prywatności</dt><dd>{submission.privacyNoticeVersion || "Brak zapisanej wersji"}{submission.privacyNoticeAcknowledgedAt ? ` · potwierdzono ${formatDate(submission.privacyNoticeAcknowledgedAt)}` : ""}</dd></div>
-    </dl>
-    <div className="admin-submission-message">
-      <h3>Wiadomość</h3>
-      <p>{submission.message}</p>
+      <p className={submission.deleteAfter ? "admin-submission-retention" : "admin-submission-retention admin-submission-retention-warning"}>
+        {submission.deleteAfter ? `Planowane usunięcie: ${formatDate(submission.deleteAfter)}` : "Brak ustawionego terminu retencji — wymaga decyzji administratora."}
+      </p>
+      <DeleteSubmissionButton id={submission.id} parentName={submission.parentName} />
     </div>
-    <p className={submission.deleteAfter ? "admin-submission-retention" : "admin-submission-retention admin-submission-retention-warning"}>
-      {submission.deleteAfter ? `Planowane usunięcie: ${formatDate(submission.deleteAfter)}` : "Brak ustawionego terminu retencji — wymaga decyzji administratora."}
-    </p>
-  </article>;
+  </details>;
 }
 
 export default async function SubmissionsPage({ searchParams }: SubmissionsPageProps) {
@@ -116,7 +121,7 @@ export default async function SubmissionsPage({ searchParams }: SubmissionsPageP
           </form>
         </div>
       </header>
-      <p className="admin-submissions-intro">Widoczne są tylko zgłoszenia zapisane w bazie. Ta skrzynka jest tylko do odczytu. Eksport XML zawiera dane osobowe — przechowuj go i usuwaj bezpiecznie.</p>
+      <p className="admin-submissions-intro">Domyślnie widoczne są tylko imiona i nazwiska. Rozwiń zgłoszenie, aby zobaczyć szczegóły. Usunięcie rekordu jest trwałe. Eksport XML zawiera dane osobowe — przechowuj go i usuwaj bezpiecznie.</p>
       <form className="admin-submissions-filter admin-form" method="get">
         <label htmlFor="submission-status">Status zgłoszenia
           <select defaultValue={query.status} id="submission-status" name="status">
@@ -125,10 +130,12 @@ export default async function SubmissionsPage({ searchParams }: SubmissionsPageP
         </label>
         <button type="submit">Filtruj</button>
       </form>
-      {result === undefined ? <p className="admin-notice" role="alert">Nie udało się wczytać zgłoszeń kontaktowych.</p> : result.submissions.length === 0 ? <p className="admin-submissions-empty">Brak zgłoszeń dla wybranego filtra.</p> : (
-        <div aria-live="polite" className="admin-submissions-list">
-          {result.submissions.map((submission) => <SubmissionCard key={submission.id} submission={submission} />)}
-        </div>
+      {result === undefined ? <p className="admin-notice" role="alert">Nie udało się wczytać zgłoszeń kontaktowych.</p> : (
+        <SubmissionList>
+          {result.submissions.length === 0
+            ? <p className="admin-submissions-empty">Brak zgłoszeń dla wybranego filtra.</p>
+            : result.submissions.map((submission) => <SubmissionCard key={submission.id} submission={submission} />)}
+        </SubmissionList>
       )}
       <nav aria-label="Paginacja zgłoszeń" className="admin-submissions-pagination">
         {query.page > 1 ? <Link href={pageHref(query.status, query.page - 1)}>← Nowsze</Link> : <span aria-disabled="true">← Nowsze</span>}

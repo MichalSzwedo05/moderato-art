@@ -154,7 +154,7 @@ Apply the committed privacy-notice migration before enabling the form against an
 
 ### CMS Submission Inbox
 
-Authenticated administrators can open `/admin/submissions` to view existing `ContactSubmission` records or download all currently stored records as one XML file. The inbox is read-only, paginated, filtered by the existing status, and renders message content as plain text. XML exports are limited to 1,000 records/4 MiB, contain personal data, and must be stored and deleted securely.
+Authenticated administrators can open `/admin/submissions` to view and permanently delete existing `ContactSubmission` records or download all currently stored records as one XML file. The inbox is paginated and filtered by the existing status; records are collapsed to the contact name by default and expand to show the remaining fields. XML exports are limited to 1,000 records/4 MiB, use a UTF-8 BOM and CRLF structural line endings while preserving message newlines, contain personal data, and must be stored and deleted securely.
 
 Security updates from Dependabot remain immediate and are exempt from the one-open-PR limit. Version updates are grouped into one weekly PR per npm, Docker, and GitHub Actions ecosystem; PostgreSQL major updates remain isolated for a reviewed database-upgrade procedure.
 
