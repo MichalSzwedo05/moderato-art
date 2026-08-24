@@ -27,6 +27,9 @@ describe("ContactForm", () => {
 
     expect(screen.getByRole("group")).not.toBeDisabled();
     expect(screen.getByLabelText(/polityką prywatności/i)).toBeRequired();
+    expect(screen.getByText("Imię i nazwisko osoby kontaktowej")).toBeInTheDocument();
+    expect(screen.getByText("Wiek uczestnika")).toBeInTheDocument();
+    expect(screen.getByText(/nie podawaj danych wrażliwych w wiadomości/i)).toBeInTheDocument();
   });
 
   it.each([
@@ -43,5 +46,28 @@ describe("ContactForm", () => {
     await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
     const [, request] = fetchMock.mock.calls[0] as [string, RequestInit];
     expect(JSON.parse(String(request.body))).toMatchObject({ lessonType });
+  });
+
+  it("lets the standalone form choose one of the form-based offers", async () => {
+    render(<ContactForm enabled standalone />);
+
+    const offerSelect = screen.getByLabelText("Rodzaj zajęć");
+    expect(offerSelect).toBeRequired();
+    expect(Array.from(offerSelect.querySelectorAll("option")).map((option) => option.textContent)).toEqual([
+      "Wybierz rodzaj zajęć",
+      "Junior Voice",
+      "Studio Wokalne",
+    ]);
+    expect(screen.queryByRole("option", { name: "Rytmisolki" })).not.toBeInTheDocument();
+    fireEvent.change(offerSelect, { target: { value: "studio-wokalne" } });
+    fireEvent.change(screen.getByLabelText(/imię i nazwisko/i), { target: { value: "Anna Kowalska" } });
+    fireEvent.change(screen.getByLabelText(/adres e-mail/i), { target: { value: "anna@example.com" } });
+    fireEvent.change(screen.getByLabelText(/wiadomość/i), { target: { value: "Proszę o kontakt." } });
+    fireEvent.click(screen.getByLabelText(/polityką prywatności/i));
+    fireEvent.submit(screen.getByRole("group").closest("form")!);
+
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+    const [, request] = fetchMock.mock.calls[0] as [string, RequestInit];
+    expect(JSON.parse(String(request.body))).toMatchObject({ lessonType: "studio-wokalne" });
   });
 });

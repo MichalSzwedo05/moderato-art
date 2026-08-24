@@ -56,7 +56,7 @@ describe("POST /api/contact", () => {
 
   const validSubmission = {
     email: "anna@example.com",
-    lessonType: "rytmika",
+    lessonType: "junior-voice",
     message: "Proszę o informacje o zajęciach.",
     parentName: "Anna Kowalska",
     privacyNoticeAcknowledged: true,
@@ -101,6 +101,28 @@ describe("POST /api/contact", () => {
     enableForm();
 
     const response = await POST(request({ ...validSubmission, privacyNoticeAcknowledged: false }));
+
+    expect(response.status).toBe(400);
+    expect(createSubmission).not.toHaveBeenCalled();
+    expect(sendEmail).not.toHaveBeenCalled();
+  });
+
+  it("rejects contact-only offers before saving or sending", async () => {
+    enableForm();
+
+    const response = await POST(request({ ...validSubmission, lessonType: "rytmika" }));
+
+    expect(response.status).toBe(400);
+    expect(createSubmission).not.toHaveBeenCalled();
+    expect(sendEmail).not.toHaveBeenCalled();
+  });
+
+  it("requires an offer before saving or sending", async () => {
+    enableForm();
+    const withoutLessonType = { ...validSubmission };
+    Reflect.deleteProperty(withoutLessonType, "lessonType");
+
+    const response = await POST(request(withoutLessonType));
 
     expect(response.status).toBe(400);
     expect(createSubmission).not.toHaveBeenCalled();

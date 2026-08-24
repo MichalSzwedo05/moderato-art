@@ -170,6 +170,32 @@ describe("contact submissions", () => {
     expect(xml).not.toContain("<!DOCTYPE");
   });
 
+  it("keeps empty exports compact and separates multiple submissions visually", () => {
+    const exportedAt = new Date("2026-08-23T12:34:56.000Z");
+    const empty = buildContactSubmissionsXml([], exportedAt);
+    expect(empty.split("\n")).toEqual([
+      '<?xml version="1.0" encoding="UTF-8"?>',
+      '<contactSubmissions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" exportedAt="2026-08-23T12:34:56.000Z" count="0">',
+      "</contactSubmissions>",
+    ]);
+
+    const single = buildContactSubmissionsXml([exportRow({
+      message: "  pierwsza linia\n\n  druga linia",
+    })], exportedAt);
+    const singleDocument = new DOMParser().parseFromString(single, "application/xml");
+    expect(singleDocument.querySelector("message")?.textContent).toBe("  pierwsza linia\n\n  druga linia");
+    expect(single).toContain('count="1">\n  <submission>');
+    expect(single).toContain("  </submission>\n</contactSubmissions>");
+
+    const multiple = buildContactSubmissionsXml([
+      exportRow({ id: "first" }),
+      exportRow({ id: "second" }),
+    ], exportedAt);
+    expect(multiple).toContain("  </submission>\n\n  <submission>");
+    expect(multiple).not.toContain('count="2">\n\n  <submission>');
+    expect(multiple).not.toContain("</submission>\n\n</contactSubmissions>");
+  });
+
   it("rejects an XML payload over the byte limit instead of truncating it", () => {
     expect(() => encodeContactSubmissionsXml([exportRow({ message: "x".repeat(4_200_000) })])).toThrow("too large");
   });

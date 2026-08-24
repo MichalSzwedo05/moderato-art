@@ -189,7 +189,7 @@ function xmlElement(name: string, value: Date | string | null) {
 }
 
 export function buildContactSubmissionsXml(rows: readonly ContactSubmissionExportRow[], exportedAt = new Date()) {
-  const submissions = rows.map((row) => [
+  const submissionBlocks = rows.map((row) => [
     "  <submission>",
     `    ${xmlElement("id", row.id)}`,
     `    ${xmlElement("parentName", row.parentName)}`,
@@ -206,15 +206,16 @@ export function buildContactSubmissionsXml(rows: readonly ContactSubmissionExpor
     `    ${xmlElement("createdAt", row.createdAt)}`,
     `    ${xmlElement("updatedAt", row.updatedAt)}`,
     "  </submission>",
-  ].join("\n")).join("\n");
+  ].join("\n"));
 
-  return [
+  const document = [
     '<?xml version="1.0" encoding="UTF-8"?>',
     '<contactSubmissions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"'
       + ` exportedAt="${escapeXml(exportedAt.toISOString())}" count="${rows.length}">`,
-    submissions,
-    "</contactSubmissions>",
-  ].join("\n");
+  ];
+  if (submissionBlocks.length > 0) document.push(submissionBlocks.join("\n\n"));
+  document.push("</contactSubmissions>");
+  return document.join("\n");
 }
 
 export function encodeContactSubmissionsXml(rows: readonly ContactSubmissionExportRow[], exportedAt = new Date()) {

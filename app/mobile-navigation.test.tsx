@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
 import { MobileNavigation } from "./mobile-navigation";
@@ -18,6 +18,7 @@ describe("MobileNavigation", () => {
 
     expect(button).toHaveAttribute("aria-expanded", "true");
     expect(navigation).not.toHaveAttribute("hidden");
+    expect(within(navigation).getByRole("link", { name: "Kontakt" })).toHaveAttribute("href", "/kontakt");
 
     fireEvent.keyDown(window, { key: "Escape" });
 

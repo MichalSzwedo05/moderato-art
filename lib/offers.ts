@@ -31,5 +31,8 @@ export const offers = [
   },
 ] as const;
 
+export const contactLessonTypes = ["junior-voice", "studio-wokalne"] as const;
+export type ContactLessonType = (typeof contactLessonTypes)[number];
 export type OfferId = (typeof offers)[number]["id"];
-export type ContactLessonType = (typeof offers)[number]["lessonType"];
+export type FormOffer = Extract<(typeof offers)[number], { contactMode: "form" }>;
+export const contactOffers = offers.filter((offer): offer is FormOffer => offer.contactMode === "form");

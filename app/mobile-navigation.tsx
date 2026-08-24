@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useId, useRef, useState, type MouseEvent } from "react";
+import Link from "next/link";
 
 export function MobileNavigation() {
   const [isOpen, setIsOpen] = useState(false);
@@ -81,7 +82,7 @@ export function MobileNavigation() {
         <a href="#o-mnie">O mnie</a>
         <a href="#oferta">Oferta</a>
         <a href="#blog">Artykuły</a>
-        <a href="#kontakt">Kontakt</a>
+        <Link href="/kontakt">Kontakt</Link>
       </nav>
     </div>
   );
