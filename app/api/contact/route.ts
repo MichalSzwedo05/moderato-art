@@ -5,6 +5,7 @@ import { createRateLimitIdentifier } from "../../../lib/admin-security";
 import { getContactFormConfig } from "../../../lib/contact-config";
 import { isContactRateLimited } from "../../../lib/contact-rate-limit";
 import { createContactSubmission } from "../../../lib/contact-submissions";
+import { contactLessonTypes } from "../../../lib/offers";
 import { privacyNoticeVersion } from "../../../lib/privacy-policy";
 
 export const dynamic = "force-dynamic";
@@ -17,7 +18,7 @@ const contactSubmissionSchema = z.object({
   parentName: z.string().trim().min(2).max(120),
   email: z.string().trim().email().max(254),
   phone: z.string().trim().max(40).optional(),
-  lessonType: z.enum(["rytmika", "junior-voice", "studio-wokalne"]).optional(),
+  lessonType: z.enum(contactLessonTypes),
   childAgeRange: z.enum(["3-5", "6-9", "10-15", "16-plus"]).optional(),
   message: z.string().trim().min(10).max(2_000),
   privacyNoticeAcknowledged: z.literal(true),

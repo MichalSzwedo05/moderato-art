@@ -42,7 +42,7 @@ export default async function HomePage() {
             <a href="#o-mnie">O mnie</a>
             <a href="#oferta">Oferta</a>
             <a href="#blog">Artykuły</a>
-            <a href="#kontakt">Kontakt</a>
+            <Link href="/kontakt">Kontakt</Link>
           </nav>
           <ThemeSwitcher />
           <MobileNavigation />

@@ -12,6 +12,8 @@ describe("PrivacyPolicyPage", () => {
     expect(screen.getByRole("heading", { name: /6\. retencja/i })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /wróć na stronę główną/i })).toHaveAttribute("href", "/");
     expect(screen.getByText("[ADMINISTRATOR DANYCH – UZUPEŁNIĆ]")).toBeInTheDocument();
+    expect(screen.getByText(/imię i nazwisko osoby kontaktowej/i)).toBeInTheDocument();
+    expect(screen.getByText(/draft-standalone-contact-2026-08-24/)).toBeInTheDocument();
   });
 
   it("marks the draft page as non-indexable", () => {

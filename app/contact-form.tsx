@@ -1,15 +1,20 @@
 "use client";
 
 import { useId, useState, type FormEvent } from "react";
-import type { ContactLessonType } from "../lib/offers";
+import { contactOffers, type ContactLessonType } from "../lib/offers";
 
 type ContactFormProps = {
   enabled?: boolean;
   lessonTitle: string;
   lessonType: ContactLessonType;
+} | {
+  enabled?: boolean;
+  standalone: true;
 };
 
-export function ContactForm({ enabled = false, lessonTitle, lessonType }: ContactFormProps) {
+export function ContactForm(props: ContactFormProps) {
+  const { enabled = false } = props;
+  const isStandalone = "standalone" in props;
   const statusId = useId();
   const [status, setStatus] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -59,7 +64,7 @@ export function ContactForm({ enabled = false, lessonTitle, lessonType }: Contac
       <fieldset disabled={!enabled}>
         <legend>Formularz kontaktowy</legend>
         <label>
-          Imię i nazwisko rodzica lub opiekuna
+          Imię i nazwisko osoby kontaktowej
           <input autoComplete="name" name="parentName" placeholder="Np. Anna Kowalska" required type="text" />
         </label>
         <label>
@@ -70,13 +75,25 @@ export function ContactForm({ enabled = false, lessonTitle, lessonType }: Contac
           Numer telefonu
           <input autoComplete="tel" name="phone" placeholder="Np. 500 000 000" type="tel" />
         </label>
-        <div className="contact-form-offer">
-          <span className="contact-form-offer-label">Wybrane zajęcia</span>
-          <strong className="contact-form-offer-value">{lessonTitle}</strong>
-        </div>
-        <input name="lessonType" type="hidden" value={lessonType} />
+        {isStandalone ? (
+          <label>
+            Rodzaj zajęć
+            <select defaultValue="" name="lessonType" required>
+              <option disabled value="">Wybierz rodzaj zajęć</option>
+              {contactOffers.map((offer) => <option key={offer.lessonType} value={offer.lessonType}>{offer.title}</option>)}
+            </select>
+          </label>
+        ) : (
+          <>
+            <div className="contact-form-offer">
+              <span className="contact-form-offer-label">Wybrane zajęcia</span>
+              <strong className="contact-form-offer-value">{props.lessonTitle}</strong>
+            </div>
+            <input name="lessonType" type="hidden" value={props.lessonType} />
+          </>
+        )}
         <label>
-          Wiek dziecka
+          Wiek uczestnika
           <select defaultValue="" name="childAgeRange">
             <option disabled value="">Wybierz przedział wieku</option>
             <option value="3-5">3–5 lat</option>
@@ -87,7 +104,7 @@ export function ContactForm({ enabled = false, lessonTitle, lessonType }: Contac
         </label>
         <label>
           Wiadomość
-          <textarea name="message" placeholder="Napisz, jakich zajęć szukasz. Nie podawaj danych wrażliwych dziecka." required rows={4} />
+          <textarea name="message" placeholder="Napisz, jakich zajęć szukasz. Nie podawaj danych wrażliwych w wiadomości." required rows={4} />
         </label>
         <label aria-hidden="true" className="contact-form-honeypot">
           Strona internetowa
@@ -103,7 +120,7 @@ export function ContactForm({ enabled = false, lessonTitle, lessonType }: Contac
       </fieldset>
       <small aria-live="polite" id={statusId}>
         {status || (enabled
-          ? "Zgłoszenie zostanie zapisane w bezpiecznej bazie. Nie podawaj danych wrażliwych dziecka."
+           ? "Zgłoszenie zostanie zapisane w bezpiecznej bazie. Nie podawaj danych wrażliwych w wiadomości."
           : "Formularz zostanie aktywowany po zatwierdzeniu zasad przetwarzania danych i infrastruktury.")}
       </small>
     </form>

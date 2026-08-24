@@ -33,8 +33,8 @@ export default function PrivacyPolicyPage() {
 
           <section>
             <h2>2. Jakie dane możemy otrzymać</h2>
-            <p>Formularz kontaktowy może przekazać imię i nazwisko rodzica lub opiekuna, adres e-mail, opcjonalny numer telefonu, wybraną ofertę, przedział wieku dziecka oraz treść wiadomości.</p>
-            <p>Nie wpisuj do formularza diagnoz, informacji o zdrowiu ani innych danych wrażliwych dziecka. Podaj tylko informacje potrzebne do odpowiedzi na zapytanie.</p>
+            <p>Formularz kontaktowy może przekazać imię i nazwisko osoby kontaktowej, adres e-mail, opcjonalny numer telefonu, wybraną ofertę, przedział wieku uczestnika oraz treść wiadomości.</p>
+            <p>Nie wpisuj do formularza diagnoz, informacji o zdrowiu ani innych danych wrażliwych uczestnika. Podaj tylko informacje potrzebne do odpowiedzi na zapytanie.</p>
           </section>
 
           <section>
