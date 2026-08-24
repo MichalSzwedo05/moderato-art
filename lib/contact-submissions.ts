@@ -189,6 +189,7 @@ function xmlElement(name: string, value: Date | string | null) {
 }
 
 export function buildContactSubmissionsXml(rows: readonly ContactSubmissionExportRow[], exportedAt = new Date()) {
+  const lineEnding = "\r\n";
   const submissionBlocks = rows.map((row) => [
     "  <submission>",
     `    ${xmlElement("id", row.id)}`,
@@ -206,20 +207,20 @@ export function buildContactSubmissionsXml(rows: readonly ContactSubmissionExpor
     `    ${xmlElement("createdAt", row.createdAt)}`,
     `    ${xmlElement("updatedAt", row.updatedAt)}`,
     "  </submission>",
-  ].join("\n"));
+  ].join(lineEnding));
 
   const document = [
     '<?xml version="1.0" encoding="UTF-8"?>',
     '<contactSubmissions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"'
       + ` exportedAt="${escapeXml(exportedAt.toISOString())}" count="${rows.length}">`,
   ];
-  if (submissionBlocks.length > 0) document.push(submissionBlocks.join("\n\n"));
+  if (submissionBlocks.length > 0) document.push(submissionBlocks.join(`${lineEnding}${lineEnding}`));
   document.push("</contactSubmissions>");
-  return document.join("\n");
+  return `${document.join(lineEnding)}${lineEnding}`;
 }
 
 export function encodeContactSubmissionsXml(rows: readonly ContactSubmissionExportRow[], exportedAt = new Date()) {
-  const bytes = new TextEncoder().encode(buildContactSubmissionsXml(rows, exportedAt));
+  const bytes = new TextEncoder().encode(`\ufeff${buildContactSubmissionsXml(rows, exportedAt)}`);
   if (bytes.byteLength > contactSubmissionExportMaxBytes) {
     throw new ContactSubmissionExportLimitError("Contact submission export is too large.");
   }

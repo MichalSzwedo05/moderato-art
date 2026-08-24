@@ -168,15 +168,21 @@ describe("contact submissions", () => {
     expect(document.querySelector("privacyNoticeAcknowledgedAt")?.textContent).toBe("2026-08-22T12:00:00.000Z");
     expect(xml).toContain('exportedAt="2026-08-23T12:34:56.000Z"');
     expect(xml).not.toContain("<!DOCTYPE");
+
+    const encoded = encodeContactSubmissionsXml([exportRow()], new Date("2026-08-23T12:34:56.000Z"));
+    expect(Array.from(encoded.slice(0, 3))).toEqual([0xef, 0xbb, 0xbf]);
+    expect(new TextDecoder().decode(encoded)).toContain("\r\n");
+    expect(new TextDecoder().decode(encoded)).toMatch(/\r\n$/);
   });
 
   it("keeps empty exports compact and separates multiple submissions visually", () => {
     const exportedAt = new Date("2026-08-23T12:34:56.000Z");
     const empty = buildContactSubmissionsXml([], exportedAt);
-    expect(empty.split("\n")).toEqual([
+    expect(empty.split("\r\n")).toEqual([
       '<?xml version="1.0" encoding="UTF-8"?>',
       '<contactSubmissions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" exportedAt="2026-08-23T12:34:56.000Z" count="0">',
       "</contactSubmissions>",
+      "",
     ]);
 
     const single = buildContactSubmissionsXml([exportRow({
@@ -184,16 +190,16 @@ describe("contact submissions", () => {
     })], exportedAt);
     const singleDocument = new DOMParser().parseFromString(single, "application/xml");
     expect(singleDocument.querySelector("message")?.textContent).toBe("  pierwsza linia\n\n  druga linia");
-    expect(single).toContain('count="1">\n  <submission>');
-    expect(single).toContain("  </submission>\n</contactSubmissions>");
+    expect(single).toContain('count="1">\r\n  <submission>');
+    expect(single).toContain("  </submission>\r\n</contactSubmissions>\r\n");
 
     const multiple = buildContactSubmissionsXml([
       exportRow({ id: "first" }),
       exportRow({ id: "second" }),
     ], exportedAt);
-    expect(multiple).toContain("  </submission>\n\n  <submission>");
-    expect(multiple).not.toContain('count="2">\n\n  <submission>');
-    expect(multiple).not.toContain("</submission>\n\n</contactSubmissions>");
+    expect(multiple).toContain("  </submission>\r\n\r\n  <submission>");
+    expect(multiple).not.toContain('count="2">\r\n\r\n  <submission>');
+    expect(multiple).not.toContain("</submission>\r\n\r\n</contactSubmissions>");
   });
 
   it("rejects an XML payload over the byte limit instead of truncating it", () => {
@@ -204,5 +210,14 @@ describe("contact submissions", () => {
     const bytes = encodeContactSubmissionsXml([exportRow({ message: "x".repeat(700_000) })]);
 
     expect(bytes.byteLength).toBeLessThan(contactSubmissionExportMaxBytes);
+  });
+
+  it("counts the UTF-8 BOM and structural line endings at the export limit", () => {
+    const exportedAt = new Date("2026-08-23T12:34:56.000Z");
+    const base = encodeContactSubmissionsXml([exportRow({ message: "" })], exportedAt);
+    const paddingLength = contactSubmissionExportMaxBytes - base.byteLength;
+
+    expect(encodeContactSubmissionsXml([exportRow({ message: "x".repeat(paddingLength) })], exportedAt)).toHaveLength(contactSubmissionExportMaxBytes);
+    expect(() => encodeContactSubmissionsXml([exportRow({ message: "x".repeat(paddingLength + 1) })], exportedAt)).toThrow("too large");
   });
 });
