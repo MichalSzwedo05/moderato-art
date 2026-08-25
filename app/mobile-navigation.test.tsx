@@ -5,6 +5,17 @@ import { MobileNavigation } from "./mobile-navigation";
 import { ThemeSwitcher } from "./theme-switcher";
 
 describe("MobileNavigation", () => {
+  it("hides the articles link when no published articles are available", () => {
+    render(<MobileNavigation hasArticles={false} />);
+
+    const button = screen.getByRole("button", { name: "Menu" });
+    const navigation = screen.getByRole("navigation", { hidden: true });
+
+    fireEvent.click(button);
+
+    expect(within(navigation).queryByRole("link", { name: "Artykuły" })).not.toBeInTheDocument();
+  });
+
   it("keeps closed links inaccessible, opens them, and restores focus after Escape", () => {
     render(<MobileNavigation />);
 

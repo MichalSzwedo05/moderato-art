@@ -11,6 +11,8 @@ const mocks = vi.hoisted(() => ({
 vi.mock("./actions", () => ({ createArticle: vi.fn(), updateArticle: vi.fn() }));
 vi.mock("./article-editor", () => ({ ArticleEditor: () => <div>Edytor artykułu</div> }));
 vi.mock("./article-editor-details", () => ({ ArticleEditorDetails: () => <div>Szczegóły artykułu</div> }));
+vi.mock("./delete-article-button", () => ({ DeleteArticleButton: () => <button type="button">Usuń artykuł</button> }));
+vi.mock("./download-user-guide-button", () => ({ DownloadUserGuideButton: () => <button type="button">Pobierz instrukcję</button> }));
 vi.mock("./gallery-manager", () => ({ GalleryManager: () => <div>Zarządzanie galerią</div> }));
 vi.mock("@/lib/admin-auth", () => ({
   getAdminAuthConfig: mocks.getAdminAuthConfig,
@@ -47,6 +49,8 @@ describe("AdminPage", () => {
     expect(screen.getByText("Galeria jest chwilowo niedostępna. Zarządzanie artykułami pozostaje dostępne.")).toBeInTheDocument();
     expect(screen.getByText("Pierwszy artykuł")).toBeInTheDocument();
     expect(screen.getByText("Edytor artykułu")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Usuń artykuł" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Pobierz instrukcję" })).toBeInTheDocument();
     expect(screen.queryByText("Zarządzanie galerią")).not.toBeInTheDocument();
   });
 

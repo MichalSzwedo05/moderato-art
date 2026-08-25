@@ -1,7 +1,11 @@
 import { render, screen } from "@testing-library/react";
 import { readFileSync } from "node:fs";
 import { createElement, type ReactNode } from "react";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
+const mocks = vi.hoisted(() => ({
+  getPublishedArticles: vi.fn().mockResolvedValue([]),
+}));
 
 vi.mock("next/image", () => ({
   default: ({ alt, src }: { alt?: string; src: string }) => createElement("img", { alt, src }),
@@ -12,9 +16,7 @@ vi.mock("next/link", () => ({
 vi.mock("next/server", () => ({ connection: vi.fn().mockResolvedValue(undefined) }));
 vi.mock("../lib/contact-config", () => ({ isContactFormConfigured: vi.fn().mockReturnValue(false) }));
 vi.mock("../lib/gallery-data", () => ({ getGalleryPhotos: vi.fn().mockResolvedValue([]) }));
-vi.mock("../lib/public-articles", () => ({ getPublishedArticles: vi.fn().mockResolvedValue([]) }));
-vi.mock("./article-library", () => ({ ArticleLibrary: () => null }));
-vi.mock("./contact-details", () => ({ ContactDetails: () => null }));
+vi.mock("../lib/public-articles", () => ({ getPublishedArticles: mocks.getPublishedArticles }));
 vi.mock("./current-year", () => ({ CurrentYear: () => 2026 }));
 vi.mock("./gallery-viewer", () => ({ GalleryViewer: () => null }));
 vi.mock("./mobile-navigation", () => ({ MobileNavigation: () => null }));
@@ -34,6 +36,10 @@ vi.mock("./theme-switcher", () => ({ ThemeSwitcher: () => null }));
 import HomePage from "./page";
 
 describe("HomePage profile", () => {
+  beforeEach(() => {
+    mocks.getPublishedArticles.mockResolvedValue([]);
+  });
+
   it("shows the original clear profile identity", async () => {
     render(await HomePage());
 
@@ -41,6 +47,7 @@ describe("HomePage profile", () => {
     expect(screen.getByText("Magdalena Warzecha-Hiller", { selector: "figcaption" })).toBeInTheDocument();
     expect(screen.getByText(/Magdalena Warzecha-Hiller jest sopranistką/)).toBeInTheDocument();
     expect(screen.queryByText(/Magdalena Kwiatkowska/)).not.toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "+48 605 946 678" })).toHaveAttribute("href", "tel:+48605946678");
   });
 
   it("does not apply blur or scale masking to the portrait image", () => {
@@ -49,5 +56,30 @@ describe("HomePage profile", () => {
 
     expect(portraitRule).not.toMatch(/filter\s*:\s*blur/);
     expect(portraitRule).not.toMatch(/transform\s*:\s*scale/);
+  });
+
+  it("hides the articles section when there are no published articles", async () => {
+    render(await HomePage());
+
+    expect(document.querySelector("#blog")).not.toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "Kilka słów o muzyce i dzieciach." })).not.toBeInTheDocument();
+    expect(screen.queryByText("Pierwsze artykuły pojawią się wkrótce.")).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "Artykuły" })).not.toBeInTheDocument();
+  });
+
+  it("shows the articles section when a published article exists", async () => {
+    mocks.getPublishedArticles.mockResolvedValue([{
+      category: "Muzyka",
+      excerpt: "Kilka słów o muzyce.",
+      publishedAt: "2026-08-25T12:00:00.000Z",
+      slug: "pierwszy-artykul",
+      title: "Pierwszy artykuł",
+    }]);
+
+    render(await HomePage());
+
+    expect(screen.getByRole("heading", { name: "Kilka słów o muzyce i dzieciach." })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /Pierwszy artykuł/ })).toHaveAttribute("href", "/articles/pierwszy-artykul");
+    expect(screen.getByRole("link", { name: "Artykuły" })).toHaveAttribute("href", "#blog");
   });
 });

@@ -25,6 +25,7 @@ export default async function HomePage() {
   await connection();
   const contactFormEnabled = isContactFormConfigured();
   const articles = await getPublishedArticles();
+  const hasArticles = articles.length > 0;
   const galleryPhotos = await getGalleryPhotos();
 
   return (
@@ -41,11 +42,11 @@ export default async function HomePage() {
           <nav aria-label="Główna nawigacja">
             <a href="#o-mnie">O mnie</a>
             <a href="#oferta">Oferta</a>
-            <a href="#blog">Artykuły</a>
+            {hasArticles ? <a href="#blog">Artykuły</a> : null}
             <Link href="/kontakt">Kontakt</Link>
           </nav>
           <ThemeSwitcher />
-          <MobileNavigation />
+          <MobileNavigation hasArticles={hasArticles} />
           <a className="header-action" href="#oferta">Zapytaj o zajęcia</a>
         </div>
       </header>
@@ -186,7 +187,7 @@ export default async function HomePage() {
           </div>
         </section> : null}
 
-        <section className="blog-section" id="blog" aria-labelledby="blog-title">
+        {hasArticles ? <section className="blog-section" id="blog" aria-labelledby="blog-title">
           <div className="site-shell">
             <div className="section-heading compact-heading">
               <div>
@@ -197,7 +198,7 @@ export default async function HomePage() {
             </div>
             <ArticleLibrary articles={articles} />
           </div>
-        </section>
+        </section> : null}
 
         <section className="contact-section" id="kontakt" aria-labelledby="contact-title">
           <div className="site-shell contact-grid">

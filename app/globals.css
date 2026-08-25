@@ -1020,13 +1020,6 @@ h2 {
   align-items: start;
 }
 
-.contact-placeholder {
-  margin-top: 1.75rem;
-  color: var(--green-hover) !important;
-  font-size: 0.82rem !important;
-  font-weight: 800;
-}
-
 .contact-details {
   display: grid;
   gap: 0.65rem;
@@ -1049,8 +1042,18 @@ h2 {
   text-transform: uppercase;
 }
 
-.contact-details .contact-placeholder {
-  margin-top: 0;
+.contact-phone {
+  color: var(--dark-blue);
+  font-size: 1.1rem;
+  font-weight: 900;
+  text-decoration: none;
+}
+
+.contact-phone:hover,
+.contact-phone:focus-visible {
+  color: var(--dark-blue);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
 }
 
 .contact-form-offer-label {
@@ -1812,6 +1815,15 @@ h2 {
   justify-content: flex-end;
 }
 
+.admin-download-feedback {
+  color: #3e573e;
+  font-size: .8rem;
+}
+
+.admin-download-feedback-error {
+  color: #8b3f35;
+}
+
 .admin-header h1 {
   margin-bottom: 0;
 }
@@ -2000,6 +2012,23 @@ h2 {
 
 .admin-submission-actions .admin-notice,
 .admin-submission-actions .admin-success {
+  margin: 0;
+}
+
+.admin-articles-status {
+  margin-top: 1.25rem;
+  outline: none;
+}
+
+.admin-article-actions {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: .75rem;
+  margin-top: .75rem;
+}
+
+.admin-article-actions .admin-notice {
   margin: 0;
 }
 

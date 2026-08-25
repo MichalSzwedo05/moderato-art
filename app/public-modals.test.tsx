@@ -52,7 +52,7 @@ describe("PublicModals", () => {
     fireEvent.click(screen.getByRole("link", { name: "Otwórz Rytmisolki" }));
 
     expect(screen.getByRole("heading", { name: "Rytmisolki" })).toBeInTheDocument();
-    expect(screen.getByText(/Dane kontaktowe zostaną uzupełnione/)).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "+48 605 946 678" })).toHaveAttribute("href", "tel:+48605946678");
     expect(document.querySelector(".public-modal form")).toBeNull();
   });
 
