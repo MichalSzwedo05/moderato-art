@@ -29,6 +29,11 @@ describe("ContactForm", () => {
     expect(screen.getByLabelText(/polityką prywatności/i)).toBeRequired();
     expect(screen.getByText("Imię i nazwisko osoby kontaktowej")).toBeInTheDocument();
     expect(screen.getByText("Wiek uczestnika")).toBeInTheDocument();
+    const message = screen.getByRole("textbox", { name: "Wiadomość (opcjonalnie)" });
+    expect(message).not.toBeRequired();
+    expect(message).toHaveAttribute("maxlength", "2000");
+    const messageHelp = screen.getByText(/wiadomość jest opcjonalna/i);
+    expect(message).toHaveAttribute("aria-describedby", messageHelp.id);
     expect(screen.getByText(/nie podawaj danych wrażliwych w wiadomości/i)).toBeInTheDocument();
   });
 
@@ -69,5 +74,17 @@ describe("ContactForm", () => {
     await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
     const [, request] = fetchMock.mock.calls[0] as [string, RequestInit];
     expect(JSON.parse(String(request.body))).toMatchObject({ lessonType: "studio-wokalne" });
+  });
+
+  it("submits an empty optional message", async () => {
+    render(<ContactForm enabled lessonTitle="Junior Voice" lessonType="junior-voice" />);
+    fireEvent.change(screen.getByLabelText(/imię i nazwisko/i), { target: { value: "Anna Kowalska" } });
+    fireEvent.change(screen.getByLabelText(/adres e-mail/i), { target: { value: "anna@example.com" } });
+    fireEvent.click(screen.getByLabelText(/polityką prywatności/i));
+    fireEvent.submit(screen.getByRole("group").closest("form")!);
+
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+    const [, request] = fetchMock.mock.calls[0] as [string, RequestInit];
+    expect(JSON.parse(String(request.body))).toMatchObject({ message: "" });
   });
 });

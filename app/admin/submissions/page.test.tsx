@@ -71,13 +71,13 @@ describe("SubmissionsPage", () => {
     mocks.getContactSubmissions.mockResolvedValue({
       hasNext: true,
       submissions: ["CONTACTED", "ARCHIVED"].map((status, index) => ({
-        childAgeRange: index === 0 ? "16-plus" : null,
+         childAgeRange: index === 0 ? "16-plus" : null,
         createdAt: new Date("2026-08-22T12:00:00.000Z"),
         deleteAfter: new Date("2026-09-01T12:00:00.000Z"),
         email: `person-${index}@example.com`,
         id: `submission-${index}`,
         lessonType: index === 0 ? "junior-voice" : null,
-        message: `Wiadomość ${index}`,
+         message: index === 0 ? `Wiadomość ${index}` : "",
         parentName: `Osoba ${index}`,
         phone: index === 0 ? "500 000 000" : null,
         status,
@@ -90,6 +90,7 @@ describe("SubmissionsPage", () => {
     expect(screen.getByText("Zarchiwizowane", { selector: "span.admin-status" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "500 000 000" })).toHaveAttribute("href", "tel:500 000 000");
     expect(screen.getAllByText("Planowane usunięcie: 1 wrz 2026, 14:00")).toHaveLength(2);
+    expect(screen.getByText("Brak wiadomości — pole pozostawiono puste.")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "← Nowsze" })).toHaveAttribute("href", "/admin/submissions?status=CONTACTED");
     expect(screen.getByRole("link", { name: "Starsze →" })).toHaveAttribute("href", "/admin/submissions?status=CONTACTED&page=3");
   });

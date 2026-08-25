@@ -8,7 +8,7 @@ vi.mock("resend", () => ({
   },
 }));
 vi.mock("../../../lib/contact-submissions", () => ({ createContactSubmission: createSubmission }));
-vi.mock("../../../lib/privacy-policy", () => ({ privacyNoticeVersion: "draft-2026-08-23", privacyPolicy: { status: "published" } }));
+vi.mock("../../../lib/privacy-policy", () => ({ privacyNoticeVersion: "draft-optional-message-2026-08-25", privacyPolicy: { status: "published" } }));
 
 import { POST } from "./route";
 import { resetContactRateLimitForTests } from "../../../lib/contact-rate-limit";
@@ -82,9 +82,9 @@ describe("POST /api/contact", () => {
     expect(response.status).toBe(200);
     await expect(response.json()).resolves.toEqual({ message: "Zgłoszenie zostało przyjęte." });
     expect(createSubmission).toHaveBeenCalledWith(expect.objectContaining({
-      privacyNoticeAcknowledgedAt: expect.any(Date),
-      privacyNoticeVersion: expect.any(String),
-    }));
+        privacyNoticeAcknowledgedAt: expect.any(Date),
+        privacyNoticeVersion: "draft-optional-message-2026-08-25",
+      }));
     expect(sendEmail).toHaveBeenCalledWith(expect.objectContaining({
       from: "Moderato Art <kontakt@moderato-art.pl>",
       to: ["owner@moderato-art.pl"],
@@ -127,6 +127,42 @@ describe("POST /api/contact", () => {
     expect(response.status).toBe(400);
     expect(createSubmission).not.toHaveBeenCalled();
     expect(sendEmail).not.toHaveBeenCalled();
+  });
+
+  it("accepts a missing message and stores an empty string", async () => {
+    enableForm();
+    const withoutMessage = Object.fromEntries(Object.entries(validSubmission).filter(([key]) => key !== "message"));
+
+    const response = await POST(request(withoutMessage));
+
+    expect(response.status).toBe(200);
+    expect(createSubmission).toHaveBeenCalledWith(expect.objectContaining({ message: "" }));
+  });
+
+  it("sends the optional-message notification without message content", async () => {
+    enableForm();
+    enableNotifications();
+    sendEmail.mockResolvedValue({ data: { id: "email-id" }, error: null });
+    const withoutMessage = Object.fromEntries(Object.entries(validSubmission).filter(([key]) => key !== "message"));
+
+    const response = await POST(request(withoutMessage));
+
+    expect(response.status).toBe(200);
+    expect(createSubmission).toHaveBeenCalledWith(expect.objectContaining({ message: "" }));
+    expect(sendEmail).toHaveBeenCalledTimes(1);
+  });
+
+  it("normalizes whitespace-only messages and keeps the field limit", async () => {
+    enableForm();
+
+    const emptyResponse = await POST(request({ ...validSubmission, message: "   " }));
+    expect(emptyResponse.status).toBe(200);
+    expect(createSubmission).toHaveBeenCalledWith(expect.objectContaining({ message: "" }));
+
+    createSubmission.mockClear();
+    const tooLongResponse = await POST(request({ ...validSubmission, message: "a".repeat(2_001) }));
+    expect(tooLongResponse.status).toBe(400);
+    expect(createSubmission).not.toHaveBeenCalled();
   });
 
   it("keeps the saved submission accepted when notification delivery fails", async () => {

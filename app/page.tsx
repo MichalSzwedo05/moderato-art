@@ -87,18 +87,18 @@ export default async function HomePage() {
             <ScrollReveal as="figure" className="portrait" variant="left">
               <Image
                 src="/magdalena-warzecha-hiller.jpg"
-                alt="Magdalena Kwiatkowska"
+                alt="Magdalena Warzecha-Hiller"
                 fill
                 priority
                 sizes="(max-width: 900px) min(100vw - 3rem, 30rem), 31vw"
               />
-              <figcaption>Magdalena Kwiatkowska</figcaption>
+              <figcaption>Magdalena Warzecha-Hiller</figcaption>
             </ScrollReveal>
             <ScrollReveal className="intro-copy" delay={120} variant="right">
               <p className="eyebrow">Poznaj prowadzącą</p>
               <h2 id="about-title">Muzyka zaczyna się od uważnego słuchania.</h2>
               <p>
-                Magdalena Kwiatkowska jest sopranistką, pedagogiem śpiewu i
+                Magdalena Warzecha-Hiller jest sopranistką, pedagogiem śpiewu i
                 rehabilitantką zaburzeń głosu. W pracy z dziećmi łączy muzyczną
                 wrażliwość z wiedzą o świadomej, bezpiecznej pracy z głosem.
               </p>

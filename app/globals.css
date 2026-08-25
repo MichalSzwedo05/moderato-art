@@ -621,10 +621,8 @@ h2 {
 }
 
 .portrait img {
-  filter: blur(16px);
   object-fit: cover;
   object-position: center;
-  transform: scale(1.08);
 }
 
 .portrait::after {
@@ -1098,6 +1096,11 @@ h2 {
   margin: 0;
   padding: 0;
   border: 0;
+}
+
+.contact-form-field {
+  display: grid;
+  gap: .45rem;
 }
 
 .contact-form legend {
