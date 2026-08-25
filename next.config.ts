@@ -3,6 +3,7 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   output: "standalone",
   outputFileTracingIncludes: {
+    "/api/admin/user-guide": ["./USER_GUIDE.md"],
     "/api/admin/gallery/\\[id\\]/complete": [
       "./node_modules/sharp/**/*",
       "./node_modules/@img/sharp-libvips-linux-x64/**/*",

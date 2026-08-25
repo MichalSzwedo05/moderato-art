@@ -3,7 +3,11 @@
 import { useEffect, useId, useRef, useState, type MouseEvent } from "react";
 import Link from "next/link";
 
-export function MobileNavigation() {
+type MobileNavigationProps = {
+  hasArticles?: boolean;
+};
+
+export function MobileNavigation({ hasArticles = true }: MobileNavigationProps) {
   const [isOpen, setIsOpen] = useState(false);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const navigationRef = useRef<HTMLDivElement>(null);
@@ -81,7 +85,7 @@ export function MobileNavigation() {
       <nav aria-label="Nawigacja mobilna" data-open={isOpen} hidden={!isOpen} id={navigationId} onClick={handleNavigationClick}>
         <a href="#o-mnie">O mnie</a>
         <a href="#oferta">Oferta</a>
-        <a href="#blog">Artykuły</a>
+        {hasArticles ? <a href="#blog">Artykuły</a> : null}
         <Link href="/kontakt">Kontakt</Link>
       </nav>
     </div>

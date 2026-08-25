@@ -1,8 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { createArticle, updateArticle } from "./actions";
+import { DeleteArticleButton } from "./delete-article-button";
+import { DownloadUserGuideButton } from "./download-user-guide-button";
 import { ArticleEditor } from "./article-editor";
 import { ArticleEditorDetails } from "./article-editor-details";
+import { ArticleListStatus } from "./article-list-status";
 import { GalleryManager } from "./gallery-manager";
 import { getAdminAuthConfig, getAdminSession } from "@/lib/admin-auth";
 import { getAdminGalleryPhotos } from "@/lib/gallery-data";
@@ -95,6 +98,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
             <h1>Panel administracyjny</h1>
           </div>
           <div className="admin-header-actions">
+            <DownloadUserGuideButton />
             <Link className="admin-secondary-button" href="/admin/submissions">Zgłoszenia kontaktowe</Link>
             <form action="/admin/auth/logout" method="post">
               <button className="admin-secondary-button" type="submit">Wyloguj</button>
@@ -112,17 +116,20 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
         <ArticleEditor action={createArticle} />
         <section className="admin-article-list" aria-labelledby="articles-list-heading">
           <h2 id="articles-list-heading">Ostatnio zmienione</h2>
-          {articles.length === 0 ? <p>Nie ma jeszcze artykułów.</p> : (
-            <ul>
-              {articles.map((article) => (
-                <li key={article.id}>
-                  <strong>{article.title}</strong>
-                  <span>{article.category} · /articles/{article.slug} · {article.status === "DRAFT" ? "Szkic" : article.status === "PUBLISHED" ? "Opublikowany" : "Archiwum"}</span>
-                  <ArticleEditorDetails action={updateArticle.bind(null, article.id)} article={article} />
-                </li>
-              ))}
-            </ul>
-          )}
+          <ArticleListStatus>
+            {articles.length === 0 ? <p>Nie ma jeszcze artykułów.</p> : (
+              <ul>
+                {articles.map((article) => (
+                  <li key={article.id}>
+                    <strong>{article.title}</strong>
+                    <span>{article.category} · /articles/{article.slug} · {article.status === "DRAFT" ? "Szkic" : article.status === "PUBLISHED" ? "Opublikowany" : "Archiwum"}</span>
+                    <ArticleEditorDetails action={updateArticle.bind(null, article.id)} article={article} />
+                    <DeleteArticleButton id={article.id} title={article.title} />
+                  </li>
+                ))}
+              </ul>
+            )}
+          </ArticleListStatus>
         </section>
       </section>
     </main>

@@ -15,4 +15,10 @@ describe("ArticleEditor", () => {
     expect(within(screen.getByLabelText("Podgląd artykułu")).getByText("Prosty opis dla rodziców.")).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Pierwszy krok" })).toBeInTheDocument();
   });
+
+  it("keeps archiving available alongside other article statuses", () => {
+    render(<ArticleEditor action={vi.fn()} />);
+
+    expect(screen.getByRole("option", { name: "Archiwum — ukryty na stronie" })).toHaveValue("ARCHIVED");
+  });
 });
