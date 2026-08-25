@@ -13,7 +13,8 @@ describe("PrivacyPolicyPage", () => {
     expect(screen.getByRole("link", { name: /wróć na stronę główną/i })).toHaveAttribute("href", "/");
     expect(screen.getByText("[ADMINISTRATOR DANYCH – UZUPEŁNIĆ]")).toBeInTheDocument();
     expect(screen.getByText(/imię i nazwisko osoby kontaktowej/i)).toBeInTheDocument();
-    expect(screen.getByText(/draft-standalone-contact-2026-08-24/)).toBeInTheDocument();
+    expect(screen.getByText(/opcjonalną treść wiadomości/i)).toBeInTheDocument();
+    expect(screen.getByText(/draft-optional-message-2026-08-25/)).toBeInTheDocument();
   });
 
   it("marks the draft page as non-indexable", () => {

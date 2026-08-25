@@ -82,7 +82,7 @@ function SubmissionCard({ submission }: { submission: ContactSubmissionRow }) {
       </dl>
       <div className="admin-submission-message">
         <h3>Wiadomość</h3>
-        <p>{submission.message}</p>
+        <p>{submission.message || "Brak wiadomości — pole pozostawiono puste."}</p>
       </div>
       <p className={submission.deleteAfter ? "admin-submission-retention" : "admin-submission-retention admin-submission-retention-warning"}>
         {submission.deleteAfter ? `Planowane usunięcie: ${formatDate(submission.deleteAfter)}` : "Brak ustawionego terminu retencji — wymaga decyzji administratora."}

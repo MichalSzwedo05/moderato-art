@@ -14,8 +14,8 @@ export const privacyPolicy: {
   privacyContact: "[KONTAKT DS. PRYWATNOŚCI – UZUPEŁNIĆ]",
   retentionMonths: 12,
   status: "draft",
-  updatedAt: "24 sierpnia 2026",
-  version: "draft-standalone-contact-2026-08-24",
+  updatedAt: "25 sierpnia 2026",
+  version: "draft-optional-message-2026-08-25",
 };
 
 export const privacyNoticeVersion = privacyPolicy.version;

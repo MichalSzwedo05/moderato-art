@@ -20,7 +20,7 @@ const contactSubmissionSchema = z.object({
   phone: z.string().trim().max(40).optional(),
   lessonType: z.enum(contactLessonTypes),
   childAgeRange: z.enum(["3-5", "6-9", "10-15", "16-plus"]).optional(),
-  message: z.string().trim().min(10).max(2_000),
+  message: z.string().trim().max(2_000).optional().default(""),
   privacyNoticeAcknowledged: z.literal(true),
   website: z.string().max(200).optional(),
 }).strict();

@@ -16,6 +16,8 @@ export function ContactForm(props: ContactFormProps) {
   const { enabled = false } = props;
   const isStandalone = "standalone" in props;
   const statusId = useId();
+  const messageId = useId();
+  const messageHelpId = useId();
   const [status, setStatus] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -102,10 +104,11 @@ export function ContactForm(props: ContactFormProps) {
             <option value="16-plus">16 lat lub więcej</option>
           </select>
         </label>
-        <label>
-          Wiadomość
-          <textarea name="message" placeholder="Napisz, jakich zajęć szukasz. Nie podawaj danych wrażliwych w wiadomości." required rows={4} />
-        </label>
+        <div className="contact-form-field">
+          <label htmlFor={messageId}>Wiadomość (opcjonalnie)</label>
+          <small className="contact-form-field-help" id={messageHelpId}>Wiadomość jest opcjonalna. Możesz opisać, czego oczekujesz od zajęć, albo zadać pytania dotyczące zajęć.</small>
+          <textarea aria-describedby={messageHelpId} id={messageId} maxLength={2_000} name="message" placeholder="Np. Czego oczekujesz od zajęć? Masz pytanie dotyczące zajęć?" rows={4} />
+        </div>
         <label aria-hidden="true" className="contact-form-honeypot">
           Strona internetowa
           <input autoComplete="off" name="website" tabIndex={-1} type="text" />
