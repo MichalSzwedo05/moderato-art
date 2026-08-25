@@ -1225,6 +1225,23 @@ h2 {
   color: #fff;
 }
 
+.footer-credit {
+  color: rgb(255 255 255 / 72%) !important;
+  font-size: 0.68rem !important;
+  font-weight: 600 !important;
+}
+
+.footer-credit-link {
+  color: rgb(255 255 255 / 72%);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.footer-credit-link:hover,
+.footer-credit-link:focus-visible {
+  color: #fff;
+}
+
 .legal-page {
   min-height: 100vh;
   padding-block: clamp(3rem, 8vw, 7rem);

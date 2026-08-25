@@ -48,6 +48,8 @@ describe("HomePage profile", () => {
     expect(screen.getByText(/Magdalena Warzecha-Hiller jest sopranistką/)).toBeInTheDocument();
     expect(screen.queryByText(/Magdalena Kwiatkowska/)).not.toBeInTheDocument();
     expect(screen.getByRole("link", { name: "+48 605 946 678" })).toHaveAttribute("href", "tel:+48605946678");
+    expect(screen.getByText(/created by:/)).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Michał Szwedo" })).toHaveAttribute("href", "https://www.linkedin.com/in/micha%C5%82-szwedo-664337403");
   });
 
   it("does not apply blur or scale masking to the portrait image", () => {
