@@ -2,6 +2,7 @@ FROM node:26.5.0-alpine AS base
 
 WORKDIR /app
 ENV NEXT_TELEMETRY_DISABLED=1
+RUN apk upgrade --no-cache libcrypto3 libssl3
 
 FROM base AS dependencies
 
