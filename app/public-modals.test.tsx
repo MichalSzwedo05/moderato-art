@@ -34,6 +34,7 @@ describe("PublicModals", () => {
   it.each([
     ["junior-voice", "Junior Voice", "junior-voice"],
     ["studio-wokalne", "Studio Wokalne", "studio-wokalne"],
+    ["rehabilitacja-zaburzen-glosu", "Rehabilitacja zaburzeń głosu", "rehabilitacja-zaburzen-glosu"],
   ] as const)("shows a form for %s with the offer fixed", (offerId, title, lessonType) => {
     render(<><OfferModalLink offerId={offerId}>Otwórz {title}</OfferModalLink><PublicModals contactFormEnabled /></>);
 
@@ -52,8 +53,21 @@ describe("PublicModals", () => {
     fireEvent.click(screen.getByRole("link", { name: "Otwórz Rytmisolki" }));
 
     expect(screen.getByRole("heading", { name: "Rytmisolki" })).toBeInTheDocument();
+    expect(screen.getByText(/pełne radości i kreatywności grupowe zajęcia/)).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "+48 605 946 678" })).toHaveAttribute("href", "tel:+48605946678");
     expect(document.querySelector(".public-modal form")).toBeNull();
+  });
+
+  it.each([
+    ["junior-voice", "Junior Voice", /Ważnym elementem programu są występy podczas koncertów/],
+    ["studio-wokalne", "Studio Wokalne", /profesjonalizm łączy się z życzliwą atmosferą/],
+    ["rehabilitacja-zaburzen-glosu", "Rehabilitacja zaburzeń głosu", /SOVT, w tym Lax Vox.*Technika Alexandra/],
+  ] as const)("shows the expanded copy for %s", (offerId, title, paragraph) => {
+    render(<><OfferModalLink offerId={offerId}>Otwórz {title}</OfferModalLink><PublicModals contactFormEnabled /></>);
+
+    fireEvent.click(screen.getByRole("link", { name: `Otwórz ${title}` }));
+
+    expect(screen.getByText(paragraph)).toBeInTheDocument();
   });
 
   it("opens from a direct URL, focuses close, and closes on Escape", () => {

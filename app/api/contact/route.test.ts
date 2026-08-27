@@ -117,6 +117,15 @@ describe("POST /api/contact", () => {
     expect(sendEmail).not.toHaveBeenCalled();
   });
 
+  it("accepts rehabilitation of voice disorders inquiries", async () => {
+    enableForm();
+
+    const response = await POST(request({ ...validSubmission, lessonType: "rehabilitacja-zaburzen-glosu" }));
+
+    expect(response.status).toBe(200);
+    expect(createSubmission).toHaveBeenCalledWith(expect.objectContaining({ lessonType: "rehabilitacja-zaburzen-glosu" }));
+  });
+
   it("requires an offer before saving or sending", async () => {
     enableForm();
     const withoutLessonType = { ...validSubmission };

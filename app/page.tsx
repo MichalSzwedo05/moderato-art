@@ -222,7 +222,7 @@ export default async function HomePage() {
             <span className="footer-brand-name">Moderato</span>
             <span className="brand-tagline">Muzyczna Kraina Malucha</span>
           </a>
-          <p>Muzyka i śpiew dla dzieci.</p>
+          <p>Muzyka, śpiew i praca z głosem.</p>
           <Link className="footer-legal-link" href="/polityka-prywatnosci">Polityka prywatności</Link>
           <p className="footer-credit">created by: <a className="footer-credit-link" href="https://www.linkedin.com/in/micha%C5%82-szwedo-664337403">Michał Szwedo</a></p>
           <p>© <CurrentYear /> Moderato Art</p>

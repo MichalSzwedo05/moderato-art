@@ -107,7 +107,7 @@ export function PublicModals({ contactFormEnabled = false }: PublicModalsProps) 
   return <dialog aria-labelledby={titleId} className="public-modal" id="offer-modal" onCancel={closeFromCancel} onClose={() => { if (modal) close(); restoreFocus(); }} onPointerDown={closeFromBackdrop} ref={dialogRef}>
     <button aria-label="Zamknij okno" className="public-modal-close" onClick={() => dialogRef.current?.close()} ref={closeButtonRef} type="button">×</button>
     {offer && <>
-      <section><p className="eyebrow">{offer.subtitle}</p><h2 id={titleId}>{offer.title}</h2><p className="offer-audience">{offer.audience}</p><p>{offer.description}</p></section>
+      <section><p className="eyebrow">{offer.subtitle}</p><h2 id={titleId}>{offer.title}</h2><p className="offer-audience">{offer.audience}</p><div className="offer-modal-copy">{offer.modalParagraphs.map((paragraph, index) => <p key={`${offer.id}-${index}`}>{paragraph}</p>)}</div></section>
       {offer.contactMode === "form" ? <ContactForm enabled={contactFormEnabled} key={offer.id} lessonTitle={offer.title} lessonType={offer.lessonType} /> : <ContactDetails />}
     </>}
   </dialog>;
