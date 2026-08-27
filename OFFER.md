@@ -1,36 +1,51 @@
 # Oferta Moderato
 
-## Rytmisolki
-### Grupowe zajęcia muzyczno-rytmiczne dla dzieci w wieku przedszkolnym
+## Rytmisolki – zajęcia muzyczno-rytmiczne dla dzieci
 
-Rytmisolki to pełne radości, ruchu i kreatywności zajęcia, podczas których dzieci naturalnie odkrywają świat muzyki. Śpiew, zabawa i aktywność ruchowa pomagają rozwijać muzykalność w atmosferze swobody oraz twórczej ekspresji.
+Rytmisolki to pełne radości i kreatywności grupowe zajęcia muzyczno-rytmiczne dla dzieci w wieku przedszkolnym. Ich celem jest rozwijanie naturalnej muzykalności dziecka poprzez śpiew, ruch i zabawę.
 
-Podczas spotkań dzieci rozwijają słuch muzyczny, poczucie rytmu, koordynację ruchową i wyobraźnię. Poznają podstawowe elementy muzyki, uczą się śpiewać i doświadczają dźwięków całym ciałem.
+Podczas zajęć dzieci rozwijają słuch muzyczny, poczucie rytmu, koordynację ruchową oraz wyobraźnię. Uczą się śpiewać, poznają podstawowe elementy muzyki i odkrywają świat dźwięków w atmosferze swobody, twórczej ekspresji i wspólnej zabawy.
 
-Program zajęć wykorzystuje elementy teorii uczenia się muzyki prof. Edwina E. Gordona oraz koncepcji rytmiki Émile’a Jaques-Dalcroze’a. Dzięki aktywnemu doświadczaniu muzyki, improwizacji i ćwiczeniom rytmicznym dzieci rozwijają się w sposób naturalny i dostosowany do ich wieku.
+Program zajęć opiera się na elementach teorii uczenia się muzyki prof. Edwina E. Gordona oraz koncepcji rytmiki Émile’a Jaques-Dalcroze’a. Dzięki temu dzieci rozwijają muzykalność w sposób naturalny, poprzez aktywne doświadczanie muzyki, improwizację, ruch oraz różnorodne ćwiczenia rytmiczne.
 
-Każde spotkanie wspiera nie tylko rozwój muzyczny, ale również koncentrację, pamięć, komunikację i umiejętność współpracy w grupie. Rytmisolki to przestrzeń, w której każde dziecko może rozwijać swoje talenty, budować pewność siebie i czerpać radość z muzyki.
+Każde spotkanie to połączenie muzyki, ruchu i kreatywnej zabawy, które wspierają nie tylko rozwój muzyczny, ale również koncentrację, pamięć, komunikację oraz umiejętność współpracy w grupie.
 
-## Junior Voice
-### Grupowe lekcje śpiewu dla dzieci w wieku przedszkolnym
+Rytmisolki to zajęcia, w którym każde dziecko może czerpać radość z muzyki, rozwijać swoje talenty i budować pewność siebie od najmłodszych lat.
 
-Junior Voice to grupowe zajęcia wokalne dla najmłodszych, podczas których dzieci w naturalny i bezpieczny sposób odkrywają możliwości własnego głosu oraz rozwijają muzyczne pasje.
+## Junior Voice – grupowe lekcje śpiewu dla dzieci
 
-Na zajęciach dzieci uczą się prawidłowego oddechu, rozwijają emisję głosu, ćwiczą aparat mowy oraz doskonalą dykcję i intonację. Odpowiednio dobrane ćwiczenia wokalne i oddechowe pomagają kształtować zdrowe nawyki głosowe, słuch muzyczny i poczucie rytmu.
+Junior Voice to grupowe zajęcia wokalne dla dzieci w wieku przedszkolnym, podczas których najmłodsi w naturalny i bezpieczny sposób odkrywają możliwości swojego głosu oraz rozwijają muzyczne pasje.
 
-Program jest prowadzony z pełnym poszanowaniem naturalnego rozwoju dziecięcego głosu. Dzieci pracują przy akompaniamencie fortepianu, śpiewają zespołowo i indywidualnie, uczą się wzajemnego słuchania oraz interpretacji piosenek.
+Podczas zajęć dzieci uczą się prawidłowego oddechu, rozwijają emisję głosu, ćwiczą aparat mowy oraz doskonalą dykcję i intonację. Poprzez odpowiednio dobrane ćwiczenia wokalne i oddechowe kształtują zdrowe nawyki związane z posługiwaniem się głosem oraz rozwijają słuch muzyczny i poczucie rytmu.
 
-Ważną częścią programu są występy podczas koncertów i wydarzeń artystycznych. Dają one dzieciom doświadczenie sceniczne, pomagają oswoić tremę i wzmacniają pewność siebie. Junior Voice to miejsce, w którym śpiewanie łączy się z radością, swobodą i motywacją do dalszego rozwoju.
+Zajęcia prowadzone są z pełnym poszanowaniem naturalnego rozwoju dziecięcego głosu. Program został opracowany tak, aby wspierać rozwój wokalny w sposób bezpieczny, dostosowany do wieku i możliwości każdego dziecka – bez presji, za to z dużą dawką radości, swobody i motywacji.
 
-## Studio Wokalne
-### Indywidualne lekcje śpiewu dla dzieci, młodzieży i dorosłych
+Podczas ćwiczeń wokalnych dzieci pracują przy akompaniamencie fortepianu, co wspiera rozwój prawidłowej intonacji, słuchu muzycznego oraz świadomego posługiwania się głosem. Uczestnicy śpiewają zarówno zespołowo, jak i indywidualnie, ucząc się współpracy, wzajemnego słuchania oraz interpretacji piosenek.
 
-Studio Wokalne to indywidualne lekcje dla osób, które rozpoczynają swoją przygodę z muzyką, oraz dla tych, które chcą rozwijać umiejętności wokalne na wyższym poziomie.
+Ważnym elementem programu są występy podczas koncertów i wydarzeń artystycznych. Publiczne prezentacje pozwalają dzieciom zdobywać doświadczenie sceniczne, wzmacniają ich pewność siebie, uczą radzenia sobie z tremą oraz dają ogromną satysfakcję z dzielenia się muzyką z innymi.
 
-Podczas zajęć pracujemy nad prawidłową techniką oddechową, zdrową emisją głosu, dykcją, intonacją oraz interpretacją utworów. Ćwiczenia wokalne odbywają się przy akompaniamencie fortepianu, wspierając rozwój słuchu muzycznego, poczucia harmonii i świadomego posługiwania się głosem.
+Junior Voice zajęcia, na których dzieci rozwijają swoje umiejętności wokalne, budują odwagę sceniczną i przede wszystkim odkrywają radość płynącą ze śpiewania.
 
-Lekcje obejmują śpiew klasyczny i rozrywkowy. Program jest każdorazowo dopasowany do wieku, możliwości i indywidualnych celów ucznia: występów scenicznych, egzaminów, konkursów, przesłuchań lub swobodniejszego śpiewania dla własnej przyjemności.
+## Studio Wokalne – indywidualne lekcje śpiewu
 
-Szczególna uwaga poświęcana jest zdrowej emisji głosu oraz świadomemu rozwijaniu jego naturalnych możliwości. Dzięki wykształceniu muzycznemu i studiom podyplomowym z rehabilitacji zaburzeń głosu Magdalena Warzecha-Hiller wspiera każdego ucznia w bezpiecznym, efektywnym i indywidualnie dopasowanym rozwoju.
+Studio Wokalne to indywidualne lekcje śpiewu dla dzieci, młodzieży i dorosłych, skierowane zarówno do osób rozpoczynających swoją przygodę z muzyką, jak i tych, które chcą rozwijać swoje umiejętności wokalne na wyższym poziomie.
 
-Studio Wokalne to połączenie profesjonalnego wsparcia, życzliwej atmosfery i narzędzi potrzebnych do świadomego rozwijania głosu.
+Podczas zajęć pracujemy nad prawidłową techniką oddechową, zdrową emisją głosu, dykcją, intonacją oraz interpretacją utworów. Ćwiczenia wokalne prowadzone są przy akompaniamencie fortepianu, co pozwala rozwijać słuch muzyczny, poczucie harmonii oraz świadomie kształtować głos.
+
+Lekcje obejmują naukę śpiewu klasycznego i rozrywkowego. Program zajęć jest zawsze dostosowany do wieku, możliwości oraz indywidualnych celów ucznia – niezależnie od tego, czy marzy o występach na scenie, przygotowuje się do egzaminów, konkursów i przesłuchań, czy po prostu chce śpiewać z większą swobodą i radością.
+
+W swojej pracy szczególną uwagę poświęcam zdrowej emisji głosu oraz świadomemu rozwijaniu jego naturalnych możliwości. Dzięki wykształceniu muzycznemu oraz studiom podyplomowym z zakresu rehabilitacji zaburzeń głosu dbam o to, aby każdy uczeń rozwijał swój głos w sposób bezpieczny, efektywny i zgodny z jego indywidualnymi predyspozycjami.
+
+Studio Wokalne to przestrzeń, w której profesjonalizm łączy się z życzliwą atmosferą, a każdy uczeń otrzymuje indywidualne wsparcie, motywację i narzędzia do świadomego rozwoju swojego głosu.
+
+## Rehabilitacja zaburzeń głosu
+
+Z troską o głos, jego zdrowie, swobodę i naturalne brzmienie.
+
+Indywidualne konsultacje z zakresu rehabilitacji zaburzeń głosu skierowane są do osób zmagających się z dysfonią, zaburzeniami głosu, jego nadmiernym zmęczeniem lub napięciem, a także do osób, które chcą świadomie i bezpiecznie korzystać ze swojego głosu.
+
+Konsultacje prowadzone są przez dyplomowanego specjalistę rehabilitacji zaburzeń głosu. W zależności od indywidualnych potrzeb wykorzystywane są m.in. SOVT, w tym Lax Vox, Metoda Akcentów, Chant Talk oraz Technika Alexandra. Ćwiczenia dobierane są indywidualnie, z uwzględnieniem potrzeb, możliwości oraz aktualnego stanu głosu.
+
+Celem rehabilitacji jest poprawa jakości i swobody głosu, zmniejszenie nadmiernego wysiłku i napięcia oraz wypracowanie zdrowych i bezpiecznych nawyków głosowych.
+
+To propozycja dla osób, które chcą zadbać o swój głos, odzyskać komfort w codziennym mówieniu lub śpiewaniu oraz lepiej poznać możliwości własnego głosu.

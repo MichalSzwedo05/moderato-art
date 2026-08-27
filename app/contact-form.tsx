@@ -15,6 +15,9 @@ type ContactFormProps = {
 export function ContactForm(props: ContactFormProps) {
   const { enabled = false } = props;
   const isStandalone = "standalone" in props;
+  const [selectedLessonType, setSelectedLessonType] = useState<ContactLessonType | "">("");
+  const activeLessonType = isStandalone ? selectedLessonType : props.lessonType;
+  const isVoiceRehabilitation = activeLessonType === "rehabilitacja-zaburzen-glosu";
   const statusId = useId();
   const messageId = useId();
   const messageHelpId = useId();
@@ -53,6 +56,7 @@ export function ContactForm(props: ContactFormProps) {
       }
 
       form.reset();
+      if (isStandalone) setSelectedLessonType("");
       setStatus(body.message || "Zgłoszenie zostało przyjęte.");
     } catch {
       setStatus("Nie udało się przesłać zgłoszenia.");
@@ -80,7 +84,7 @@ export function ContactForm(props: ContactFormProps) {
         {isStandalone ? (
           <label>
             Rodzaj zajęć
-            <select defaultValue="" name="lessonType" required>
+            <select name="lessonType" onChange={(event) => setSelectedLessonType(event.currentTarget.value as ContactLessonType)} required value={selectedLessonType}>
               <option disabled value="">Wybierz rodzaj zajęć</option>
               {contactOffers.map((offer) => <option key={offer.lessonType} value={offer.lessonType}>{offer.title}</option>)}
             </select>
@@ -106,7 +110,9 @@ export function ContactForm(props: ContactFormProps) {
         </label>
         <div className="contact-form-field">
           <label htmlFor={messageId}>Wiadomość (opcjonalnie)</label>
-          <small className="contact-form-field-help" id={messageHelpId}>Wiadomość jest opcjonalna. Możesz opisać, czego oczekujesz od zajęć, albo zadać pytania dotyczące zajęć.</small>
+          <small className="contact-form-field-help" id={messageHelpId}>{isVoiceRehabilitation
+            ? "Wiadomość jest opcjonalna. Nie wpisuj diagnoz, objawów, informacji o leczeniu ani historii zdrowia. Opisz ogólnie, czego potrzebujesz od konsultacji."
+            : "Wiadomość jest opcjonalna. Możesz opisać, czego oczekujesz od zajęć, albo zadać pytania dotyczące zajęć."}</small>
           <textarea aria-describedby={messageHelpId} id={messageId} maxLength={2_000} name="message" placeholder="Np. Czego oczekujesz od zajęć? Masz pytanie dotyczące zajęć?" rows={4} />
         </div>
         <label aria-hidden="true" className="contact-form-honeypot">

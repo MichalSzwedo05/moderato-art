@@ -37,6 +37,12 @@ describe("ContactForm", () => {
     expect(screen.getByText(/nie podawaj danych wrażliwych w wiadomości/i)).toBeInTheDocument();
   });
 
+  it("shows a health-data warning for voice rehabilitation inquiries", () => {
+    render(<ContactForm enabled lessonTitle="Rehabilitacja zaburzeń głosu" lessonType="rehabilitacja-zaburzen-glosu" />);
+
+    expect(screen.getByText(/nie wpisuj diagnoz, objawów, informacji o leczeniu ani historii zdrowia/i)).toBeInTheDocument();
+  });
+
   it.each([
     ["Junior Voice", "junior-voice"],
     ["Studio Wokalne", "studio-wokalne"],
@@ -62,6 +68,7 @@ describe("ContactForm", () => {
       "Wybierz rodzaj zajęć",
       "Junior Voice",
       "Studio Wokalne",
+      "Rehabilitacja zaburzeń głosu",
     ]);
     expect(screen.queryByRole("option", { name: "Rytmisolki" })).not.toBeInTheDocument();
     fireEvent.change(offerSelect, { target: { value: "studio-wokalne" } });
@@ -74,6 +81,16 @@ describe("ContactForm", () => {
     await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
     const [, request] = fetchMock.mock.calls[0] as [string, RequestInit];
     expect(JSON.parse(String(request.body))).toMatchObject({ lessonType: "studio-wokalne" });
+  });
+
+  it("shows the health-data warning after selecting rehabilitation in the standalone form", () => {
+    render(<ContactForm enabled standalone />);
+
+    fireEvent.change(screen.getByLabelText("Rodzaj zajęć"), { target: { value: "rehabilitacja-zaburzen-glosu" } });
+
+    const message = screen.getByRole("textbox", { name: "Wiadomość (opcjonalnie)" });
+    const warning = screen.getByText(/nie wpisuj diagnoz, objawów, informacji o leczeniu ani historii zdrowia/i);
+    expect(message).toHaveAttribute("aria-describedby", warning.id);
   });
 
   it("submits an empty optional message", async () => {

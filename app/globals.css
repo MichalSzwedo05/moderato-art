@@ -1011,6 +1011,8 @@ h2 {
 .public-modal-list span { color: var(--gray-light); font-size: .9rem; line-height: 1.45; }
 .public-modal .contact-form { margin-top: 2rem; }
 .public-modal .contact-details { margin-top: 2rem; }
+.offer-modal-copy { display: grid; gap: .9rem; }
+.offer-modal-copy p { margin: 0; }
 
 .contact-section {
   background: var(--contact-background);

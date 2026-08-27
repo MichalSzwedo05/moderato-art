@@ -8,5 +8,6 @@ import { metadata } from "./layout";
 describe("root metadata", () => {
   it("uses the original profile name in the site description", () => {
     expect(metadata.description).toContain("Magdalenę Warzechę-Hiller");
+    expect(metadata.description).toContain("rehabilitacji zaburzeń głosu");
   });
 });

@@ -76,7 +76,7 @@ describe("SubmissionsPage", () => {
         deleteAfter: new Date("2026-09-01T12:00:00.000Z"),
         email: `person-${index}@example.com`,
         id: `submission-${index}`,
-        lessonType: index === 0 ? "junior-voice" : null,
+        lessonType: index === 0 ? "junior-voice" : "rehabilitacja-zaburzen-glosu",
          message: index === 0 ? `Wiadomość ${index}` : "",
         parentName: `Osoba ${index}`,
         phone: index === 0 ? "500 000 000" : null,
@@ -88,6 +88,7 @@ describe("SubmissionsPage", () => {
 
     expect(screen.getByText("Skontaktowano się", { selector: "span.admin-status" })).toBeInTheDocument();
     expect(screen.getByText("Zarchiwizowane", { selector: "span.admin-status" })).toBeInTheDocument();
+    expect(screen.getByText("Rehabilitacja zaburzeń głosu")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "500 000 000" })).toHaveAttribute("href", "tel:500 000 000");
     expect(screen.getAllByText("Planowane usunięcie: 1 wrz 2026, 14:00")).toHaveLength(2);
     expect(screen.getByText("Brak wiadomości — pole pozostawiono puste.")).toBeInTheDocument();

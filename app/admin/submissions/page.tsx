@@ -32,6 +32,7 @@ const statusLabels: Record<Exclude<ContactSubmissionFilter, "ALL">, string> = {
 
 const lessonLabels: Record<string, string> = {
   "junior-voice": "Junior Voice",
+  "rehabilitacja-zaburzen-glosu": "Rehabilitacja zaburzeń głosu",
   rytmika: "Rytmisolki",
   "studio-wokalne": "Studio Wokalne",
 };

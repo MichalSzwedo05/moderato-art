@@ -16,11 +16,11 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: "Moderato Art | Zajęcia muzyczne dla dzieci",
+    default: "Moderato Art | Muzyka, śpiew i praca z głosem",
     template: "%s | Moderato Art",
   },
   description:
-    "Zajęcia muzyczne, nauka śpiewu i rytmika dla dzieci prowadzone przez Magdalenę Warzechę-Hiller.",
+    "Zajęcia muzyczne i nauka śpiewu dla dzieci, młodzieży i dorosłych oraz konsultacje z zakresu rehabilitacji zaburzeń głosu prowadzone przez Magdalenę Warzechę-Hiller.",
   openGraph: {
     locale: "pl_PL",
     type: "website",
