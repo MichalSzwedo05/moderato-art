@@ -45,6 +45,7 @@ describe("PublicModals", () => {
     expect(document.querySelector('input[name="lessonType"]')).toHaveValue(lessonType);
     expect(document.querySelector(".public-modal form")).not.toBeNull();
     expect(screen.queryByLabelText("Rodzaj zajęć")).not.toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Przejdź do strony kontaktu" })).toHaveAttribute("href", "/kontakt");
   });
 
   it("shows only contact details for Rytmisolki", () => {
@@ -54,7 +55,9 @@ describe("PublicModals", () => {
 
     expect(screen.getByRole("heading", { name: "Rytmisolki" })).toBeInTheDocument();
     expect(screen.getByText(/pełne radości i kreatywności grupowe zajęcia/)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Pokaż numer telefonu" }));
     expect(screen.getByRole("link", { name: "+48 605 946 678" })).toHaveAttribute("href", "tel:+48605946678");
+    expect(screen.getByRole("link", { name: "Przejdź do strony kontaktu" })).toHaveAttribute("href", "/kontakt");
     expect(document.querySelector(".public-modal form")).toBeNull();
   });
 

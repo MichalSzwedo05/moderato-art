@@ -96,7 +96,7 @@ function SubmissionCard({ submission }: { submission: ContactSubmissionRow }) {
 export default async function SubmissionsPage({ searchParams }: SubmissionsPageProps) {
   const config = getAdminAuthConfig();
   if (!config) {
-    return <main className="admin-shell"><section className="admin-card"><p>Panel administracyjny jest chwilowo niedostępny.</p></section></main>;
+    return <main className="admin-shell"><section className="admin-card"><p>Panel administracyjny jest chwilowo niedostępny.</p><Link className="admin-secondary-button admin-public-link" href="/">Strona publiczna</Link></section></main>;
   }
   if (!(await getAdminSession())) {
     redirect("/admin");
@@ -113,6 +113,7 @@ export default async function SubmissionsPage({ searchParams }: SubmissionsPageP
           <h1>Zgłoszenia kontaktowe</h1>
         </div>
         <div className="admin-header-actions">
+          <Link className="admin-secondary-button" href="/">Strona publiczna</Link>
           <Link className="admin-secondary-button" href="/admin">Wróć do panelu</Link>
           <form action="/api/admin/submissions/export" method="post">
             <button className="admin-secondary-button" type="submit">Pobierz XML</button>

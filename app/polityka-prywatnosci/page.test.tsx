@@ -11,6 +11,7 @@ describe("PrivacyPolicyPage", () => {
     expect(screen.getByRole("heading", { name: /1\. administrator danych/i })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /6\. retencja/i })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /wróć na stronę główną/i })).toHaveAttribute("href", "/");
+    expect(screen.getByRole("link", { name: "Przejdź do kontaktu" })).toHaveAttribute("href", "/kontakt");
     expect(screen.getByText("[ADMINISTRATOR DANYCH – UZUPEŁNIĆ]")).toBeInTheDocument();
     expect(screen.getByText(/imię i nazwisko osoby kontaktowej/i)).toBeInTheDocument();
     expect(screen.getByText(/opcjonalną treść wiadomości/i)).toBeInTheDocument();

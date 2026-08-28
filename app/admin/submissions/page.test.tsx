@@ -62,6 +62,7 @@ describe("SubmissionsPage", () => {
     expect(screen.getByText("draft-db-only-2026-08-23 · potwierdzono 22 sie 2026, 14:00")).toBeInTheDocument();
     expect(screen.getByText((_, element) => element?.tagName === "P" && element.textContent === "<script>alert(1)</script>\nProszę o kontakt.")).toBeInTheDocument();
     expect(screen.getByText(/Brak ustawionego terminu retencji/)).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Strona publiczna" })).toHaveAttribute("href", "/");
     expect(screen.getByRole("link", { name: "Wróć do panelu" })).toHaveAttribute("href", "/admin");
     expect(screen.getByRole("button", { name: "Pobierz XML" }).closest("form")).toHaveAttribute("action", "/api/admin/submissions/export");
   });
@@ -118,6 +119,7 @@ describe("SubmissionsPage", () => {
     render(await SubmissionsPage({ searchParams: Promise.resolve({}) }));
 
     expect(screen.getByText("Panel administracyjny jest chwilowo niedostępny.")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Strona publiczna" })).toHaveAttribute("href", "/");
     expect(mocks.getContactSubmissions).not.toHaveBeenCalled();
   });
 });

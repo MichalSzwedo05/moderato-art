@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { isAdminCmsEnabled } from "@/lib/admin-auth";
 import { isMagicToken } from "@/lib/admin-security";
 
@@ -32,6 +33,7 @@ export default async function ConfirmAdminLoginPage({
             <button type="submit">Potwierdź logowanie</button>
           </form>
         )}
+        <Link className="admin-secondary-button admin-public-link" href="/">Strona publiczna</Link>
       </section>
     </main>
   );

@@ -13,6 +13,7 @@ export default function PrivacyPolicyPage() {
     <main className="legal-page">
       <div className="site-shell legal-shell">
         <Link className="text-link legal-back-link" href="/">← Wróć na stronę główną</Link>
+        <div className="legal-actions"><Link className="button button-primary" href="/kontakt">Przejdź do kontaktu</Link></div>
         <article className="legal-content">
           <p className="eyebrow">Dokument roboczy</p>
           <h1>Polityka prywatności i zasady przetwarzania danych</h1>

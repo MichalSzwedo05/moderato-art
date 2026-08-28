@@ -47,7 +47,7 @@ export default async function HomePage() {
           </nav>
           <ThemeSwitcher />
           <MobileNavigation hasArticles={hasArticles} />
-          <a className="header-action" href="#oferta">Zapytaj o zajęcia</a>
+          <a className="header-action" href="/kontakt">Zapytaj o zajęcia</a>
         </div>
       </header>
 
@@ -64,7 +64,7 @@ export default async function HomePage() {
                 praca z głosem dla dzieci, młodzieży i dorosłych.
               </p>
               <div className="hero-actions">
-                <a className="button button-primary" href="#oferta">Zapytaj o zajęcia</a>
+                <a className="button button-primary" href="/kontakt">Zapytaj o zajęcia</a>
                 <a className="text-link" href="#oferta">Sprawdź ofertę <span aria-hidden="true">-&gt;</span></a>
               </div>
               <p className="hero-note">Zajęcia grupowe dla przedszkolaków oraz indywidualne lekcje śpiewu</p>
