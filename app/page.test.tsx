@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { readFileSync } from "node:fs";
 import { createElement, type ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -47,7 +47,13 @@ describe("HomePage profile", () => {
     expect(screen.getByText("Magdalena Warzecha-Hiller", { selector: "figcaption" })).toBeInTheDocument();
     expect(screen.getByText(/Magdalena Warzecha-Hiller jest sopranistką/)).toBeInTheDocument();
     expect(screen.queryByText(/Magdalena Kwiatkowska/)).not.toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Kontakt" })).toHaveAttribute("href", "/kontakt");
+    expect(screen.getAllByRole("link", { name: "Zapytaj o zajęcia" })).toHaveLength(2);
+    expect(screen.getAllByRole("link", { name: "Zapytaj o zajęcia" }).every((link) => link.getAttribute("href") === "/kontakt")).toBe(true);
+    expect(screen.queryByRole("link", { name: "+48 605 946 678" })).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Pokaż numer telefonu" }));
     expect(screen.getByRole("link", { name: "+48 605 946 678" })).toHaveAttribute("href", "tel:+48605946678");
+    expect(screen.getByRole("link", { name: "Przejdź do strony kontaktu" })).toHaveAttribute("href", "/kontakt");
     expect(screen.getByRole("heading", { name: "Rehabilitacja zaburzeń głosu" })).toBeInTheDocument();
     expect(screen.getByText(/created by:/)).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Michał Szwedo" })).toHaveAttribute("href", "https://www.linkedin.com/in/micha%C5%82-szwedo-664337403");

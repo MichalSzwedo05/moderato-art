@@ -41,6 +41,14 @@ describe("AdminPage", () => {
     }]);
   });
 
+  it("keeps a public-site link when the CMS is disabled", async () => {
+    mocks.getAdminAuthConfig.mockReturnValue(undefined);
+
+    render(await AdminPage({ searchParams: Promise.resolve({}) }));
+
+    expect(screen.getByRole("link", { name: "Strona publiczna" })).toHaveAttribute("href", "/");
+  });
+
   it("keeps article management available when the gallery query fails", async () => {
     mocks.getAdminGalleryPhotos.mockResolvedValue(undefined);
 
@@ -51,6 +59,7 @@ describe("AdminPage", () => {
     expect(screen.getByText("Edytor artykułu")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Usuń artykuł" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Pobierz instrukcję" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Strona publiczna" })).toHaveAttribute("href", "/");
     expect(screen.queryByText("Zarządzanie galerią")).not.toBeInTheDocument();
   });
 
@@ -70,6 +79,7 @@ describe("AdminPage", () => {
     render(await AdminPage({ searchParams: Promise.resolve({}) }));
 
     expect(screen.getByText("Panel administracyjny jest chwilowo niedostępny.")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Strona publiczna" })).toHaveAttribute("href", "/");
     expect(screen.queryByText("Edytor artykułu")).not.toBeInTheDocument();
   });
 });

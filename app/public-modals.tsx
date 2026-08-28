@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useId, useRef, useState, type ComponentPropsWithoutRef, type MouseEvent, type PointerEvent as ReactPointerEvent, type SyntheticEvent } from "react";
 import { offers, type OfferId } from "../lib/offers";
 import { ContactDetails } from "./contact-details";
@@ -108,7 +109,7 @@ export function PublicModals({ contactFormEnabled = false }: PublicModalsProps) 
     <button aria-label="Zamknij okno" className="public-modal-close" onClick={() => dialogRef.current?.close()} ref={closeButtonRef} type="button">×</button>
     {offer && <>
       <section><p className="eyebrow">{offer.subtitle}</p><h2 id={titleId}>{offer.title}</h2><p className="offer-audience">{offer.audience}</p><div className="offer-modal-copy">{offer.modalParagraphs.map((paragraph, index) => <p key={`${offer.id}-${index}`}>{paragraph}</p>)}</div></section>
-      {offer.contactMode === "form" ? <ContactForm enabled={contactFormEnabled} key={offer.id} lessonTitle={offer.title} lessonType={offer.lessonType} /> : <ContactDetails />}
+      {offer.contactMode === "form" ? <><ContactForm enabled={contactFormEnabled} key={offer.id} lessonTitle={offer.title} lessonType={offer.lessonType} /><Link className="button button-primary public-modal-contact-link" href="/kontakt">Przejdź do strony kontaktu</Link></> : <ContactDetails />}
     </>}
   </dialog>;
 }

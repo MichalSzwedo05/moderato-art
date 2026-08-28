@@ -29,7 +29,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
         </header>
         {article.imageUrl ? <figure className="article-cover"><Image alt="" height={720} src={article.imageUrl} unoptimized width={1280} /></figure> : null}
         <div className="article-markdown article-body"><ReactMarkdown skipHtml>{article.content}</ReactMarkdown></div>
-        <footer className="article-footer"><Link className="text-link" href="/#kontakt">Porozmawiajmy o zajęciach →</Link></footer>
+        <footer className="article-footer"><Link className="button button-primary" href="/kontakt">Porozmawiajmy o zajęciach →</Link></footer>
       </article>
     </main>
   );

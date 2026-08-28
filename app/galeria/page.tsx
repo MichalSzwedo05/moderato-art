@@ -9,5 +9,5 @@ export const metadata: Metadata = { description: "Galeria przestrzeni muzycznej 
 
 export default async function GalleryPage() {
   const galleryPhotos = await getGalleryPhotos();
-  return <main className="gallery-page site-shell"><Link className="text-link" href="/#galeria">Wróć do strony głównej</Link><p className="eyebrow">Galeria</p><h1>Przestrzeń, w której muzyka się dzieje.</h1>{galleryPhotos.length > 0 ? <GalleryViewer photos={galleryPhotos} /> : <p className="gallery-empty">Galeria jest obecnie pusta.</p>}</main>;
+  return <main className="gallery-page site-shell"><div className="page-actions"><Link className="text-link" href="/#galeria">Wróć do strony głównej</Link><Link className="button button-primary" href="/kontakt">Przejdź do kontaktu</Link></div><p className="eyebrow">Galeria</p><h1>Przestrzeń, w której muzyka się dzieje.</h1>{galleryPhotos.length > 0 ? <GalleryViewer photos={galleryPhotos} /> : <p className="gallery-empty">Galeria jest obecnie pusta.</p>}</main>;
 }

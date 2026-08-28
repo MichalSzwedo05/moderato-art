@@ -36,6 +36,7 @@ function LoginForm({ mode, notice }: { mode: "magic_link" | "password"; notice?:
           {mode === "password" ? <><label htmlFor="admin-username">Nazwa użytkownika</label><input autoComplete="username" id="admin-username" maxLength={100} name="username" required /><label htmlFor="admin-password">Hasło</label><input autoComplete="current-password" id="admin-password" maxLength={1024} name="password" required type="password" /></> : <><label htmlFor="admin-email">Adres e-mail</label><input autoComplete="email" id="admin-email" name="email" required type="email" /></>}
           <button type="submit">{mode === "password" ? "Zaloguj" : "Wyślij link"}</button>
         </form>
+        <Link className="admin-secondary-button admin-public-link" href="/">Strona publiczna</Link>
       </section>
     </main>
   );
@@ -69,7 +70,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
   if (!config) {
     return (
       <main className="admin-shell">
-        <section className="admin-card"><p>Panel administracyjny jest chwilowo niedostępny.</p></section>
+        <section className="admin-card"><p>Panel administracyjny jest chwilowo niedostępny.</p><Link className="admin-secondary-button admin-public-link" href="/">Strona publiczna</Link></section>
       </main>
     );
   }
@@ -84,7 +85,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
   if (!articles) {
     return (
       <main className="admin-shell">
-        <section className="admin-card"><p>Panel administracyjny jest chwilowo niedostępny.</p></section>
+        <section className="admin-card"><p>Panel administracyjny jest chwilowo niedostępny.</p><Link className="admin-secondary-button admin-public-link" href="/">Strona publiczna</Link></section>
       </main>
     );
   }
@@ -100,6 +101,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
           <div className="admin-header-actions">
             <DownloadUserGuideButton />
             <Link className="admin-secondary-button" href="/admin/submissions">Zgłoszenia kontaktowe</Link>
+            <Link className="admin-secondary-button" href="/">Strona publiczna</Link>
             <form action="/admin/auth/logout" method="post">
               <button className="admin-secondary-button" type="submit">Wyloguj</button>
             </form>

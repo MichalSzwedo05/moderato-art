@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("next/server", () => ({ connection: vi.fn().mockResolvedValue(undefined) }));
@@ -19,6 +19,12 @@ describe("ContactPage", () => {
     expect(screen.getByRole("group")).not.toBeDisabled();
     expect(screen.getByLabelText("Rodzaj zajęć")).toBeRequired();
     expect(screen.getByRole("link", { name: /wróć na stronę główną/i })).toHaveAttribute("href", "/");
+    expect(screen.getByText("Magdalena Warzecha-Hiller", { selector: "dd" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "moderato.art@wp.pl" })).toHaveAttribute("href", "mailto:moderato.art@wp.pl");
+    expect(screen.getByText("6621786684", { selector: "dd" })).toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "+48 605 946 678" })).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Pokaż numer telefonu" }));
+    expect(screen.getByRole("link", { name: "+48 605 946 678" })).toHaveAttribute("href", "tel:+48605946678");
   });
 
   it("keeps the form disabled when production configuration is incomplete", async () => {
