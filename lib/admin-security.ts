@@ -15,9 +15,12 @@ export type AdminAuthConfig = {
   resendKey: string;
 } | {
   mode: "password";
-  passwordHash: string;
   username: string;
+  passwordHash: string;
+  extraUsers: Array<{ username: string; passwordHash: string }>;
 });
+
+export type AdminPasswordUser = { username: string; passwordHash: string };
 
 type AdminAuthEnvironment = {
   ADMIN_AUTH_MODE?: string;
@@ -26,6 +29,7 @@ type AdminAuthEnvironment = {
   ADMIN_AUTH_URL?: string;
   ADMIN_CMS_ENABLED?: string;
   ADMIN_EMAIL?: string;
+  ADMIN_EXTRA_USERS?: string;
   ADMIN_PASSWORD_HASH?: string;
   ADMIN_RATE_LIMIT_SECRET?: string;
   ADMIN_USERNAME?: string;
@@ -41,7 +45,7 @@ function isValidEmail(value: string) {
 }
 
 function isValidUsername(value: string) {
-  return /^[a-zA-Z0-9._-]{1,100}$/.test(value);
+  return /^[a-zA-Z0-9._@-]{1,100}$/.test(value);
 }
 
 function isCanonicalBase64(value: string, minimumLength: number) {
@@ -73,6 +77,24 @@ export function isAdminCmsEnabled(environment: AdminAuthEnvironment = process.en
   return environment.ADMIN_CMS_ENABLED === "true";
 }
 
+function parseExtraUsers(value: string | undefined): Array<AdminPasswordUser> | undefined {
+  if (!value || !hasUsableValue(value)) return [];
+  const users: Array<AdminPasswordUser> = [];
+  for (const line of value.split("\n")) {
+    const entry = line.trim();
+    if (!entry) continue;
+    const separator = entry.indexOf(":");
+    if (separator <= 0) return undefined;
+    const entryUsername = entry.slice(0, separator);
+    const entryHash = entry.slice(separator + 1);
+    if (!isValidUsername(entryUsername) || !isValidPasswordHash(entryHash) || entryHash.length > 1024) return undefined;
+    users.push({ username: entryUsername, passwordHash: entryHash });
+  }
+  if (users.some((user, index) => users.findIndex((other) => other.username === user.username) !== index)) return undefined;
+  return users;
+}
+
+
 export function getAdminAuthConfig(
   environment: AdminAuthEnvironment = process.env,
 ): AdminAuthConfig | undefined {
@@ -84,6 +106,7 @@ export function getAdminAuthConfig(
     ADMIN_AUTH_RESEND_KEY: resendKey,
     ADMIN_AUTH_URL: authUrl,
     ADMIN_EMAIL: adminEmail,
+    ADMIN_EXTRA_USERS: extraUsersValue,
     ADMIN_PASSWORD_HASH: passwordHash,
     ADMIN_RATE_LIMIT_SECRET: rateLimitSecret,
     ADMIN_USERNAME: username,
@@ -104,6 +127,10 @@ export function getAdminAuthConfig(
     || !isValidUsername(username) || !isValidPasswordHash(passwordHash)
     || passwordHash.length > 1024 || hasMagicLinkCredentials)) return undefined;
 
+  const extraUsers = mode === "password" ? parseExtraUsers(extraUsersValue) : undefined;
+  if (mode === "password" && (extraUsers === undefined
+    || extraUsers.some((user) => user.username === username))) return undefined;
+
   try {
     const parsedUrl = new URL(authUrl);
     const isLocalDevelopmentOrigin = environment.NODE_ENV === "development"
@@ -122,7 +149,7 @@ export function getAdminAuthConfig(
       authUrl: parsedUrl.origin,
       rateLimitSecret,
     };
-    if (mode === "password") return { ...base, mode, passwordHash: passwordHash!, username: username! };
+    if (mode === "password") return { ...base, extraUsers: extraUsers!, mode, passwordHash: passwordHash!, username: username! };
     return { ...base, adminEmail: adminEmail!, mode, resendFrom: resendFrom!, resendKey: resendKey! };
   } catch {
     return undefined;
@@ -137,8 +164,19 @@ export function hashToken(token: string) {
   return createHash("sha256").update(token).digest("hex");
 }
 
+export function getPasswordUsers(config: AdminAuthConfig) {
+  if (config.mode !== "password") return [];
+  return [{ username: config.username, passwordHash: config.passwordHash }, ...config.extraUsers];
+}
+
+export function getPasswordUser(config: AdminAuthConfig, username: string): AdminPasswordUser | undefined {
+  return getPasswordUsers(config).find((user) => user.username === username);
+}
+
 export function getAdminSessionVersion(config: AdminAuthConfig) {
-  return hashToken(config.mode === "password" ? config.passwordHash : "magic-link-v1");
+  if (config.mode !== "password") return hashToken("magic-link-v1");
+  const hashes = getPasswordUsers(config).map((user) => user.passwordHash).sort();
+  return hashToken(hashes.join("\n"));
 }
 
 export function createRateLimitIdentifier(clientAddress: string, secret: string) {

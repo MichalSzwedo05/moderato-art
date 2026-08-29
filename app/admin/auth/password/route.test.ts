@@ -3,8 +3,9 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const mocks = vi.hoisted(() => ({
   createAdminSession: vi.fn(),
   getAdminAuthConfig: vi.fn(),
-  getEffectivePasswordHash: vi.fn(),
+  getPasswordUser: vi.fn(),
   getTrustedClientAddress: vi.fn(),
+  getUserPasswordHash: vi.fn(),
   isSameAdminOrigin: vi.fn(),
   takePasswordLoginRateLimit: vi.fn(),
   verifyAdminPassword: vi.fn(),
@@ -15,18 +16,19 @@ vi.mock("@/lib/admin-auth", () => ({
   adminSessionCookieName: "__Host-moderato-admin-session",
   createAdminSession: mocks.createAdminSession,
   getAdminAuthConfig: mocks.getAdminAuthConfig,
-  getEffectivePasswordHash: mocks.getEffectivePasswordHash,
   getTrustedClientAddress: mocks.getTrustedClientAddress,
+  getUserPasswordHash: mocks.getUserPasswordHash,
   takePasswordLoginRateLimit: mocks.takePasswordLoginRateLimit,
 }));
 vi.mock("@/lib/admin-password", () => ({ verifyAdminPassword: mocks.verifyAdminPassword }));
-vi.mock("@/lib/admin-security", () => ({ isSameAdminOrigin: mocks.isSameAdminOrigin }));
+vi.mock("@/lib/admin-security", () => ({ getPasswordUser: mocks.getPasswordUser, isSameAdminOrigin: mocks.isSameAdminOrigin }));
 
 import { POST } from "./route";
 
 const config = {
   authOrigin: "https://moderato-art.vercel.app",
   authUrl: "https://moderato-art.vercel.app",
+  extraUsers: [],
   mode: "password" as const,
   passwordHash: "$argon2id$test",
   rateLimitSecret: "a-very-long-secret-that-is-at-least-thirty-two-characters",
@@ -45,8 +47,9 @@ describe("POST /admin/auth/password", () => {
   beforeEach(() => {
     vi.resetAllMocks();
     mocks.getAdminAuthConfig.mockReturnValue(config);
-    mocks.getEffectivePasswordHash.mockResolvedValue(config.passwordHash);
+    mocks.getPasswordUser.mockImplementation(() => ({ passwordHash: config.passwordHash, username: config.username }));
     mocks.getTrustedClientAddress.mockReturnValue("203.0.113.10");
+    mocks.getUserPasswordHash.mockResolvedValue(config.passwordHash);
     mocks.isSameAdminOrigin.mockReturnValue(true);
     mocks.takePasswordLoginRateLimit.mockResolvedValue(true);
     mocks.verifyAdminPassword.mockResolvedValue(false);
@@ -61,7 +64,7 @@ describe("POST /admin/auth/password", () => {
     expect(response.status).toBe(303);
     expect(response.headers.get("location")).toBe("https://moderato-art.vercel.app/admin");
     expect(response.headers.get("set-cookie")).toContain("__Host-moderato-admin-session=session-token");
-    expect(mocks.createAdminSession).toHaveBeenCalledWith(config);
+    expect(mocks.createAdminSession).toHaveBeenCalledWith(config, "admin");
   });
 
   it("returns the same generic redirect for invalid credentials and rejected origins", async () => {

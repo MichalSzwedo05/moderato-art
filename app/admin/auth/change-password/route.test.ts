@@ -3,7 +3,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const mocks = vi.hoisted(() => ({
   getAdminAuthConfig: vi.fn(),
   getAdminSession: vi.fn(),
-  getEffectivePasswordHash: vi.fn(),
+  getPasswordUser: vi.fn(),
+  getUserPasswordHash: vi.fn(),
   isSameAdminOrigin: vi.fn(),
   resolveAdminSessionVersion: vi.fn(),
   hashAdminPassword: vi.fn(),
@@ -16,7 +17,7 @@ const mocks = vi.hoisted(() => ({
 vi.mock("@/lib/admin-auth", () => ({
   getAdminAuthConfig: mocks.getAdminAuthConfig,
   getAdminSession: mocks.getAdminSession,
-  getEffectivePasswordHash: mocks.getEffectivePasswordHash,
+  getUserPasswordHash: mocks.getUserPasswordHash,
   resolveAdminSessionVersion: mocks.resolveAdminSessionVersion,
 }));
 vi.mock("@/lib/admin-password", () => ({
@@ -24,7 +25,7 @@ vi.mock("@/lib/admin-password", () => ({
   minimumAdminPasswordLength: 12,
   verifyAdminPassword: mocks.verifyAdminPassword,
 }));
-vi.mock("@/lib/admin-security", () => ({ isSameAdminOrigin: mocks.isSameAdminOrigin }));
+vi.mock("@/lib/admin-security", () => ({ getPasswordUser: mocks.getPasswordUser, isSameAdminOrigin: mocks.isSameAdminOrigin }));
 vi.mock("@/lib/prisma", () => ({
   getPrisma: mocks.getPrisma,
 }));
@@ -34,6 +35,7 @@ import { POST } from "./route";
 const config = {
   authOrigin: "https://moderato-art.vercel.app",
   authUrl: "https://moderato-art.vercel.app",
+  extraUsers: [],
   mode: "password" as const,
   passwordHash: "$argon2id$env-hash",
   rateLimitSecret: "a-very-long-secret-that-is-at-least-thirty-two-characters",
@@ -41,6 +43,7 @@ const config = {
 };
 
 const session = {
+  adminUsername: "admin",
   authMode: "password",
   credentialVersion: "old-version",
   expiresAt: new Date(Date.now() + 60_000),
@@ -62,7 +65,8 @@ describe("POST /admin/auth/change-password", () => {
     vi.resetAllMocks();
     mocks.getAdminAuthConfig.mockReturnValue(config);
     mocks.getAdminSession.mockResolvedValue(session);
-    mocks.getEffectivePasswordHash.mockResolvedValue(config.passwordHash);
+    mocks.getPasswordUser.mockImplementation((_config, username) => ({ passwordHash: config.passwordHash, username }));
+    mocks.getUserPasswordHash.mockResolvedValue(config.passwordHash);
     mocks.isSameAdminOrigin.mockReturnValue(true);
     mocks.resolveAdminSessionVersion.mockResolvedValue("new-version");
     mocks.hashAdminPassword.mockResolvedValue("$argon2id$new-hash");

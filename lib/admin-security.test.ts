@@ -58,6 +58,9 @@ describe("admin security configuration", () => {
     expect(getAdminAuthConfig({ ...passwordEnvironment, ADMIN_PASSWORD_HASH: "$argon2id$v=19$m=999999,t=3,p=1$abcdefghijklmnop$abcdefghijklmnopqrstuv" })).toBeUndefined();
     expect(getAdminAuthConfig({ ...passwordEnvironment, ADMIN_PASSWORD_HASH: "$argon2id$v=19$m=65536,t=3,p=1$AAAAAAAAAAA$AAAAAA" })).toBeUndefined();
     expect(getAdminAuthConfig({ ...passwordEnvironment, ADMIN_PASSWORD_HASH: "$argon2id$v=19$m=65536,t=3,p=1$A$A" })).toBeUndefined();
+    const emailConfig = getAdminAuthConfig({ ...passwordEnvironment, ADMIN_USERNAME: "moderato.artis@gmail.com" });
+    expect(emailConfig?.mode === "password" ? emailConfig.username : undefined).toBe("moderato.artis@gmail.com");
+    expect(getAdminAuthConfig({ ...passwordEnvironment, ADMIN_USERNAME: "has space" })).toBeUndefined();
   });
 
   it("creates 32-byte URL-safe secrets and one-way identifiers", () => {

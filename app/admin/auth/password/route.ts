@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { createAdminSession, adminSessionCookie, getAdminAuthConfig, getEffectivePasswordHash, getTrustedClientAddress, takePasswordLoginRateLimit } from "@/lib/admin-auth";
+import { createAdminSession, adminSessionCookie, getAdminAuthConfig, getUserPasswordHash, getTrustedClientAddress, takePasswordLoginRateLimit } from "@/lib/admin-auth";
 import { verifyAdminPassword } from "@/lib/admin-password";
-import { isSameAdminOrigin } from "@/lib/admin-security";
+import { getPasswordUser, isSameAdminOrigin } from "@/lib/admin-security";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -39,9 +39,10 @@ export async function POST(request: Request) {
     const parsed = credentialsSchema.safeParse(Object.fromEntries(await request.formData()));
     const username = parsed.success ? parsed.data.username : "";
     const password = parsed.success ? parsed.data.password : "";
-    if (!(await verifyAdminPassword(config.username, (await getEffectivePasswordHash(config)) ?? config.passwordHash, username, password))) return failure(config);
+    const user = getPasswordUser(config, username);
+    if (!user || !(await verifyAdminPassword(user.username, await getUserPasswordHash(config, user), username, password))) return failure(config);
 
-    const sessionToken = await createAdminSession(config);
+    const sessionToken = await createAdminSession(config, username);
     const { value, ...cookieOptions } = adminSessionCookie(sessionToken);
     const response = NextResponse.redirect(new URL("/admin", config.authUrl), 303);
     response.headers.set("Cache-Control", "no-store");

@@ -135,6 +135,7 @@ model AdminMagicLink {
 
 model AdminSession {
   id          String   @id @default(cuid())
+  adminUsername String? @db.VarChar(100)
   authMode    String   @default("magic_link") @db.VarChar(20)
   credentialVersion String @default("b31f6b9a4489f6b772bcc4ce53579d138bb0c2ad97bfb35074501b989ba150b9") @db.Char(64)
   sessionHash String   @unique @db.Char(64)
