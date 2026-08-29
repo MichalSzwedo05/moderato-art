@@ -30,6 +30,7 @@ describe("MobileNavigation", () => {
     expect(button).toHaveAttribute("aria-expanded", "true");
     expect(navigation).not.toHaveAttribute("hidden");
     expect(within(navigation).getByRole("link", { name: "Kontakt" })).toHaveAttribute("href", "/kontakt");
+    expect(within(navigation).getByRole("link", { name: "Zapisz się" })).toHaveAttribute("href", "/zgloszenie");
 
     fireEvent.keyDown(window, { key: "Escape" });
 

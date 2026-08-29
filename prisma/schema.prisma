@@ -33,12 +33,19 @@ enum GalleryPhotoVariant {
 
 model ContactSubmission {
   id                       String                  @id @default(cuid())
-  parentName               String                  @db.VarChar(120)
+  parentName               String?                 @db.VarChar(120)
+  childName                String?                 @db.VarChar(120)
+  birthDate                String?                 @db.VarChar(20)
+  preschool                String?                 @db.VarChar(200)
+  group                    String?                 @db.VarChar(100)
+  address                  String?                 @db.VarChar(300)
   email                    String                  @db.VarChar(254)
   phone                    String?                 @db.VarChar(40)
   lessonType               String?                 @db.VarChar(80)
   childAgeRange            String?                 @db.VarChar(40)
   message                  String                  @db.Text
+  paymentAccepted          Boolean                 @default(false)
+  imageConsent             String?                 @db.VarChar(30)
   privacyNoticeVersion     String?                 @db.VarChar(40)
   privacyNoticeAcknowledgedAt DateTime?
   status                   ContactSubmissionStatus @default(NEW)

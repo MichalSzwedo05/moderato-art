@@ -48,8 +48,8 @@ describe("HomePage profile", () => {
     expect(screen.getByText(/Magdalena Warzecha-Hiller jest sopranistką/)).toBeInTheDocument();
     expect(screen.queryByText(/Magdalena Kwiatkowska/)).not.toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Kontakt" })).toHaveAttribute("href", "/kontakt");
-    expect(screen.getAllByRole("link", { name: "Zapytaj o zajęcia" })).toHaveLength(2);
-    expect(screen.getAllByRole("link", { name: "Zapytaj o zajęcia" }).every((link) => link.getAttribute("href") === "/kontakt")).toBe(true);
+    expect(screen.getByRole("link", { name: "Zapisz się" })).toHaveAttribute("href", "/zgloszenie");
+    expect(screen.queryByRole("link", { name: "Zapytaj o zajęcia" })).not.toBeInTheDocument();
     expect(screen.queryByRole("link", { name: "+48 605 946 678" })).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Pokaż numer telefonu" }));
     expect(screen.getByRole("link", { name: "+48 605 946 678" })).toHaveAttribute("href", "tel:+48605946678");

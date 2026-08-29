@@ -67,7 +67,7 @@ function pageHref(status: ContactSubmissionFilter, page: number) {
 function SubmissionCard({ submission }: { submission: ContactSubmissionRow }) {
   return <details className="admin-submission-card">
     <summary className="admin-submission-summary">
-      <span className="admin-submission-summary-name">{submission.parentName}</span>
+       <span className="admin-submission-summary-name">{submission.childName || submission.parentName || "Bez podanego imienia"}</span>
     </summary>
     <div className="admin-submission-expanded">
       <header className="admin-submission-card-header">
@@ -88,7 +88,7 @@ function SubmissionCard({ submission }: { submission: ContactSubmissionRow }) {
       <p className={submission.deleteAfter ? "admin-submission-retention" : "admin-submission-retention admin-submission-retention-warning"}>
         {submission.deleteAfter ? `Planowane usunięcie: ${formatDate(submission.deleteAfter)}` : "Brak ustawionego terminu retencji — wymaga decyzji administratora."}
       </p>
-      <DeleteSubmissionButton id={submission.id} parentName={submission.parentName} />
+       <DeleteSubmissionButton id={submission.id} parentName={submission.childName || submission.parentName || "Bez podanego imienia"} />
     </div>
   </details>;
 }

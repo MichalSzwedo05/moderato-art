@@ -35,21 +35,19 @@ describe("PublicModals", () => {
     ["junior-voice", "Junior Voice", "junior-voice"],
     ["studio-wokalne", "Studio Wokalne", "studio-wokalne"],
     ["rehabilitacja-zaburzen-glosu", "Rehabilitacja zaburzeń głosu", "rehabilitacja-zaburzen-glosu"],
-  ] as const)("shows a form for %s with the offer fixed", (offerId, title, lessonType) => {
-    render(<><OfferModalLink offerId={offerId}>Otwórz {title}</OfferModalLink><PublicModals contactFormEnabled /></>);
+  ] as const)("redirects %s to the enrollment page with the chosen lesson type", (offerId, title, lessonType) => {
+    render(<><OfferModalLink offerId={offerId}>Otwórz {title}</OfferModalLink><PublicModals /></>);
 
     fireEvent.click(screen.getByRole("link", { name: `Otwórz ${title}` }));
 
-    expect(screen.getByText("Wybrane zajęcia")).toBeInTheDocument();
-    expect(screen.getByText(title, { selector: "strong" })).toBeInTheDocument();
-    expect(document.querySelector('input[name="lessonType"]')).toHaveValue(lessonType);
-    expect(document.querySelector(".public-modal form")).not.toBeNull();
-    expect(screen.queryByLabelText("Rodzaj zajęć")).not.toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Przejdź do strony kontaktu" })).toHaveAttribute("href", "/kontakt");
+    expect(screen.getByRole("heading", { name: title })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /przejdź do formularza zgłoszeniowego/i })).toHaveAttribute("href", `/zgloszenie?zajecia=${lessonType}`);
+    expect(document.querySelector(".public-modal form")).toBeNull();
+    expect(screen.queryByText("Wybrane zajęcia")).not.toBeInTheDocument();
   });
 
   it("shows only contact details for Rytmisolki", () => {
-    render(<><OfferModalLink offerId="rytmisolki">Otwórz Rytmisolki</OfferModalLink><PublicModals contactFormEnabled /></>);
+    render(<><OfferModalLink offerId="rytmisolki">Otwórz Rytmisolki</OfferModalLink><PublicModals /></>);
 
     fireEvent.click(screen.getByRole("link", { name: "Otwórz Rytmisolki" }));
 
@@ -66,7 +64,7 @@ describe("PublicModals", () => {
     ["studio-wokalne", "Studio Wokalne", /profesjonalizm łączy się z życzliwą atmosferą/],
     ["rehabilitacja-zaburzen-glosu", "Rehabilitacja zaburzeń głosu", /SOVT, w tym Lax Vox.*Technika Alexandra/],
   ] as const)("shows the expanded copy for %s", (offerId, title, paragraph) => {
-    render(<><OfferModalLink offerId={offerId}>Otwórz {title}</OfferModalLink><PublicModals contactFormEnabled /></>);
+    render(<><OfferModalLink offerId={offerId}>Otwórz {title}</OfferModalLink><PublicModals /></>);
 
     fireEvent.click(screen.getByRole("link", { name: `Otwórz ${title}` }));
 

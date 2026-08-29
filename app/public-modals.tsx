@@ -1,10 +1,9 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useId, useRef, useState, type ComponentPropsWithoutRef, type MouseEvent, type PointerEvent as ReactPointerEvent, type SyntheticEvent } from "react";
-import { offers, type OfferId } from "../lib/offers";
+import Link from "next/link";
 import { ContactDetails } from "./contact-details";
-import { ContactForm } from "./contact-form";
+import { offers, type OfferId } from "../lib/offers";
 
 function isOfferId(value: string | null): value is OfferId {
   return offers.some((offer) => offer.id === value);
@@ -29,11 +28,7 @@ export function OfferModalLink({ children, href = "#oferta", offerId, ...props }
   return <a aria-controls="offer-modal" aria-haspopup="dialog" href={href} onClick={openModal} {...props}>{children}</a>;
 }
 
-type PublicModalsProps = {
-  contactFormEnabled?: boolean;
-};
-
-export function PublicModals({ contactFormEnabled = false }: PublicModalsProps) {
+export function PublicModals() {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const openerRef = useRef<HTMLElement | null>(null);
@@ -109,7 +104,7 @@ export function PublicModals({ contactFormEnabled = false }: PublicModalsProps) 
     <button aria-label="Zamknij okno" className="public-modal-close" onClick={() => dialogRef.current?.close()} ref={closeButtonRef} type="button">×</button>
     {offer && <>
       <section><p className="eyebrow">{offer.subtitle}</p><h2 id={titleId}>{offer.title}</h2><p className="offer-audience">{offer.audience}</p><div className="offer-modal-copy">{offer.modalParagraphs.map((paragraph, index) => <p key={`${offer.id}-${index}`}>{paragraph}</p>)}</div></section>
-      {offer.contactMode === "form" ? <><ContactForm enabled={contactFormEnabled} key={offer.id} lessonTitle={offer.title} lessonType={offer.lessonType} /><Link className="button button-primary public-modal-contact-link" href="/kontakt">Przejdź do strony kontaktu</Link></> : <ContactDetails />}
+      {offer.contactMode === "form" ? <div className="offer-modal-enrollment"><Link className="offer-modal-enrollment-link" href={`/zgloszenie?zajecia=${offer.lessonType}`}>Przejdź do formularza zgłoszeniowego →</Link></div> : <ContactDetails />}
     </>}
   </dialog>;
 }
