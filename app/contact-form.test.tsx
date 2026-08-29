@@ -20,6 +20,7 @@ function fillRequiredFields() {
   fireEvent.change(screen.getByLabelText(/przedszkole/i), { target: { value: "Przedszkole Moderato" } });
   fireEvent.change(screen.getByLabelText(/grupa/i), { target: { value: "Motylki" } });
   fireEvent.change(screen.getByLabelText(/adres e-mail/i), { target: { value: "anna@example.com" } });
+  fireEvent.change(screen.getByLabelText(/numer telefonu/i), { target: { value: "500 000 000" } });
   fireEvent.click(screen.getByLabelText(/akceptuję warunki/i));
   fireEvent.click(screen.getByLabelText("Nie wyrażam zgody"));
   fireEvent.click(screen.getByLabelText(/polityką prywatności/i));
@@ -39,6 +40,8 @@ describe("ContactForm", () => {
     expect(screen.getAllByRole("group")[0]).not.toBeDisabled();
     expect(screen.getByLabelText(/polityką prywatności/i)).toBeRequired();
     expect(screen.getByText("Imię i nazwisko dziecka")).toBeInTheDocument();
+    expect(screen.getByLabelText(/imię i nazwisko dziecka/i)).toBeRequired();
+    expect(screen.getByLabelText(/numer telefonu/i)).toBeRequired();
     expect(screen.getByText("Data urodzenia dziecka")).toBeInTheDocument();
     expect(screen.getByText("Przedszkole, do którego uczęszcza dziecko")).toBeInTheDocument();
     expect(screen.getByText("Grupa")).toBeInTheDocument();
@@ -106,12 +109,14 @@ describe("ContactForm", () => {
     });
   });
 
-  it("submits without an optional child name", async () => {
+  it("submits without the optional address fields", async () => {
     render(<ContactForm enabled lessonTitle="Junior Voice" lessonType="junior-voice" />);
+    fireEvent.change(screen.getByLabelText(/imię i nazwisko dziecka/i), { target: { value: "Anna Kowalska" } });
     fireEvent.change(screen.getByLabelText(/data urodzenia/i), { target: { value: "2020-05-12" } });
     fireEvent.change(screen.getByLabelText(/przedszkole/i), { target: { value: "Przedszkole Moderato" } });
     fireEvent.change(screen.getByLabelText(/grupa/i), { target: { value: "Motylki" } });
     fireEvent.change(screen.getByLabelText(/adres e-mail/i), { target: { value: "anna@example.com" } });
+    fireEvent.change(screen.getByLabelText(/numer telefonu/i), { target: { value: "500 000 000" } });
     fireEvent.click(screen.getByLabelText(/akceptuję warunki/i));
     fireEvent.click(screen.getByLabelText("Wyrażam zgodę"));
     fireEvent.click(screen.getByLabelText(/polityką prywatności/i));
@@ -120,8 +125,10 @@ describe("ContactForm", () => {
     await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
     const [, request] = fetchMock.mock.calls[0] as [string, RequestInit];
     const parsed = JSON.parse(String(request.body));
-    expect(parsed.childName).toBeUndefined();
-    expect(parsed).toMatchObject({ imageConsent: "Wyrażam zgodę" });
+    expect(parsed.addressStreet).toBeUndefined();
+    expect(parsed.postalCode).toBeUndefined();
+    expect(parsed.city).toBeUndefined();
+    expect(parsed).toMatchObject({ imageConsent: "Wyrażam zgodę", phone: "500 000 000" });
   });
 
   it("shows a green success popup after a successful submission", async () => {

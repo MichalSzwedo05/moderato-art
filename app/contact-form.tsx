@@ -108,8 +108,8 @@ export function ContactForm(props: ContactFormProps) {
           </>
         )}
         <label>
-          Imię i nazwisko dziecka
-          <input autoComplete="name" name="childName" placeholder="Np. Anna Kowalska" type="text" />
+          <span>Imię i nazwisko dziecka<RequiredMark /></span>
+          <input autoComplete="name" name="childName" placeholder="Np. Anna Kowalska" required type="text" />
         </label>
         <label>
           <span>Data urodzenia dziecka<RequiredMark /></span>
@@ -123,8 +123,16 @@ export function ContactForm(props: ContactFormProps) {
           <span>Grupa<RequiredMark /></span>
           <input name="group" required type="text" />
         </label>
+        <label>
+          <span>Adres e-mail<RequiredMark /></span>
+          <input autoComplete="email" name="email" placeholder="twoj@email.pl" required type="email" />
+        </label>
+        <label>
+          <span>Numer telefonu<RequiredMark /></span>
+          <input autoComplete="tel" name="phone" placeholder="Np. 500 000 000" required type="tel" />
+        </label>
         <fieldset>
-          <legend>Dane kontaktowe (adres) — opcjonalnie</legend>
+          <legend>Dane kontaktowe</legend>
           <label>
             Ulica i numer
             <input autoComplete="street-address" name="addressStreet" placeholder="Np. Krokusowa 25" type="text" />
@@ -140,14 +148,6 @@ export function ContactForm(props: ContactFormProps) {
             </label>
           </div>
         </fieldset>
-        <label>
-          <span>Adres e-mail<RequiredMark /></span>
-          <input autoComplete="email" name="email" placeholder="twoj@email.pl" required type="email" />
-        </label>
-        <label>
-          Numer telefonu
-          <input autoComplete="tel" name="phone" placeholder="Np. 500 000 000" type="tel" />
-        </label>
         <fieldset>
           <legend>Zobowiązuję się do terminowej zapłaty za zajęcia, tj. 100 zł miesięcznie do 10. dnia każdego miesiąca.<RequiredMark /></legend>
           <label className="contact-form-consent">

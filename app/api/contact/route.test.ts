@@ -64,6 +64,7 @@ describe("POST /api/contact", () => {
     imageConsent: "Nie wyrażam zgody",
     lessonType: "junior-voice",
     paymentAccepted: true,
+    phone: "500 000 000",
     postalCode: "86-012",
     preschool: "Przedszkole Moderato",
     privacyNoticeAcknowledged: true,

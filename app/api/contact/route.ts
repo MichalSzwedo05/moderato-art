@@ -16,7 +16,7 @@ const maxRequestBytes = 10_000;
 const notificationTimeoutMs = 5_000;
 
 const contactSubmissionSchema = z.object({
-  childName: z.string().trim().max(120).optional(),
+  childName: z.string().trim().min(1).max(120),
   birthDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
   preschool: z.string().trim().min(1).max(200),
   group: z.string().trim().min(1).max(100),
@@ -24,7 +24,7 @@ const contactSubmissionSchema = z.object({
   postalCode: z.string().trim().max(20).optional(),
   city: z.string().trim().max(120).optional(),
   email: z.string().trim().email().max(254),
-  phone: z.string().trim().max(40).optional(),
+  phone: z.string().trim().min(1).max(40),
   lessonType: z.enum(contactLessonTypes),
   paymentAccepted: z.literal(true),
   imageConsent: z.enum(["Wyrażam zgodę", "Nie wyrażam zgody"]),
