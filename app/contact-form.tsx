@@ -150,13 +150,9 @@ export function ContactForm(props: ContactFormProps) {
         </fieldset>
         <fieldset>
           <legend>Zobowiązuję się do terminowej zapłaty za zajęcia, tj. 100 PLN miesięcznie do 10. dnia każdego miesiąca.<br />Dane do przelewu: Moderato, ul. Krokusowa 25, 86-012 Żołędowo<br />16 10501429 1000 0097 6911 7905.<RequiredMark /></legend>
-          <label>
-            <span>Potwierdzenie warunków płatności<RequiredMark /></span>
-            <select name="paymentAccepted" required defaultValue="">
-              <option disabled value="">Wybierz z listy</option>
-              <option value="true">Akceptuję warunki</option>
-              <option value="false">Nie akceptuję warunków</option>
-            </select>
+          <label className="contact-form-consent">
+            <input name="paymentAccepted" required type="radio" value="true" />
+            <span>Akceptuję warunki</span>
           </label>
         </fieldset>
         <fieldset>
