@@ -45,7 +45,8 @@ describe("PublicModals", () => {
     expect(document.querySelector('input[name="lessonType"]')).toHaveValue(lessonType);
     expect(document.querySelector(".public-modal form")).not.toBeNull();
     expect(screen.queryByLabelText("Rodzaj zajęć")).not.toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Przejdź do strony kontaktu" })).toHaveAttribute("href", "/kontakt");
+    expect(screen.getByRole("button", { name: /przejdź do formularza zgłoszeniowego/i })).toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "Przejdź do strony kontaktu" })).not.toBeInTheDocument();
   });
 
   it("shows only contact details for Rytmisolki", () => {

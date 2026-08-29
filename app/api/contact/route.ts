@@ -7,6 +7,7 @@ import { isContactRateLimited } from "../../../lib/contact-rate-limit";
 import { createContactSubmission } from "../../../lib/contact-submissions";
 import { contactLessonTypes } from "../../../lib/offers";
 import { privacyNoticeVersion } from "../../../lib/privacy-policy";
+import { appendContactSubmissionToSheet } from "../../../lib/google-sheets";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -15,12 +16,16 @@ const maxRequestBytes = 10_000;
 const notificationTimeoutMs = 5_000;
 
 const contactSubmissionSchema = z.object({
-  parentName: z.string().trim().min(2).max(120),
+  childName: z.string().trim().max(120).optional(),
+  birthDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  preschool: z.string().trim().min(1).max(200),
+  group: z.string().trim().min(1).max(100),
+  address: z.string().trim().max(300).optional(),
   email: z.string().trim().email().max(254),
   phone: z.string().trim().max(40).optional(),
   lessonType: z.enum(contactLessonTypes),
-  childAgeRange: z.enum(["3-5", "6-9", "10-15", "16-plus"]).optional(),
-  message: z.string().trim().max(2_000).optional().default(""),
+  paymentAccepted: z.literal(true),
+  imageConsent: z.enum(["Wyrażam zgodę", "Nie wyrażam zgody"]),
   privacyNoticeAcknowledged: z.literal(true),
   website: z.string().max(200).optional(),
 }).strict();
@@ -122,6 +127,29 @@ async function sendContactNotification(
   }
 }
 
+async function appendContactSheetRow(
+  sheets: NonNullable<ReturnType<typeof getContactFormConfig>>["sheets"],
+  submission: {
+    address?: string;
+    birthDate: string;
+    childName?: string;
+    email: string;
+    group: string;
+    imageConsent: string;
+    paymentAccepted: boolean;
+    preschool: string;
+    phone?: string;
+  },
+) {
+  if (!sheets) return;
+
+  try {
+    await appendContactSubmissionToSheet(sheets, { ...submission, submittedAt: new Date() });
+  } catch {
+    console.error("Contact submission Google Sheets append failed");
+  }
+}
+
 export async function POST(request: Request) {
   const config = getContactFormConfig();
   if (!config) {
@@ -161,12 +189,18 @@ export async function POST(request: Request) {
   let savedSubmission: { id: string };
   try {
     savedSubmission = await createContactSubmission({
-      childAgeRange: submission.childAgeRange,
+      address: submission.address,
+      birthDate: submission.birthDate,
+      childName: submission.childName,
       email: submission.email,
       lessonType: submission.lessonType,
-      message: submission.message,
-      parentName: submission.parentName,
+      message: "",
+      parentName: submission.childName,
+      group: submission.group,
+      imageConsent: submission.imageConsent,
+      paymentAccepted: submission.paymentAccepted,
       phone: submission.phone,
+      preschool: submission.preschool,
       privacyNoticeAcknowledgedAt: new Date(),
       privacyNoticeVersion,
     });
@@ -175,9 +209,20 @@ export async function POST(request: Request) {
     return unavailableResponse();
   }
 
-  if (config.notification) {
-    await sendContactNotification(config.notification, savedSubmission.id);
-  }
+  await Promise.all([
+    sendContactNotification(config.notification, savedSubmission.id),
+    appendContactSheetRow(config.sheets, {
+      address: submission.address,
+      birthDate: submission.birthDate,
+      childName: submission.childName,
+      email: submission.email,
+      group: submission.group,
+      imageConsent: submission.imageConsent,
+      paymentAccepted: submission.paymentAccepted,
+      phone: submission.phone,
+      preschool: submission.preschool,
+    }),
+  ]);
 
   return jsonResponse({ message: "Zgłoszenie zostało przyjęte." }, 200);
 }

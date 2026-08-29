@@ -16,8 +16,8 @@ describe("ContactPage", () => {
     render(await ContactPage());
 
     expect(screen.getByRole("heading", { level: 1, name: /znajdźmy zajęcia/i })).toBeInTheDocument();
-    expect(screen.getByRole("group")).not.toBeDisabled();
-    expect(screen.getByLabelText("Rodzaj zajęć")).toBeRequired();
+    expect(screen.getAllByRole("group")[0]).not.toBeDisabled();
+    expect(screen.getByLabelText(/rodzaj zajęć/i)).toBeRequired();
     expect(screen.getByRole("link", { name: /wróć na stronę główną/i })).toHaveAttribute("href", "/");
     expect(screen.getByText("Magdalena Warzecha-Hiller", { selector: "dd" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "moderato.art@wp.pl" })).toHaveAttribute("href", "mailto:moderato.art@wp.pl");
@@ -32,7 +32,7 @@ describe("ContactPage", () => {
 
     render(await ContactPage());
 
-    expect(screen.getByRole("group")).toBeDisabled();
+    expect(screen.getAllByRole("group")[0]).toBeDisabled();
     expect(screen.getByRole("button", { name: /formularz chwilowo niedostępny/i })).toBeDisabled();
   });
 

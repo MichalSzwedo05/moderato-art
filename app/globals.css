@@ -1012,7 +1012,7 @@ h2 {
 .public-modal-list span { color: var(--gray-light); font-size: .9rem; line-height: 1.45; }
 .public-modal .contact-form { margin-top: 2rem; }
 .public-modal .contact-details { margin-top: 2rem; }
-.public-modal-contact-link { margin-top: 1rem; }
+.offer-modal-form-link { margin: 0.4rem 0 0.2rem; padding: 0; background: none; border: 0; cursor: pointer; font-family: inherit; }
 .offer-modal-copy { display: grid; gap: .9rem; }
 .offer-modal-copy p { margin: 0; }
 
@@ -1154,8 +1154,11 @@ h2 {
 
 .contact-form {
   display: grid;
-  gap: 1rem;
-  padding: clamp(1.4rem, 4vw, 2.2rem);
+  gap: 1.15rem;
+  width: 100%;
+  max-width: 34rem;
+  margin-inline: auto;
+  padding: clamp(1.75rem, 4vw, 2.75rem);
   background: var(--surface);
   border: 1px solid var(--border-color);
   border-radius: 1.25rem;
@@ -1175,6 +1178,31 @@ h2 {
   margin: 0;
   padding: 0;
   border: 0;
+}
+
+.contact-form > fieldset > fieldset {
+  display: block;
+  padding: 1.1rem;
+  background: color-mix(in srgb, var(--cream) 60%, var(--surface));
+  border: 1px solid var(--border-color);
+  border-radius: 0.85rem;
+}
+
+.contact-form > fieldset > fieldset legend {
+  float: left;
+  width: 100%;
+  margin: 0 0 0.75rem;
+  padding: 0;
+  line-height: 1.4;
+}
+
+.contact-form > fieldset > fieldset .contact-form-consent {
+  clear: both;
+  margin-top: 0.6rem;
+}
+
+.contact-form > fieldset > fieldset .contact-form-consent:first-of-type {
+  margin-top: 0;
 }
 
 .contact-form-field {
@@ -1215,6 +1243,12 @@ h2 {
 .contact-form button:disabled {
   cursor: not-allowed;
   opacity: 0.65;
+}
+
+.contact-form button[type="submit"] {
+  width: 100%;
+  margin-top: 0.35rem;
+  padding-block: 0.85rem;
 }
 
 
@@ -1263,6 +1297,22 @@ h2 {
 
 .contact-form-consent a {
   color: var(--green-hover);
+}
+
+.contact-form-required {
+  color: #d3232f;
+  font-weight: 900;
+}
+
+.contact-form-required-note {
+  margin: 0;
+  color: var(--gray-light);
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.contact-form-required-note .contact-form-required {
+  font-size: 0.85rem;
 }
 
 .site-footer {

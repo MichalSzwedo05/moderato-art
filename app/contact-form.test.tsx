@@ -14,55 +14,64 @@ afterEach(() => {
   vi.clearAllMocks();
 });
 
+function fillRequiredFields() {
+  fireEvent.change(screen.getByLabelText(/imię i nazwisko dziecka/i), { target: { value: "Anna Kowalska" } });
+  fireEvent.change(screen.getByLabelText(/data urodzenia/i), { target: { value: "2020-05-12" } });
+  fireEvent.change(screen.getByLabelText(/przedszkole/i), { target: { value: "Przedszkole Moderato" } });
+  fireEvent.change(screen.getByLabelText(/grupa/i), { target: { value: "Motylki" } });
+  fireEvent.change(screen.getByLabelText(/adres e-mail/i), { target: { value: "anna@example.com" } });
+  fireEvent.click(screen.getByLabelText(/akceptuję warunki/i));
+  fireEvent.click(screen.getByLabelText("Nie wyrażam zgody"));
+  fireEvent.click(screen.getByLabelText(/polityką prywatności/i));
+}
+
 describe("ContactForm", () => {
   it("keeps every staged control disabled and explains why the form is unavailable", () => {
     render(<ContactForm lessonTitle="Junior Voice" lessonType="junior-voice" />);
 
-    expect(screen.getByRole("group")).toBeDisabled();
+    expect(screen.getAllByRole("group")[0]).toBeDisabled();
     expect(screen.getByText(/formularz zostanie aktywowany/i)).toBeInTheDocument();
   });
 
-  it("shows the privacy acknowledgement when the form is enabled", () => {
+  it("shows the Google Form fields and the privacy acknowledgement when enabled", () => {
     render(<ContactForm enabled lessonTitle="Studio Wokalne" lessonType="studio-wokalne" />);
 
-    expect(screen.getByRole("group")).not.toBeDisabled();
+    expect(screen.getAllByRole("group")[0]).not.toBeDisabled();
     expect(screen.getByLabelText(/polityką prywatności/i)).toBeRequired();
-    expect(screen.getByText("Imię i nazwisko osoby kontaktowej")).toBeInTheDocument();
-    expect(screen.getByText("Wiek uczestnika")).toBeInTheDocument();
-    const message = screen.getByRole("textbox", { name: "Wiadomość (opcjonalnie)" });
-    expect(message).not.toBeRequired();
-    expect(message).toHaveAttribute("maxlength", "2000");
-    const messageHelp = screen.getByText(/wiadomość jest opcjonalna/i);
-    expect(message).toHaveAttribute("aria-describedby", messageHelp.id);
-    expect(screen.getByText(/nie podawaj danych wrażliwych w wiadomości/i)).toBeInTheDocument();
-  });
-
-  it("shows a health-data warning for voice rehabilitation inquiries", () => {
-    render(<ContactForm enabled lessonTitle="Rehabilitacja zaburzeń głosu" lessonType="rehabilitacja-zaburzen-glosu" />);
-
-    expect(screen.getByText(/nie wpisuj diagnoz, objawów, informacji o leczeniu ani historii zdrowia/i)).toBeInTheDocument();
+    expect(screen.getByText("Imię i nazwisko dziecka")).toBeInTheDocument();
+    expect(screen.getByText("Data urodzenia dziecka")).toBeInTheDocument();
+    expect(screen.getByText("Przedszkole, do którego uczęszcza dziecko")).toBeInTheDocument();
+    expect(screen.getByText("Grupa")).toBeInTheDocument();
+    expect(screen.getByLabelText(/akceptuję warunki/i)).toBeRequired();
+    expect(screen.getByLabelText("Wyrażam zgodę")).toBeRequired();
+    expect(screen.getByLabelText("Nie wyrażam zgody")).toBeRequired();
   });
 
   it.each([
     ["Junior Voice", "junior-voice"],
     ["Studio Wokalne", "studio-wokalne"],
-  ] as const)("submits the fixed lesson type for %s", async (lessonTitle, lessonType) => {
+  ] as const)("submits the fixed lesson type and Google Form fields for %s", async (lessonTitle, lessonType) => {
     render(<ContactForm enabled lessonTitle={lessonTitle} lessonType={lessonType} />);
-    fireEvent.change(screen.getByLabelText(/imię i nazwisko/i), { target: { value: "Anna Kowalska" } });
-    fireEvent.change(screen.getByLabelText(/adres e-mail/i), { target: { value: "anna@example.com" } });
-    fireEvent.change(screen.getByLabelText(/wiadomość/i), { target: { value: "Proszę o kontakt." } });
-    fireEvent.click(screen.getByLabelText(/polityką prywatności/i));
-    fireEvent.submit(screen.getByRole("group").closest("form")!);
+    fillRequiredFields();
+    fireEvent.submit(screen.getByLabelText(/polityką prywatności/i).closest("form")!);
 
     await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
     const [, request] = fetchMock.mock.calls[0] as [string, RequestInit];
-    expect(JSON.parse(String(request.body))).toMatchObject({ lessonType });
+    expect(JSON.parse(String(request.body))).toMatchObject({
+      birthDate: "2020-05-12",
+      childName: "Anna Kowalska",
+      group: "Motylki",
+      imageConsent: "Nie wyrażam zgody",
+      lessonType,
+      paymentAccepted: true,
+      preschool: "Przedszkole Moderato",
+    });
   });
 
   it("lets the standalone form choose one of the form-based offers", async () => {
     render(<ContactForm enabled standalone />);
 
-    const offerSelect = screen.getByLabelText("Rodzaj zajęć");
+    const offerSelect = screen.getByLabelText(/rodzaj zajęć/i);
     expect(offerSelect).toBeRequired();
     expect(Array.from(offerSelect.querySelectorAll("option")).map((option) => option.textContent)).toEqual([
       "Wybierz rodzaj zajęć",
@@ -72,36 +81,29 @@ describe("ContactForm", () => {
     ]);
     expect(screen.queryByRole("option", { name: "Rytmisolki" })).not.toBeInTheDocument();
     fireEvent.change(offerSelect, { target: { value: "studio-wokalne" } });
-    fireEvent.change(screen.getByLabelText(/imię i nazwisko/i), { target: { value: "Anna Kowalska" } });
-    fireEvent.change(screen.getByLabelText(/adres e-mail/i), { target: { value: "anna@example.com" } });
-    fireEvent.change(screen.getByLabelText(/wiadomość/i), { target: { value: "Proszę o kontakt." } });
-    fireEvent.click(screen.getByLabelText(/polityką prywatności/i));
-    fireEvent.submit(screen.getByRole("group").closest("form")!);
+    fillRequiredFields();
+    fireEvent.submit(screen.getByLabelText(/polityką prywatności/i).closest("form")!);
 
     await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
     const [, request] = fetchMock.mock.calls[0] as [string, RequestInit];
     expect(JSON.parse(String(request.body))).toMatchObject({ lessonType: "studio-wokalne" });
   });
 
-  it("shows the health-data warning after selecting rehabilitation in the standalone form", () => {
-    render(<ContactForm enabled standalone />);
-
-    fireEvent.change(screen.getByLabelText("Rodzaj zajęć"), { target: { value: "rehabilitacja-zaburzen-glosu" } });
-
-    const message = screen.getByRole("textbox", { name: "Wiadomość (opcjonalnie)" });
-    const warning = screen.getByText(/nie wpisuj diagnoz, objawów, informacji o leczeniu ani historii zdrowia/i);
-    expect(message).toHaveAttribute("aria-describedby", warning.id);
-  });
-
-  it("submits an empty optional message", async () => {
+  it("submits without an optional child name", async () => {
     render(<ContactForm enabled lessonTitle="Junior Voice" lessonType="junior-voice" />);
-    fireEvent.change(screen.getByLabelText(/imię i nazwisko/i), { target: { value: "Anna Kowalska" } });
+    fireEvent.change(screen.getByLabelText(/data urodzenia/i), { target: { value: "2020-05-12" } });
+    fireEvent.change(screen.getByLabelText(/przedszkole/i), { target: { value: "Przedszkole Moderato" } });
+    fireEvent.change(screen.getByLabelText(/grupa/i), { target: { value: "Motylki" } });
     fireEvent.change(screen.getByLabelText(/adres e-mail/i), { target: { value: "anna@example.com" } });
+    fireEvent.click(screen.getByLabelText(/akceptuję warunki/i));
+    fireEvent.click(screen.getByLabelText("Wyrażam zgodę"));
     fireEvent.click(screen.getByLabelText(/polityką prywatności/i));
-    fireEvent.submit(screen.getByRole("group").closest("form")!);
+    fireEvent.submit(screen.getByLabelText(/polityką prywatności/i).closest("form")!);
 
     await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
     const [, request] = fetchMock.mock.calls[0] as [string, RequestInit];
-    expect(JSON.parse(String(request.body))).toMatchObject({ message: "" });
+    const parsed = JSON.parse(String(request.body));
+    expect(parsed.childName).toBeUndefined();
+    expect(parsed).toMatchObject({ imageConsent: "Wyrażam zgodę" });
   });
 });

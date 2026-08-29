@@ -13,15 +13,22 @@ const contactSubmissionFilterSchema = z.enum(contactSubmissionFilters);
 const contactSubmissionPageSchema = z.coerce.number().int().min(1).max(1_000);
 
 export type ContactSubmissionRow = {
+  address: string | null;
+  birthDate: string | null;
+  childName: string | null;
   childAgeRange: string | null;
   createdAt: Date;
   deleteAfter: Date | null;
   email: string;
+  group: string | null;
+  imageConsent: string | null;
   id: string;
   lessonType: string | null;
   message: string;
-  parentName: string;
+  parentName: string | null;
+  paymentAccepted: boolean;
   phone: string | null;
+  preschool: string | null;
   privacyNoticeAcknowledgedAt: Date | null;
   privacyNoticeVersion: string | null;
   status: ContactSubmissionStatus;
@@ -40,12 +47,19 @@ export class ContactSubmissionExportLimitError extends Error {
 }
 
 export type CreateContactSubmissionInput = {
+  address?: string;
+  birthDate?: string;
+  childName?: string;
   childAgeRange?: string;
   email: string;
   lessonType?: string;
   message: string;
-  parentName: string;
+  parentName?: string;
+  paymentAccepted?: boolean;
   phone?: string;
+  preschool?: string;
+  group?: string;
+  imageConsent?: string;
   privacyNoticeAcknowledgedAt: Date;
   privacyNoticeVersion: string;
 };
@@ -64,13 +78,20 @@ export async function createContactSubmission(input: CreateContactSubmissionInpu
   const now = new Date();
   return getPrisma().contactSubmission.create({
     data: {
+      address: input.address,
+      birthDate: input.birthDate,
+      childName: input.childName,
       childAgeRange: input.childAgeRange,
       deleteAfter: addContactRetentionPeriod(now),
       email: input.email,
       lessonType: input.lessonType,
       message: input.message,
       parentName: input.parentName,
+      paymentAccepted: input.paymentAccepted ?? false,
       phone: input.phone,
+      preschool: input.preschool,
+      group: input.group,
+      imageConsent: input.imageConsent,
       privacyNoticeAcknowledgedAt: input.privacyNoticeAcknowledgedAt,
       privacyNoticeVersion: input.privacyNoticeVersion,
       retentionAnchorAt: now,
@@ -93,15 +114,22 @@ export async function getContactSubmissions({ page, status }: { page: number; st
     const submissions = await getPrisma().contactSubmission.findMany({
       orderBy: [{ createdAt: "desc" }, { id: "desc" }],
       select: {
+        address: true,
+        birthDate: true,
+        childName: true,
         childAgeRange: true,
         createdAt: true,
         deleteAfter: true,
         email: true,
+        group: true,
+        imageConsent: true,
         id: true,
         lessonType: true,
         message: true,
         parentName: true,
+        paymentAccepted: true,
         phone: true,
+        preschool: true,
         privacyNoticeAcknowledgedAt: true,
         privacyNoticeVersion: true,
         status: true,
@@ -138,16 +166,23 @@ export async function getContactSubmissionExportRows() {
 
   const submissions = await prisma.contactSubmission.findMany({
     orderBy: [{ createdAt: "desc" }, { id: "desc" }],
-    select: {
-      childAgeRange: true,
+      select: {
+        address: true,
+        birthDate: true,
+        childName: true,
+        childAgeRange: true,
       createdAt: true,
       deleteAfter: true,
-      email: true,
+        email: true,
+        group: true,
+        imageConsent: true,
       id: true,
       lessonType: true,
       message: true,
-      parentName: true,
-      phone: true,
+        parentName: true,
+        paymentAccepted: true,
+        phone: true,
+        preschool: true,
       privacyNoticeAcknowledgedAt: true,
       privacyNoticeVersion: true,
       retentionAnchorAt: true,

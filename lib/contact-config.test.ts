@@ -28,4 +28,26 @@ describe("contact form configuration", () => {
     expect(isContactFormConfigured({ ...validEnvironment, CRON_SECRET: "short" })).toBe(false);
     expect(isContactFormConfigured({ ...validEnvironment, CONTACT_RATE_LIMIT_SECRET: "short" })).toBe(false);
   });
+
+  it("accepts a complete Google Sheets configuration", () => {
+    expect(getContactFormConfig({
+      ...validEnvironment,
+      GOOGLE_SHEETS_SPREADSHEET_ID: "1tek0IUfI64-xh0WTHq_fDGfskz91eNcg6lxGlduG25M",
+      GOOGLE_SHEETS_RANGE: "Sheet1!A:I",
+      GOOGLE_SERVICE_ACCOUNT_EMAIL: "sheets-writer@moderato-art.iam.gserviceaccount.com",
+      GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY: "-----BEGIN PRIVATE KEY-----\\nkey\\n-----END PRIVATE KEY-----",
+    })).toMatchObject({
+      sheets: {
+        range: "Sheet1!A:I",
+        spreadsheetId: "1tek0IUfI64-xh0WTHq_fDGfskz91eNcg6lxGlduG25M",
+      },
+    });
+  });
+
+  it("fails closed when Google Sheets configuration is incomplete", () => {
+    expect(isContactFormConfigured({
+      ...validEnvironment,
+      GOOGLE_SHEETS_SPREADSHEET_ID: "1tek0IUfI64-xh0WTHq_fDGfskz91eNcg6lxGlduG25M",
+    })).toBe(false);
+  });
 });

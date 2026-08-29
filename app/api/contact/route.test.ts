@@ -55,10 +55,15 @@ describe("POST /api/contact", () => {
   }
 
   const validSubmission = {
+    address: "ul. Krokusowa 25, 86-012 Żołędowo",
+    birthDate: "2020-05-12",
+    childName: "Anna Kowalska",
     email: "anna@example.com",
+    group: "Motylki",
+    imageConsent: "Nie wyrażam zgody",
     lessonType: "junior-voice",
-    message: "Proszę o informacje o zajęciach.",
-    parentName: "Anna Kowalska",
+    paymentAccepted: true,
+    preschool: "Przedszkole Moderato",
     privacyNoticeAcknowledged: true,
   };
 
@@ -138,39 +143,14 @@ describe("POST /api/contact", () => {
     expect(sendEmail).not.toHaveBeenCalled();
   });
 
-  it("accepts a missing message and stores an empty string", async () => {
-    enableForm();
-    const withoutMessage = Object.fromEntries(Object.entries(validSubmission).filter(([key]) => key !== "message"));
-
-    const response = await POST(request(withoutMessage));
-
-    expect(response.status).toBe(200);
-    expect(createSubmission).toHaveBeenCalledWith(expect.objectContaining({ message: "" }));
-  });
-
-  it("sends the optional-message notification without message content", async () => {
-    enableForm();
-    enableNotifications();
-    sendEmail.mockResolvedValue({ data: { id: "email-id" }, error: null });
-    const withoutMessage = Object.fromEntries(Object.entries(validSubmission).filter(([key]) => key !== "message"));
-
-    const response = await POST(request(withoutMessage));
-
-    expect(response.status).toBe(200);
-    expect(createSubmission).toHaveBeenCalledWith(expect.objectContaining({ message: "" }));
-    expect(sendEmail).toHaveBeenCalledTimes(1);
-  });
-
-  it("normalizes whitespace-only messages and keeps the field limit", async () => {
+  it("requires the payment and image consent fields", async () => {
     enableForm();
 
-    const emptyResponse = await POST(request({ ...validSubmission, message: "   " }));
-    expect(emptyResponse.status).toBe(200);
-    expect(createSubmission).toHaveBeenCalledWith(expect.objectContaining({ message: "" }));
+    const paymentResponse = await POST(request({ ...validSubmission, paymentAccepted: false }));
+    expect(paymentResponse.status).toBe(400);
 
-    createSubmission.mockClear();
-    const tooLongResponse = await POST(request({ ...validSubmission, message: "a".repeat(2_001) }));
-    expect(tooLongResponse.status).toBe(400);
+    const imageResponse = await POST(request({ ...validSubmission, imageConsent: "invalid" }));
+    expect(imageResponse.status).toBe(400);
     expect(createSubmission).not.toHaveBeenCalled();
   });
 

@@ -10,8 +10,8 @@ services:
       RESEND_API_KEY: ${RESEND_API_KEY:-}
       CONTACT_FORM_RECIPIENT: ${CONTACT_FORM_RECIPIENT:-}
       CONTACT_FORM_RESEND_FROM: ${CONTACT_FORM_RESEND_FROM:-}
-      CONTACT_RATE_LIMIT_SECRET: ${CONTACT_RATE_LIMIT_SECRET:-}
-      CRON_SECRET: ${CRON_SECRET:-}
+      CONTACT_RATE_LIMIT_SECRET: ${CONTACT_RATE_LIMIT_SECRET:-local-contact-rate-limit-secret-for-development-only}
+      CRON_SECRET: ${CRON_SECRET:-local-cron-secret-for-development-only}
       ADMIN_CMS_ENABLED: ${ADMIN_CMS_ENABLED:-false}
       ADMIN_AUTH_MODE: ${ADMIN_AUTH_MODE:-magic_link}
       ADMIN_EMAIL: ${ADMIN_EMAIL:-}
@@ -22,6 +22,10 @@ services:
       ADMIN_AUTH_RESEND_KEY: ${ADMIN_AUTH_RESEND_KEY:-}
       ADMIN_RATE_LIMIT_SECRET: ${ADMIN_RATE_LIMIT_SECRET:-}
       GALLERY_CLEANUP_SECRET: ${GALLERY_CLEANUP_SECRET:-}
+      GOOGLE_SHEETS_SPREADSHEET_ID: ${GOOGLE_SHEETS_SPREADSHEET_ID:-}
+      GOOGLE_SHEETS_RANGE: ${GOOGLE_SHEETS_RANGE:-}
+      GOOGLE_SERVICE_ACCOUNT_EMAIL: ${GOOGLE_SERVICE_ACCOUNT_EMAIL:-}
+      GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY: ${GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY:-}
       NEXT_PUBLIC_SITE_URL: http://localhost:3000
       NODE_ENV: development
     ports:
@@ -45,7 +49,7 @@ services:
       timeout: 5s
       retries: 10
     ports:
-      - "5432:5432"
+      - "${POSTGRES_HOST_PORT:-15432}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
 

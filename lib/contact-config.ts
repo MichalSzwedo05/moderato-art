@@ -1,3 +1,5 @@
+import type { GoogleSheetsConfig } from "./google-sheets";
+
 type ContactFormEnvironment = {
   CONTACT_FORM_ENABLED?: string;
   CONTACT_FORM_RECIPIENT?: string;
@@ -6,6 +8,10 @@ type ContactFormEnvironment = {
   CRON_SECRET?: string;
   DATABASE_URL?: string;
   RESEND_API_KEY?: string;
+  GOOGLE_SHEETS_SPREADSHEET_ID?: string;
+  GOOGLE_SHEETS_RANGE?: string;
+  GOOGLE_SERVICE_ACCOUNT_EMAIL?: string;
+  GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY?: string;
 };
 
 export type ContactFormConfig = {
@@ -15,6 +21,7 @@ export type ContactFormConfig = {
     resendFrom: string;
     resendKey: string;
   };
+  sheets?: GoogleSheetsConfig;
 };
 
 function hasUsableValue(value: string | undefined) {
@@ -49,6 +56,28 @@ function isSender(value: string | undefined) {
   return isEmail(match ? match[1] : value);
 }
 
+function getSheetsConfig(environment: ContactFormEnvironment) {
+  const values = [
+    environment.GOOGLE_SHEETS_SPREADSHEET_ID,
+    environment.GOOGLE_SHEETS_RANGE,
+    environment.GOOGLE_SERVICE_ACCOUNT_EMAIL,
+    environment.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY,
+  ];
+  if (!values.some(Boolean)) return undefined;
+
+  const spreadsheetId = environment.GOOGLE_SHEETS_SPREADSHEET_ID?.trim();
+  const range = environment.GOOGLE_SHEETS_RANGE?.trim();
+  const clientEmail = environment.GOOGLE_SERVICE_ACCOUNT_EMAIL?.trim();
+  const privateKey = environment.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY?.replaceAll("\\n", "\n").trim();
+  if (!spreadsheetId || !/^[A-Za-z0-9_-]{20,}$/.test(spreadsheetId)
+    || !range || range.length > 200 || /[\r\n]/.test(range)
+    || !clientEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(clientEmail)
+    || !privateKey?.startsWith("-----BEGIN PRIVATE KEY-----")
+    || !privateKey.endsWith("-----END PRIVATE KEY-----")) return null;
+
+  return { clientEmail, privateKey, range, spreadsheetId } satisfies GoogleSheetsConfig;
+}
+
 export function getContactFormConfig(environment: ContactFormEnvironment = process.env as ContactFormEnvironment): ContactFormConfig | undefined {
   const resendKey = environment.RESEND_API_KEY;
   const recipient = environment.CONTACT_FORM_RECIPIENT?.trim();
@@ -60,7 +89,8 @@ export function getContactFormConfig(environment: ContactFormEnvironment = proce
     ? (isResendKey(resendKey) && isEmail(recipient) && isSender(resendFrom)
       ? { recipient: recipient!, resendFrom: resendFrom!, resendKey: resendKey!.trim() }
       : undefined)
-    : undefined;
+      : undefined;
+  const sheets = getSheetsConfig(environment);
 
   if (environment.CONTACT_FORM_ENABLED !== "true"
     || !rateLimitSecret
@@ -71,8 +101,13 @@ export function getContactFormConfig(environment: ContactFormEnvironment = proce
     || cronSecret!.length < 16) return undefined;
 
   if (notificationConfigured && !notification) return undefined;
+  if (sheets === null) return undefined;
 
-  return { notification, rateLimitSecret: rateLimitSecret! };
+  return {
+    notification,
+    rateLimitSecret: rateLimitSecret!,
+    ...(sheets ? { sheets } : {}),
+  };
 }
 
 export function isContactFormConfigured(environment: ContactFormEnvironment = process.env as ContactFormEnvironment) {
