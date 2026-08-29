@@ -1,7 +1,9 @@
 "use client";
 
-import { useId, useState, type FormEvent } from "react";
-import { contactOffers, type ContactLessonType } from "../lib/offers";
+import { useEffect, useId, useRef, useState, type FormEvent } from "react";
+import { enrollmentOffers, type ContactLessonType } from "../lib/offers";
+
+type SubmitPopup = { kind: "success" | "error"; message: string };
 
 function RequiredMark() {
   return <span aria-hidden="true" className="contact-form-required">{"\u00A0*"}</span>;
@@ -20,10 +22,18 @@ type ContactFormProps = {
 export function ContactForm(props: ContactFormProps) {
   const { enabled = false } = props;
   const isStandalone = "standalone" in props;
-  const [selectedLessonType, setSelectedLessonType] = useState<ContactLessonType | "">("");
+  const [selectedLessonType, setSelectedLessonType] = useState<ContactLessonType>("junior-voice");
   const statusId = useId();
   const [status, setStatus] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [popup, setPopup] = useState<SubmitPopup | null>(null);
+  const popupTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+
+  useEffect(() => {
+    if (!popup) return;
+    popupTimer.current = setTimeout(() => setPopup(null), 5000);
+    return () => clearTimeout(popupTimer.current);
+  }, [popup]);
 
   async function submitForm(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -43,7 +53,9 @@ export function ContactForm(props: ContactFormProps) {
           birthDate: formData.get("birthDate"),
           preschool: formData.get("preschool"),
           group: formData.get("group"),
-          address: formData.get("address") || undefined,
+          addressStreet: formData.get("addressStreet") || undefined,
+          postalCode: formData.get("postalCode") || undefined,
+          city: formData.get("city") || undefined,
           email: formData.get("email"),
           phone: formData.get("phone") || undefined,
           lessonType: formData.get("lessonType") || undefined,
@@ -57,24 +69,44 @@ export function ContactForm(props: ContactFormProps) {
 
       if (!response.ok) {
         setStatus(body.message || "Nie udało się przesłać zgłoszenia.");
+        setPopup({ kind: "error", message: body.message || "Nie udało się przesłać zgłoszenia. Spróbuj ponownie." });
         return;
       }
 
       form.reset();
-      if (isStandalone) setSelectedLessonType("");
-      setStatus(body.message || "Zgłoszenie zostało przyjęte.");
+      if (isStandalone) setSelectedLessonType("junior-voice");
+      setStatus("");
+      setPopup({ kind: "success", message: body.message || "Zgłoszenie zostało przyjęte." });
     } catch {
       setStatus("Nie udało się przesłać zgłoszenia.");
+      setPopup({ kind: "error", message: "Nie udało się przesłać zgłoszenia. Spróbuj ponownie." });
     } finally {
       setIsSubmitting(false);
     }
   }
 
   return (
+    <>
     <form className="contact-form" aria-describedby={statusId} onSubmit={enabled ? submitForm : undefined}>
       <fieldset disabled={!enabled}>
         <legend>Formularz kontaktowy</legend>
         <p className="contact-form-required-note">Pola oznaczone <RequiredMark /> są wymagane.</p>
+        {isStandalone ? (
+          <label>
+            <span>Rodzaj zajęć<RequiredMark /></span>
+            <select name="lessonType" onChange={(event) => setSelectedLessonType(event.currentTarget.value as ContactLessonType)} required value={selectedLessonType}>
+              {enrollmentOffers.map((offer) => <option key={offer.lessonType} value={offer.lessonType}>{offer.title}</option>)}
+            </select>
+          </label>
+        ) : (
+          <>
+            <div className="contact-form-offer">
+              <span className="contact-form-offer-label">Wybrane zajęcia</span>
+              <strong className="contact-form-offer-value">{props.lessonTitle}</strong>
+            </div>
+            <input name="lessonType" type="hidden" value={props.lessonType} />
+          </>
+        )}
         <label>
           Imię i nazwisko dziecka
           <input autoComplete="name" name="childName" placeholder="Np. Anna Kowalska" type="text" />
@@ -91,10 +123,23 @@ export function ContactForm(props: ContactFormProps) {
           <span>Grupa<RequiredMark /></span>
           <input name="group" required type="text" />
         </label>
-        <label>
-          Dane kontaktowe (adres: ulica, kod pocztowy)
-          <input autoComplete="street-address" name="address" type="text" />
-        </label>
+        <fieldset>
+          <legend>Dane kontaktowe (adres) — opcjonalnie</legend>
+          <label>
+            Ulica i numer
+            <input autoComplete="street-address" name="addressStreet" placeholder="Np. Krokusowa 25" type="text" />
+          </label>
+          <div className="contact-form-address-row">
+            <label>
+              Kod pocztowy
+              <input autoComplete="postal-code" name="postalCode" placeholder="Np. 86-012" type="text" />
+            </label>
+            <label>
+              Miasto
+              <input autoComplete="address-level2" name="city" placeholder="Np. Żołędowo" type="text" />
+            </label>
+          </div>
+        </fieldset>
         <label>
           <span>Adres e-mail<RequiredMark /></span>
           <input autoComplete="email" name="email" placeholder="twoj@email.pl" required type="email" />
@@ -103,23 +148,6 @@ export function ContactForm(props: ContactFormProps) {
           Numer telefonu
           <input autoComplete="tel" name="phone" placeholder="Np. 500 000 000" type="tel" />
         </label>
-        {isStandalone ? (
-          <label>
-            <span>Rodzaj zajęć<RequiredMark /></span>
-            <select name="lessonType" onChange={(event) => setSelectedLessonType(event.currentTarget.value as ContactLessonType)} required value={selectedLessonType}>
-              <option disabled value="">Wybierz rodzaj zajęć</option>
-              {contactOffers.map((offer) => <option key={offer.lessonType} value={offer.lessonType}>{offer.title}</option>)}
-            </select>
-          </label>
-        ) : (
-          <>
-            <div className="contact-form-offer">
-              <span className="contact-form-offer-label">Wybrane zajęcia</span>
-              <strong className="contact-form-offer-value">{props.lessonTitle}</strong>
-            </div>
-            <input name="lessonType" type="hidden" value={props.lessonType} />
-          </>
-        )}
         <fieldset>
           <legend>Zobowiązuję się do terminowej zapłaty za zajęcia, tj. 100 zł miesięcznie do 10. dnia każdego miesiąca.<RequiredMark /></legend>
           <label className="contact-form-consent">
@@ -156,5 +184,13 @@ export function ContactForm(props: ContactFormProps) {
           : "Formularz zostanie aktywowany po zatwierdzeniu zasad przetwarzania danych i infrastruktury.")}
       </small>
     </form>
+    {popup ? (
+      <div className="contact-form-popup" data-kind={popup.kind} role={popup.kind === "success" ? "status" : "alert"}>
+        <span aria-hidden="true" className="contact-form-popup-icon">{popup.kind === "success" ? "✓" : "!"}</span>
+        <p>{popup.message}</p>
+        <button aria-label="Zamknij powiadomienie" onClick={() => setPopup(null)} type="button">×</button>
+      </div>
+    ) : null}
+    </>
   );
 }

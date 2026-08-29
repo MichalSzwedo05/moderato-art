@@ -86,6 +86,7 @@ export function MobileNavigation({ hasArticles = true }: MobileNavigationProps) 
         <a href="#o-mnie">O mnie</a>
         <a href="#oferta">Oferta</a>
         {hasArticles ? <a href="#blog">Artykuły</a> : null}
+        <Link href="/zgloszenie">Zapisz się</Link>
         <Link href="/kontakt">Kontakt</Link>
       </nav>
     </div>

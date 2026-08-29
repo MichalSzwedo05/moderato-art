@@ -142,14 +142,14 @@ Configure these server-only variables in Vercel or the equivalent runtime:
 - `CONTACT_RATE_LIMIT_SECRET` with a random value of at least 32 characters
 - `CRON_SECRET` for the daily retention cleanup job
 
-To append new contact submissions to Google Sheets, configure all four server-only variables below. The service account must have Editor access to the spreadsheet, and the Google Sheets API must be enabled in its Google Cloud project. Set the range to the actual response-tab name, for example `Odpowiedzi do formularza 1!A:J` or `Form Responses 1!A:J`; a numeric `gid` is not a valid range name:
+To append new contact submissions to Google Sheets, configure all four server-only variables below. The service account must have Editor access to the spreadsheet, and the Google Sheets API must be enabled in its Google Cloud project. Each submission is written to its own spreadsheet tab named after the chosen lesson type — `Rytmisolki`, `Junior Voice`, `Studio Wokalne`, or `Rehabilitacja zaburzeń głosu` — so those four tabs must exist in the spreadsheet. `GOOGLE_SHEETS_RANGE` is still required for validation but only acts as a fallback when a lesson type has no matching tab:
 
 - `GOOGLE_SHEETS_SPREADSHEET_ID` with the ID from the spreadsheet URL
-- `GOOGLE_SHEETS_RANGE` with a range such as `Odpowiedzi do formularza 1!A:J`
+- `GOOGLE_SHEETS_RANGE` with a range such as `Junior Voice!A:J`
 - `GOOGLE_SERVICE_ACCOUNT_EMAIL` with the service account email
 - `GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY` with the private key, keeping newline characters as `\\n` in an environment variable
 
-The first row should contain these columns in the same order as the Google Form: `Timestamp`, `Imię i nazwisko dziecka`, `Data urodzenia dziecka`, `Przedszkole`, `Grupa`, `Dane kontaktowe`, `Numer telefonu`, `Adres e-mail`, `Akceptuje warunki`, and `Wyrażam zgodę`. PostgreSQL remains the primary store. A Sheets API failure does not reject the form submission. Because this creates a second copy of personal data, apply the same retention and access controls to the spreadsheet.
+Each of the four tabs should have a header row with these columns in the same order as the Google Form: `Timestamp`, `Imię i nazwisko dziecka`, `Data urodzenia dziecka`, `Przedszkole`, `Grupa`, `Ulica i numer`, `Kod pocztowy`, `Miasto`, `Numer telefonu`, `Adres e-mail`, `Akceptuje warunki`, and `Wyrażam zgodę`. PostgreSQL remains the primary store. A Sheets API failure does not reject the form submission. Because this creates a second copy of personal data, apply the same retention and access controls to the spreadsheet.
 
 Submissions are assigned a 12-month deletion deadline. On Vercel, the committed `vercel.json` schedule calls the cleanup route daily and removes expired submissions, expired admin links/sessions, and expired login rate-limit records. The Docker/VPS deployment does not include a scheduler; leave `CONTACT_FORM_ENABLED=false` there until a protected daily host cron is configured, for example:
 

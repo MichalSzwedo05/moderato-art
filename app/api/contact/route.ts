@@ -5,7 +5,7 @@ import { createRateLimitIdentifier } from "../../../lib/admin-security";
 import { getContactFormConfig } from "../../../lib/contact-config";
 import { isContactRateLimited } from "../../../lib/contact-rate-limit";
 import { createContactSubmission } from "../../../lib/contact-submissions";
-import { contactLessonTypes } from "../../../lib/offers";
+import { contactLessonTypes, type ContactLessonType } from "../../../lib/offers";
 import { privacyNoticeVersion } from "../../../lib/privacy-policy";
 import { appendContactSubmissionToSheet } from "../../../lib/google-sheets";
 
@@ -20,7 +20,9 @@ const contactSubmissionSchema = z.object({
   birthDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
   preschool: z.string().trim().min(1).max(200),
   group: z.string().trim().min(1).max(100),
-  address: z.string().trim().max(300).optional(),
+  addressStreet: z.string().trim().max(120).optional(),
+  postalCode: z.string().trim().max(20).optional(),
+  city: z.string().trim().max(120).optional(),
   email: z.string().trim().email().max(254),
   phone: z.string().trim().max(40).optional(),
   lessonType: z.enum(contactLessonTypes),
@@ -130,13 +132,16 @@ async function sendContactNotification(
 async function appendContactSheetRow(
   sheets: NonNullable<ReturnType<typeof getContactFormConfig>>["sheets"],
   submission: {
-    address?: string;
+    addressStreet?: string;
     birthDate: string;
     childName?: string;
+    city?: string;
     email: string;
     group: string;
     imageConsent: string;
+    lessonType: ContactLessonType;
     paymentAccepted: boolean;
+    postalCode?: string;
     preschool: string;
     phone?: string;
   },
@@ -186,10 +191,14 @@ export async function POST(request: Request) {
   const submission = parsedSubmission.data;
   if (submission.website) return jsonResponse({ message: "Zgłoszenie zostało przyjęte." }, 200);
 
+  const consolidatedAddress = [submission.addressStreet, submission.postalCode, submission.city]
+    .filter((part) => part?.trim())
+    .join(", ");
+
   let savedSubmission: { id: string };
   try {
     savedSubmission = await createContactSubmission({
-      address: submission.address,
+      address: consolidatedAddress || undefined,
       birthDate: submission.birthDate,
       childName: submission.childName,
       email: submission.email,
@@ -212,13 +221,16 @@ export async function POST(request: Request) {
   await Promise.all([
     sendContactNotification(config.notification, savedSubmission.id),
     appendContactSheetRow(config.sheets, {
-      address: submission.address,
+      addressStreet: submission.addressStreet,
       birthDate: submission.birthDate,
       childName: submission.childName,
+      city: submission.city,
       email: submission.email,
       group: submission.group,
       imageConsent: submission.imageConsent,
+      lessonType: submission.lessonType,
       paymentAccepted: submission.paymentAccepted,
+      postalCode: submission.postalCode,
       phone: submission.phone,
       preschool: submission.preschool,
     }),

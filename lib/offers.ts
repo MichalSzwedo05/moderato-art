@@ -70,8 +70,12 @@ export const offers = [
   },
 ] as const;
 
-export const contactLessonTypes = ["junior-voice", "studio-wokalne", "rehabilitacja-zaburzen-glosu"] as const;
+export const contactLessonTypes = ["rytmika", "junior-voice", "studio-wokalne", "rehabilitacja-zaburzen-glosu"] as const;
 export type ContactLessonType = (typeof contactLessonTypes)[number];
 export type OfferId = (typeof offers)[number]["id"];
 export type FormOffer = Extract<(typeof offers)[number], { contactMode: "form" }>;
 export const contactOffers = offers.filter((offer): offer is FormOffer => offer.contactMode === "form");
+export const enrollmentOffers = offers.filter((offer) => "lessonType" in offer);
+export const lessonTypeTabs = Object.fromEntries(
+  enrollmentOffers.map((offer) => [offer.lessonType, offer.title]),
+) as Record<ContactLessonType, string>;

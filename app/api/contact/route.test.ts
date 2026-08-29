@@ -55,14 +55,16 @@ describe("POST /api/contact", () => {
   }
 
   const validSubmission = {
-    address: "ul. Krokusowa 25, 86-012 Żołędowo",
+    addressStreet: "ul. Krokusowa 25",
     birthDate: "2020-05-12",
     childName: "Anna Kowalska",
+    city: "Żołędowo",
     email: "anna@example.com",
     group: "Motylki",
     imageConsent: "Nie wyrażam zgody",
     lessonType: "junior-voice",
     paymentAccepted: true,
+    postalCode: "86-012",
     preschool: "Przedszkole Moderato",
     privacyNoticeAcknowledged: true,
   };
@@ -112,10 +114,19 @@ describe("POST /api/contact", () => {
     expect(sendEmail).not.toHaveBeenCalled();
   });
 
-  it("rejects contact-only offers before saving or sending", async () => {
+  it("accepts Rytmisolki enrollments", async () => {
     enableForm();
 
     const response = await POST(request({ ...validSubmission, lessonType: "rytmika" }));
+
+    expect(response.status).toBe(200);
+    expect(createSubmission).toHaveBeenCalledWith(expect.objectContaining({ lessonType: "rytmika" }));
+  });
+
+  it("rejects an unknown lesson type before saving or sending", async () => {
+    enableForm();
+
+    const response = await POST(request({ ...validSubmission, lessonType: "nieznane-zajecia" }));
 
     expect(response.status).toBe(400);
     expect(createSubmission).not.toHaveBeenCalled();

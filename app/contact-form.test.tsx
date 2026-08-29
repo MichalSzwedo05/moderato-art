@@ -68,18 +68,18 @@ describe("ContactForm", () => {
     });
   });
 
-  it("lets the standalone form choose one of the form-based offers", async () => {
+  it("lets the standalone form default to Junior Voice and choose among all four offers", async () => {
     render(<ContactForm enabled standalone />);
 
     const offerSelect = screen.getByLabelText(/rodzaj zajęć/i);
     expect(offerSelect).toBeRequired();
+    expect(offerSelect).toHaveValue("junior-voice");
     expect(Array.from(offerSelect.querySelectorAll("option")).map((option) => option.textContent)).toEqual([
-      "Wybierz rodzaj zajęć",
+      "Rytmisolki",
       "Junior Voice",
       "Studio Wokalne",
       "Rehabilitacja zaburzeń głosu",
     ]);
-    expect(screen.queryByRole("option", { name: "Rytmisolki" })).not.toBeInTheDocument();
     fireEvent.change(offerSelect, { target: { value: "studio-wokalne" } });
     fillRequiredFields();
     fireEvent.submit(screen.getByLabelText(/polityką prywatności/i).closest("form")!);
@@ -87,6 +87,23 @@ describe("ContactForm", () => {
     await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
     const [, request] = fetchMock.mock.calls[0] as [string, RequestInit];
     expect(JSON.parse(String(request.body))).toMatchObject({ lessonType: "studio-wokalne" });
+  });
+
+  it("submits the three optional address fields grouped together", async () => {
+    render(<ContactForm enabled standalone />);
+    fireEvent.change(screen.getByLabelText(/ulica i numer/i), { target: { value: "Krokusowa 25" } });
+    fireEvent.change(screen.getByLabelText(/kod pocztowy/i), { target: { value: "86-012" } });
+    fireEvent.change(screen.getByLabelText(/miasto/i), { target: { value: "Żołędowo" } });
+    fillRequiredFields();
+    fireEvent.submit(screen.getByLabelText(/polityką prywatności/i).closest("form")!);
+
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+    const [, request] = fetchMock.mock.calls[0] as [string, RequestInit];
+    expect(JSON.parse(String(request.body))).toMatchObject({
+      addressStreet: "Krokusowa 25",
+      postalCode: "86-012",
+      city: "Żołędowo",
+    });
   });
 
   it("submits without an optional child name", async () => {
@@ -105,5 +122,26 @@ describe("ContactForm", () => {
     const parsed = JSON.parse(String(request.body));
     expect(parsed.childName).toBeUndefined();
     expect(parsed).toMatchObject({ imageConsent: "Wyrażam zgodę" });
+  });
+
+  it("shows a green success popup after a successful submission", async () => {
+    render(<ContactForm enabled standalone />);
+    fillRequiredFields();
+    fireEvent.submit(screen.getByLabelText(/polityką prywatności/i).closest("form")!);
+
+    const popup = await screen.findByRole("status");
+    expect(popup).toHaveAttribute("data-kind", "success");
+    expect(popup).toHaveTextContent("Wysłano");
+  });
+
+  it("shows a red error popup when the submission fails", async () => {
+    fetchMock.mockResolvedValue({ ok: false, json: async () => ({ message: "Sprawdź poprawność formularza." }) });
+    render(<ContactForm enabled standalone />);
+    fillRequiredFields();
+    fireEvent.submit(screen.getByLabelText(/polityką prywatności/i).closest("form")!);
+
+    const popup = await screen.findByRole("alert");
+    expect(popup).toHaveAttribute("data-kind", "error");
+    expect(popup).toHaveTextContent("Sprawdź poprawność formularza.");
   });
 });
