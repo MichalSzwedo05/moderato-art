@@ -246,8 +246,8 @@ export async function POST(request: Request) {
       privacyNoticeVersion,
       ...childFields,
     });
-  } catch {
-    console.error("Contact submission creation failed");
+  } catch (error) {
+    console.error("Contact submission creation failed", error instanceof Error ? error.message : String(error));
     return unavailableResponse();
   }
 
