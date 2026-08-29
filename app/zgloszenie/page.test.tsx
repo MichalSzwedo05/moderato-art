@@ -13,7 +13,7 @@ describe("ZgloszeniePage", () => {
   });
 
   it("renders the standalone form without contact details and a link back to the home page", async () => {
-    render(await ZgloszeniePage());
+    render(await ZgloszeniePage({ searchParams: Promise.resolve({}) }));
 
     expect(screen.getByRole("heading", { level: 1, name: /zapisz się na zajęcia/i })).toBeInTheDocument();
     expect(screen.getAllByRole("group")[0]).not.toBeDisabled();
@@ -24,10 +24,22 @@ describe("ZgloszeniePage", () => {
     expect(screen.queryByRole("button", { name: "Pokaż numer telefonu" })).not.toBeInTheDocument();
   });
 
+  it("preselects the lesson type from the zajecia query parameter", async () => {
+    render(await ZgloszeniePage({ searchParams: Promise.resolve({ zajecia: "studio-wokalne" }) }));
+
+    expect(screen.getByLabelText(/rodzaj zajęć/i)).toHaveValue("studio-wokalne");
+  });
+
+  it("defaults the lesson type when the query parameter is invalid or missing", async () => {
+    render(await ZgloszeniePage({ searchParams: Promise.resolve({ zajecia: "nie-istnieje" }) }));
+
+    expect(screen.getByLabelText(/rodzaj zajęć/i)).toHaveValue("junior-voice");
+  });
+
   it("keeps the form disabled when production configuration is incomplete", async () => {
     isContactFormConfigured.mockReturnValue(false);
 
-    render(await ZgloszeniePage());
+    render(await ZgloszeniePage({ searchParams: Promise.resolve({}) }));
 
     expect(screen.getAllByRole("group")[0]).toBeDisabled();
     expect(screen.getByRole("button", { name: /formularz chwilowo niedostępny/i })).toBeDisabled();

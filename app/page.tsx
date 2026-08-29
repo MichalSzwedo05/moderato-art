@@ -1,7 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
 import { connection } from "next/server";
-import { isContactFormConfigured } from "../lib/contact-config";
 import { getPublishedArticles } from "../lib/public-articles";
 import { ArticleLibrary } from "./article-library";
 import { OfferModalLink, PublicModals } from "./public-modals";
@@ -23,7 +22,6 @@ const benefits = [
 
 export default async function HomePage() {
   await connection();
-  const contactFormEnabled = isContactFormConfigured();
   const articles = await getPublishedArticles();
   const hasArticles = articles.length > 0;
   const galleryPhotos = await getGalleryPhotos();
@@ -48,7 +46,6 @@ export default async function HomePage() {
           </nav>
           <ThemeSwitcher />
           <MobileNavigation hasArticles={hasArticles} />
-          <a className="header-action" href="/kontakt">Zapytaj o zajęcia</a>
         </div>
       </header>
 
@@ -65,7 +62,6 @@ export default async function HomePage() {
                 praca z głosem dla dzieci, młodzieży i dorosłych.
               </p>
               <div className="hero-actions">
-                <a className="button button-primary" href="/kontakt">Zapytaj o zajęcia</a>
                 <a className="text-link" href="#oferta">Sprawdź ofertę <span aria-hidden="true">-&gt;</span></a>
               </div>
               <p className="hero-note">Zajęcia grupowe dla przedszkolaków oraz indywidualne lekcje śpiewu</p>
@@ -215,7 +211,7 @@ export default async function HomePage() {
           </div>
         </section>
       </main>
-      <PublicModals contactFormEnabled={contactFormEnabled} />
+      <PublicModals />
 
       <footer className="site-footer">
         <div className="site-shell footer-content">

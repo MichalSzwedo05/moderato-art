@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useId, useRef, useState, type FormEvent } from "react";
-import { enrollmentOffers, type ContactLessonType } from "../lib/offers";
+import { formLessonOffers, type ContactLessonType } from "../lib/offers";
 
 type SubmitPopup = { kind: "success" | "error"; message: string };
 
@@ -16,13 +16,17 @@ type ContactFormProps = {
   lessonType: ContactLessonType;
 } | {
   enabled?: boolean;
+  initialLessonType?: ContactLessonType;
   standalone: true;
 };
 
 export function ContactForm(props: ContactFormProps) {
   const { enabled = false } = props;
   const isStandalone = "standalone" in props;
-  const [selectedLessonType, setSelectedLessonType] = useState<ContactLessonType>("junior-voice");
+  const initialLessonType: ContactLessonType | undefined = isStandalone && "initialLessonType" in props ? props.initialLessonType : undefined;
+  const [selectedLessonType, setSelectedLessonType] = useState<ContactLessonType>(
+    "standalone" in props ? (props.initialLessonType ?? "junior-voice") : props.lessonType,
+  );
   const statusId = useId();
   const [status, setStatus] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -43,27 +47,30 @@ export function ContactForm(props: ContactFormProps) {
     setStatus("");
 
     try {
+      const payload: Record<string, unknown> = {
+        childName: formData.get("childName") || undefined,
+        birthDate: formData.get("birthDate"),
+        addressStreet: formData.get("addressStreet") || undefined,
+        postalCode: formData.get("postalCode") || undefined,
+        city: formData.get("city") || undefined,
+        email: formData.get("email"),
+        phone: formData.get("phone") || undefined,
+        lessonType: formData.get("lessonType") || undefined,
+        imageConsent: formData.get("imageConsent"),
+        website: formData.get("website") || undefined,
+        privacyNoticeAcknowledged: formData.get("privacyNoticeAcknowledged") === "true",
+      };
+      if (selectedLessonType === "junior-voice") {
+        payload.preschool = formData.get("preschool");
+        payload.group = formData.get("group");
+        payload.paymentAccepted = formData.get("paymentAccepted") === "true";
+      }
       const response = await fetch("/api/contact", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          childName: formData.get("childName") || undefined,
-          birthDate: formData.get("birthDate"),
-          preschool: formData.get("preschool"),
-          group: formData.get("group"),
-          addressStreet: formData.get("addressStreet") || undefined,
-          postalCode: formData.get("postalCode") || undefined,
-          city: formData.get("city") || undefined,
-          email: formData.get("email"),
-          phone: formData.get("phone") || undefined,
-          lessonType: formData.get("lessonType") || undefined,
-          paymentAccepted: formData.get("paymentAccepted") === "true",
-          imageConsent: formData.get("imageConsent"),
-          website: formData.get("website") || undefined,
-          privacyNoticeAcknowledged: formData.get("privacyNoticeAcknowledged") === "true",
-        }),
+        body: JSON.stringify(payload),
       });
       const body = await response.json() as { message?: string };
 
@@ -74,7 +81,7 @@ export function ContactForm(props: ContactFormProps) {
       }
 
       form.reset();
-      if (isStandalone) setSelectedLessonType("junior-voice");
+      if (isStandalone) setSelectedLessonType(initialLessonType ?? "junior-voice");
       setStatus("");
       setPopup({ kind: "success", message: body.message || "Zgłoszenie zostało przyjęte." });
     } catch {
@@ -95,7 +102,7 @@ export function ContactForm(props: ContactFormProps) {
           <label>
             <span>Rodzaj zajęć<RequiredMark /></span>
             <select name="lessonType" onChange={(event) => setSelectedLessonType(event.currentTarget.value as ContactLessonType)} required value={selectedLessonType}>
-              {enrollmentOffers.map((offer) => <option key={offer.lessonType} value={offer.lessonType}>{offer.title}</option>)}
+              {formLessonOffers.map((offer) => <option key={offer.lessonType} value={offer.lessonType}>{offer.title}</option>)}
             </select>
           </label>
         ) : (
@@ -108,30 +115,34 @@ export function ContactForm(props: ContactFormProps) {
           </>
         )}
         <label>
-          <span>Imię i nazwisko dziecka<RequiredMark /></span>
+          <span>{selectedLessonType === "junior-voice" ? "Imię i nazwisko dziecka" : "Imię i nazwisko"}<RequiredMark /></span>
           <input autoComplete="name" name="childName" placeholder="Np. Anna Kowalska" required type="text" />
         </label>
         <label>
-          <span>Data urodzenia dziecka<RequiredMark /></span>
+          <span>{selectedLessonType === "junior-voice" ? "Data urodzenia dziecka" : "Data urodzenia"}<RequiredMark /></span>
           <input name="birthDate" required type="date" />
         </label>
-        <label>
-          <span>Przedszkole, do którego uczęszcza dziecko<RequiredMark /></span>
-          <input name="preschool" required type="text" />
-        </label>
-        <label>
-          <span>Grupa<RequiredMark /></span>
-          <input name="group" required type="text" />
-        </label>
+        {selectedLessonType === "junior-voice" ? (
+          <>
+            <label>
+              <span>Przedszkole, do którego uczęszcza dziecko<RequiredMark /></span>
+              <input name="preschool" required type="text" />
+            </label>
+            <label>
+              <span>Grupa<RequiredMark /></span>
+              <input name="group" required type="text" />
+            </label>
+          </>
+        ) : null}
         <label>
           <span>Adres e-mail<RequiredMark /></span>
           <input autoComplete="email" name="email" placeholder="twoj@email.pl" required type="email" />
         </label>
         <label>
           <span>Numer telefonu<RequiredMark /></span>
-          <input autoComplete="tel" name="phone" placeholder="Np. 500 000 000" required type="tel" />
+          <input autoComplete="tel" name="phone" pattern="[+0-9 ().,\/-]{7,25}" placeholder="Np. 500 000 000" required title="Podaj polski numer telefonu albo numer międzynarodowy zaczynający się od + lub 00." type="tel" />
         </label>
-        <fieldset>
+        <fieldset className="contact-form-address-fieldset">
           <legend>Dane kontaktowe</legend>
           <label>
             Ulica i numer
@@ -148,15 +159,17 @@ export function ContactForm(props: ContactFormProps) {
             </label>
           </div>
         </fieldset>
+        {selectedLessonType === "junior-voice" ? (
+          <fieldset>
+            <legend>Zobowiązuję się do terminowej zapłaty za zajęcia, tj. 100 PLN miesięcznie do 10. dnia każdego miesiąca.<br />Dane do przelewu: Moderato, ul. Krokusowa 25, 86-012 Żołędowo<br />16 10501429 1000 0097 6911 7905.<RequiredMark /></legend>
+            <label className="contact-form-consent">
+              <input name="paymentAccepted" required type="radio" value="true" />
+              <span>Akceptuję warunki</span>
+            </label>
+          </fieldset>
+        ) : null}
         <fieldset>
-          <legend>Zobowiązuję się do terminowej zapłaty za zajęcia, tj. 100 PLN miesięcznie do 10. dnia każdego miesiąca.<br />Dane do przelewu: Moderato, ul. Krokusowa 25, 86-012 Żołędowo<br />16 10501429 1000 0097 6911 7905.<RequiredMark /></legend>
-          <label className="contact-form-consent">
-            <input name="paymentAccepted" required type="radio" value="true" />
-            <span>Akceptuję warunki</span>
-          </label>
-        </fieldset>
-        <fieldset>
-          <legend>Oświadczam, że wyrażam zgodę na rejestrowanie i wykorzystanie wizerunku mojego dziecka w celach informacyjnych i promocyjnych.<RequiredMark /></legend>
+          <legend>Oświadczam, że wyrażam zgodę na rejestrowanie i wykorzystanie wizerunku {selectedLessonType === "junior-voice" ? "mojego dziecka" : "uczestnika"} w celach informacyjnych i promocyjnych.<RequiredMark /></legend>
           <label className="contact-form-consent">
             <input name="imageConsent" required type="radio" value="Wyrażam zgodę" />
             <span>Wyrażam zgodę</span>

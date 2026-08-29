@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { connection } from "next/server";
 import { isContactFormConfigured } from "../../lib/contact-config";
+import { formLessonTypes, type ContactLessonType } from "../../lib/offers";
 import { ContactForm } from "../contact-form";
 
 export const metadata: Metadata = {
@@ -9,9 +10,16 @@ export const metadata: Metadata = {
   title: "Zgłoszenie na zajęcia",
 };
 
-export default async function ZgloszeniePage() {
+type ZgloszeniePageProps = {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+};
+
+export default async function ZgloszeniePage({ searchParams }: ZgloszeniePageProps) {
   await connection();
   const contactFormEnabled = isContactFormConfigured();
+  const params = await searchParams;
+  const zajecia = typeof params.zajecia === "string" ? params.zajecia : "";
+  const initialLessonType = formLessonTypes.includes(zajecia as ContactLessonType) ? (zajecia as ContactLessonType) : undefined;
 
   return (
     <main className="contact-page">
@@ -24,7 +32,7 @@ export default async function ZgloszeniePage() {
             <p>Wybierz rodzaj zajęć i wypełnij formularz zgłoszeniowy. Wrócimy do Ciebie z potwierdzeniem i szczegółami.</p>
             <p className="contact-page-note">Nie podawaj w formularzu danych wrażliwych uczestnika.</p>
           </header>
-          <ContactForm enabled={contactFormEnabled} standalone />
+          <ContactForm enabled={contactFormEnabled} initialLessonType={initialLessonType} standalone />
         </div>
       </div>
     </main>

@@ -14,12 +14,12 @@ export type ContactSheetRow = {
   childName?: string;
   city?: string;
   email: string;
-  group: string;
+  group?: string;
   imageConsent: string;
   lessonType: ContactLessonType;
-  paymentAccepted: boolean;
+  paymentAccepted?: boolean;
   postalCode?: string;
-  preschool: string;
+  preschool?: string;
   phone?: string;
   submittedAt: Date;
 };
@@ -37,19 +37,14 @@ export async function appendContactSubmissionToSheet(
   });
   const sheets = google.sheets({ version: "v4", auth });
   const tabTitle = lessonTypeTabs[submission.lessonType] ?? submission.lessonType;
-
-  await sheets.spreadsheets.values.append({
-    spreadsheetId: config.spreadsheetId,
-    range: `'${tabTitle}'!A:L`,
-    valueInputOption: "RAW",
-    requestBody: {
-      majorDimension: "ROWS",
-      values: [[
+  const isChildLesson = submission.lessonType === "junior-voice";
+  const row = isChildLesson
+    ? [
         submission.submittedAt.toISOString(),
         submission.childName ?? "",
         submission.birthDate,
-        submission.preschool,
-        submission.group,
+        submission.preschool ?? "",
+        submission.group ?? "",
         submission.addressStreet ?? "",
         submission.postalCode ?? "",
         submission.city ?? "",
@@ -57,7 +52,26 @@ export async function appendContactSubmissionToSheet(
         submission.email,
         submission.paymentAccepted ? "Akceptuje warunki" : "",
         submission.imageConsent,
-      ]],
+      ]
+    : [
+        submission.submittedAt.toISOString(),
+        submission.childName ?? "",
+        submission.birthDate,
+        submission.addressStreet ?? "",
+        submission.postalCode ?? "",
+        submission.city ?? "",
+        submission.phone ?? "",
+        submission.email,
+        submission.imageConsent,
+      ];
+
+  await sheets.spreadsheets.values.append({
+    spreadsheetId: config.spreadsheetId,
+    range: `'${tabTitle}'!A1:A1`,
+    valueInputOption: "RAW",
+    requestBody: {
+      majorDimension: "ROWS",
+      values: [row],
     },
   });
 }

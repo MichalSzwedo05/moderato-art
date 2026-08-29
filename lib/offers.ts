@@ -76,6 +76,8 @@ export type OfferId = (typeof offers)[number]["id"];
 export type FormOffer = Extract<(typeof offers)[number], { contactMode: "form" }>;
 export const contactOffers = offers.filter((offer): offer is FormOffer => offer.contactMode === "form");
 export const enrollmentOffers = offers.filter((offer) => "lessonType" in offer);
+export const formLessonOffers = enrollmentOffers.filter((offer) => offer.lessonType !== "rytmika");
+export const formLessonTypes = formLessonOffers.map((offer) => offer.lessonType) as ContactLessonType[];
 export const lessonTypeTabs = Object.fromEntries(
   enrollmentOffers.map((offer) => [offer.lessonType, offer.title]),
 ) as Record<ContactLessonType, string>;
