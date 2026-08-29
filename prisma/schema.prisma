@@ -153,3 +153,11 @@ model AdminLoginRateLimit {
 
   @@index([resetAt])
 }
+
+model AdminPassword {
+  id           String   @id @default(cuid())
+  username     String   @unique @db.VarChar(100)
+  passwordHash String   @db.VarChar(2048)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}

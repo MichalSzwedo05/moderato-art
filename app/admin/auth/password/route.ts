@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { createAdminSession, adminSessionCookie, getAdminAuthConfig, getTrustedClientAddress, takePasswordLoginRateLimit } from "@/lib/admin-auth";
+import { createAdminSession, adminSessionCookie, getAdminAuthConfig, getEffectivePasswordHash, getTrustedClientAddress, takePasswordLoginRateLimit } from "@/lib/admin-auth";
 import { verifyAdminPassword } from "@/lib/admin-password";
 import { isSameAdminOrigin } from "@/lib/admin-security";
 
@@ -39,7 +39,7 @@ export async function POST(request: Request) {
     const parsed = credentialsSchema.safeParse(Object.fromEntries(await request.formData()));
     const username = parsed.success ? parsed.data.username : "";
     const password = parsed.success ? parsed.data.password : "";
-    if (!(await verifyAdminPassword(config.username, config.passwordHash, username, password))) return failure(config);
+    if (!(await verifyAdminPassword(config.username, (await getEffectivePasswordHash(config)) ?? config.passwordHash, username, password))) return failure(config);
 
     const sessionToken = await createAdminSession(config);
     const { value, ...cookieOptions } = adminSessionCookie(sessionToken);

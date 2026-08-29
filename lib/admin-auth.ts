@@ -25,6 +25,25 @@ export const adminSessionCookieName = "__Host-moderato-admin-session";
 export { getAdminAuthConfig, isAdminCmsEnabled };
 export { getTrustedClientAddress };
 
+export async function getEffectivePasswordHash(config: AdminAuthConfig) {
+  if (config.mode !== "password") return undefined;
+  try {
+    const stored = await getPrisma().adminPassword.findUnique({
+      where: { username: config.username },
+      select: { passwordHash: true },
+    });
+    return stored?.passwordHash ?? config.passwordHash;
+  } catch {
+    return config.passwordHash;
+  }
+}
+
+export async function resolveAdminSessionVersion(config: AdminAuthConfig) {
+  if (config.mode !== "password") return getAdminSessionVersion(config);
+  const effective = await getEffectivePasswordHash(config);
+  return hashToken(effective ?? config.passwordHash);
+}
+
 function logResendFailure(error: unknown) {
   const details = error && typeof error === "object" ? error as Record<string, unknown> : {};
   console.error("Admin magic-link delivery failed", {
@@ -173,7 +192,7 @@ export async function createAdminSession(config: AdminAuthConfig) {
   await getPrisma().adminSession.create({
     data: {
       authMode: config.mode,
-      credentialVersion: getAdminSessionVersion(config),
+      credentialVersion: await resolveAdminSessionVersion(config),
       expiresAt: new Date(Date.now() + sessionLifetimeMs),
       sessionHash: hashToken(sessionToken),
     },
@@ -195,7 +214,7 @@ export async function getAdminSession() {
       where: {
         expiresAt: { gt: new Date() },
         authMode: config.mode,
-        credentialVersion: getAdminSessionVersion(config),
+        credentialVersion: await resolveAdminSessionVersion(config),
         revokedAt: null,
         sessionHash: hashToken(sessionToken),
       },

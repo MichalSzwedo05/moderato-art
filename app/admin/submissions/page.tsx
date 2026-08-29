@@ -11,6 +11,7 @@ import {
 import { getAdminAuthConfig, getAdminSession } from "@/lib/admin-auth";
 import { DeleteSubmissionButton } from "./delete-submission-button";
 import { SubmissionList } from "./submission-list";
+import { AdminPanel } from "../admin-panel";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -96,7 +97,7 @@ function SubmissionCard({ submission }: { submission: ContactSubmissionRow }) {
 export default async function SubmissionsPage({ searchParams }: SubmissionsPageProps) {
   const config = getAdminAuthConfig();
   if (!config) {
-    return <main className="admin-shell"><section className="admin-card"><p>Panel administracyjny jest chwilowo niedostępny.</p><Link className="admin-secondary-button admin-public-link" href="/">Strona publiczna</Link></section></main>;
+    return <main className="admin-shell"><section className="admin-card"><p>Panel administracyjny jest chwilowo niedostępny.</p><Link className="admin-secondary-button admin-public-link" href="/">Strona główna</Link></section></main>;
   }
   if (!(await getAdminSession())) {
     redirect("/admin");
@@ -105,25 +106,13 @@ export default async function SubmissionsPage({ searchParams }: SubmissionsPageP
   const query = parseContactSubmissionQuery(await searchParams);
   const result = await getContactSubmissions(query);
 
-  return <main className="admin-shell">
-    <section className="admin-card admin-content-card">
-      <header className="admin-header">
-        <div>
-          <p className="admin-eyebrow">Moderato Art</p>
-          <h1>Zgłoszenia kontaktowe</h1>
-        </div>
-        <div className="admin-header-actions">
-          <Link className="admin-secondary-button" href="/">Strona publiczna</Link>
-          <Link className="admin-secondary-button" href="/admin">Wróć do panelu</Link>
-          <form action="/api/admin/submissions/export" method="post">
-            <button className="admin-secondary-button" type="submit">Pobierz XML</button>
-          </form>
-          <form action="/admin/auth/logout" method="post">
-            <button className="admin-secondary-button" type="submit">Wyloguj</button>
-          </form>
-        </div>
-      </header>
-      <p className="admin-submissions-intro">Domyślnie widoczne są tylko imiona i nazwiska. Rozwiń zgłoszenie, aby zobaczyć szczegóły. Usunięcie rekordu jest trwałe. Eksport XML zawiera dane osobowe — przechowuj go i usuwaj bezpiecznie.</p>
+  return <AdminPanel title="Zgłoszenia kontaktowe">
+      <section className="admin-submissions-export">
+        <p className="admin-submissions-intro">Domyślnie widoczne są tylko imiona i nazwiska. Rozwiń zgłoszenie, aby zobaczyć szczegóły. Usunięcie rekordu jest trwałe. Eksport XML zawiera dane osobowe — przechowuj go i usuwaj bezpiecznie.</p>
+        <form action="/api/admin/submissions/export" method="post">
+          <button className="admin-secondary-button" type="submit">Pobierz XML</button>
+        </form>
+      </section>
       <form className="admin-submissions-filter admin-form" method="get">
         <label htmlFor="submission-status">Status zgłoszenia
           <select defaultValue={query.status} id="submission-status" name="status">
@@ -144,6 +133,5 @@ export default async function SubmissionsPage({ searchParams }: SubmissionsPageP
         <span>Strona {query.page}</span>
         {result?.hasNext ? <Link href={pageHref(query.status, query.page + 1)}>Starsze →</Link> : <span aria-disabled="true">Starsze →</span>}
       </nav>
-    </section>
-  </main>;
+  </AdminPanel>;
 }

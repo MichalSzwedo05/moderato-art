@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const mocks = vi.hoisted(() => ({
   createAdminSession: vi.fn(),
   getAdminAuthConfig: vi.fn(),
+  getEffectivePasswordHash: vi.fn(),
   getTrustedClientAddress: vi.fn(),
   isSameAdminOrigin: vi.fn(),
   takePasswordLoginRateLimit: vi.fn(),
@@ -14,6 +15,7 @@ vi.mock("@/lib/admin-auth", () => ({
   adminSessionCookieName: "__Host-moderato-admin-session",
   createAdminSession: mocks.createAdminSession,
   getAdminAuthConfig: mocks.getAdminAuthConfig,
+  getEffectivePasswordHash: mocks.getEffectivePasswordHash,
   getTrustedClientAddress: mocks.getTrustedClientAddress,
   takePasswordLoginRateLimit: mocks.takePasswordLoginRateLimit,
 }));
@@ -43,6 +45,7 @@ describe("POST /admin/auth/password", () => {
   beforeEach(() => {
     vi.resetAllMocks();
     mocks.getAdminAuthConfig.mockReturnValue(config);
+    mocks.getEffectivePasswordHash.mockResolvedValue(config.passwordHash);
     mocks.getTrustedClientAddress.mockReturnValue("203.0.113.10");
     mocks.isSameAdminOrigin.mockReturnValue(true);
     mocks.takePasswordLoginRateLimit.mockResolvedValue(true);
