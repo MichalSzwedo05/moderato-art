@@ -1205,6 +1205,11 @@ h2 {
   margin-top: 0;
 }
 
+.contact-form > fieldset > fieldset > label,
+.contact-form > fieldset > fieldset > .contact-form-address-row {
+  clear: both;
+}
+
 .contact-form-field {
   display: grid;
   gap: .45rem;
