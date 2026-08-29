@@ -146,16 +146,16 @@ export function ContactForm(props: ContactFormProps) {
           <legend>Dane kontaktowe</legend>
           <label>
             Ulica i numer
-            <input autoComplete="street-address" name="addressStreet" placeholder="Np. Krokusowa 25" type="text" />
+            <input autoComplete="street-address" name="addressStreet" placeholder="Np. Marszałkowska 15" type="text" />
           </label>
           <div className="contact-form-address-row">
             <label>
               Kod pocztowy
-              <input autoComplete="postal-code" name="postalCode" placeholder="Np. 86-012" type="text" />
+              <input autoComplete="postal-code" name="postalCode" placeholder="Np. 00-001" type="text" />
             </label>
             <label>
               Miasto
-              <input autoComplete="address-level2" name="city" placeholder="Np. Żołędowo" type="text" />
+              <input autoComplete="address-level2" name="city" placeholder="Np. Warszawa" type="text" />
             </label>
           </div>
         </fieldset>

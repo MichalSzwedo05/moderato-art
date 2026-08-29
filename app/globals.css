@@ -1548,7 +1548,7 @@ h2 {
 
 .contact-page {
   min-height: 100vh;
-  padding-block: clamp(2.5rem, 7vw, 6rem);
+  padding-block: clamp(1.25rem, 3.5vw, 2.5rem);
   background: linear-gradient(145deg, var(--hero-start), var(--cream) 42rem);
 }
 
@@ -1558,7 +1558,7 @@ h2 {
 
 .contact-page-back {
   display: inline-block;
-  margin-bottom: clamp(2rem, 6vw, 4rem);
+  margin-bottom: clamp(0.75rem, 2.5vw, 1.5rem);
 }
 
 .contact-page-grid {
