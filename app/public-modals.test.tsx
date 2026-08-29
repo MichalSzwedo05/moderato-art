@@ -32,7 +32,6 @@ describe("PublicModals", () => {
   });
 
   it.each([
-    ["junior-voice", "Junior Voice", "junior-voice"],
     ["studio-wokalne", "Studio Wokalne", "studio-wokalne"],
     ["rehabilitacja-zaburzen-glosu", "Rehabilitacja zaburzeń głosu", "rehabilitacja-zaburzen-glosu"],
   ] as const)("shows a form for %s with the offer fixed", (offerId, title, lessonType) => {
@@ -47,6 +46,17 @@ describe("PublicModals", () => {
     expect(screen.queryByLabelText("Rodzaj zajęć")).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: /przejdź do formularza zgłoszeniowego/i })).toBeInTheDocument();
     expect(screen.queryByRole("link", { name: "Przejdź do strony kontaktu" })).not.toBeInTheDocument();
+  });
+
+  it("redirects Junior Voice to the enrollment page instead of showing a form", () => {
+    render(<><OfferModalLink offerId="junior-voice">Otwórz Junior Voice</OfferModalLink><PublicModals contactFormEnabled /></>);
+
+    fireEvent.click(screen.getByRole("link", { name: "Otwórz Junior Voice" }));
+
+    expect(screen.getByRole("heading", { name: "Junior Voice" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /przejdź do formularza zgłoszeniowego/i })).toHaveAttribute("href", "/zgloszenie");
+    expect(document.querySelector(".public-modal form")).toBeNull();
+    expect(screen.queryByText("Wybrane zajęcia")).not.toBeInTheDocument();
   });
 
   it("shows only contact details for Rytmisolki", () => {
