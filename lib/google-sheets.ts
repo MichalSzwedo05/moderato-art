@@ -65,9 +65,18 @@ export async function appendContactSubmissionToSheet(
         submission.imageConsent,
       ];
 
-  await sheets.spreadsheets.values.append({
+  const values = await sheets.spreadsheets.values.get({
     spreadsheetId: config.spreadsheetId,
-    range: `'${tabTitle}'!A1:A1`,
+    range: `'${tabTitle}'!A:A`,
+    valueRenderOption: "UNFORMATTED_VALUE",
+  });
+  const existing = (values.data.values ?? []).map((cell) => (typeof cell[0] === "string" ? cell[0] : ""));
+  const firstEmptyRow = existing.findIndex((value) => value.length === 0);
+  const targetRow = firstEmptyRow === -1 ? existing.length + 1 : firstEmptyRow + 1;
+
+  await sheets.spreadsheets.values.update({
+    spreadsheetId: config.spreadsheetId,
+    range: `'${tabTitle}'!A${targetRow}`,
     valueInputOption: "RAW",
     requestBody: {
       majorDimension: "ROWS",
