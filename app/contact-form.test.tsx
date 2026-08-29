@@ -21,7 +21,7 @@ function fillRequiredFields() {
   fireEvent.change(screen.getByLabelText(/grupa/i), { target: { value: "Motylki" } });
   fireEvent.change(screen.getByLabelText(/adres e-mail/i), { target: { value: "anna@example.com" } });
   fireEvent.change(screen.getByLabelText(/numer telefonu/i), { target: { value: "500 000 000" } });
-  fireEvent.click(screen.getByLabelText(/akceptuję warunki/i));
+  fireEvent.change(screen.getByLabelText(/potwierdzenie warunków płatności/i), { target: { value: "true" } });
   fireEvent.click(screen.getByLabelText("Nie wyrażam zgody"));
   fireEvent.click(screen.getByLabelText(/polityką prywatności/i));
 }
@@ -45,7 +45,7 @@ describe("ContactForm", () => {
     expect(screen.getByText("Data urodzenia dziecka")).toBeInTheDocument();
     expect(screen.getByText("Przedszkole, do którego uczęszcza dziecko")).toBeInTheDocument();
     expect(screen.getByText("Grupa")).toBeInTheDocument();
-    expect(screen.getByLabelText(/akceptuję warunki/i)).toBeRequired();
+    expect(screen.getByLabelText(/potwierdzenie warunków płatności/i)).toBeRequired();
     expect(screen.getByLabelText("Wyrażam zgodę")).toBeRequired();
     expect(screen.getByLabelText("Nie wyrażam zgody")).toBeRequired();
   });
@@ -117,7 +117,7 @@ describe("ContactForm", () => {
     fireEvent.change(screen.getByLabelText(/grupa/i), { target: { value: "Motylki" } });
     fireEvent.change(screen.getByLabelText(/adres e-mail/i), { target: { value: "anna@example.com" } });
     fireEvent.change(screen.getByLabelText(/numer telefonu/i), { target: { value: "500 000 000" } });
-    fireEvent.click(screen.getByLabelText(/akceptuję warunki/i));
+    fireEvent.change(screen.getByLabelText(/potwierdzenie warunków płatności/i), { target: { value: "true" } });
     fireEvent.click(screen.getByLabelText("Wyrażam zgodę"));
     fireEvent.click(screen.getByLabelText(/polityką prywatności/i));
     fireEvent.submit(screen.getByLabelText(/polityką prywatności/i).closest("form")!);
