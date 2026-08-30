@@ -21,41 +21,41 @@
     "db:migrate:dev": "prisma migrate dev"
   },
   "dependencies": {
-    "@prisma/adapter-neon": "^7.9.1",
-    "@prisma/adapter-pg": "^7.9.1",
-    "@prisma/client": "^7.9.1",
+    "@prisma/adapter-neon": "^7.10.0",
+    "@prisma/adapter-pg": "^7.10.0",
+    "@prisma/client": "^7.10.0",
     "argon2": "^0.45.1",
     "googleapis": "^176.0.0",
-    "next": "16.2.12",
-    "pg": "^8.22.0",
-    "prisma": "^7.9.1",
+    "next": "16.3.3",
+    "pg": "^8.23.0",
+    "prisma": "^7.10.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "react-markdown": "^10.1.0",
-    "resend": "^6.18.1",
-    "sharp": "0.35.3",
+    "resend": "^6.24.0",
+    "sharp": "0.35.4",
     "zod": "^4.4.3"
   },
   "devDependencies": {
     "@eslint/compat": "^2.1.0",
-    "@testing-library/jest-dom": "^7.0.0",
+    "@testing-library/jest-dom": "^7.0.1",
     "@testing-library/react": "^16.3.2",
-    "@testing-library/user-event": "^14.6.1",
-    "@types/node": "^22.20.1",
-    "@types/react": "19.2.17",
-    "@types/react-dom": "19.2.3",
+    "@testing-library/user-event": "^14.6.6",
+    "@types/node": "^26.4.0",
+    "@types/react": "19.2.18",
+    "@types/react-dom": "19.2.5",
     "dotenv": "^17.4.2",
-    "eslint": "10.8.0",
-    "eslint-config-next": "16.2.12",
-    "jsdom": "^30.0.0",
+    "eslint": "10.9.1",
+    "eslint-config-next": "16.3.3",
+    "jsdom": "^30.0.1",
     "typescript": "^5.9.3",
-    "vitest": "^4.1.10"
+    "vitest": "^4.1.11"
   },
   "overrides": {
     "deepmerge-ts": "8.0.2",
     "fast-uri": "3.1.5",
     "nanoid": "3.3.18",
     "postcss": "8.5.18",
-    "sharp": "0.35.3"
+    "sharp": "0.35.4"
   }
 }
