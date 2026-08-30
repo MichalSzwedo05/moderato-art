@@ -135,6 +135,7 @@ model AdminMagicLink {
 
 model AdminSession {
   id          String   @id @default(cuid())
+  adminUsername String? @db.VarChar(100)
   authMode    String   @default("magic_link") @db.VarChar(20)
   credentialVersion String @default("b31f6b9a4489f6b772bcc4ce53579d138bb0c2ad97bfb35074501b989ba150b9") @db.Char(64)
   sessionHash String   @unique @db.Char(64)
@@ -152,4 +153,12 @@ model AdminLoginRateLimit {
   updatedAt      DateTime @updatedAt
 
   @@index([resetAt])
+}
+
+model AdminPassword {
+  id           String   @id @default(cuid())
+  username     String   @unique @db.VarChar(100)
+  passwordHash String   @db.VarChar(2048)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 }
