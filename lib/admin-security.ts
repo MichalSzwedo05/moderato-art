@@ -188,8 +188,17 @@ export function isMagicToken(token: string) {
   return magicTokenPattern.test(token);
 }
 
+function stripWwwPrefix(origin: string | null) {
+  if (!origin) return "";
+  const parts = origin.split("://");
+  if (parts.length !== 2) return origin;
+  const [scheme, rest] = parts;
+  const host = rest.startsWith("www.") ? rest.slice("www.".length) : rest;
+  return `${scheme}://${host}`;
+}
+
 export function isSameAdminOrigin(origin: string | null, config: AdminAuthConfig) {
-  return origin === config.authOrigin;
+  return stripWwwPrefix(origin) === stripWwwPrefix(config.authOrigin);
 }
 
 export function getTrustedClientAddress(request: Request) {
