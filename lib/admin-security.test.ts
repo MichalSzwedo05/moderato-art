@@ -77,6 +77,7 @@ describe("admin security configuration", () => {
     const config = getAdminAuthConfig(environment);
 
     expect(config && isSameAdminOrigin("https://moderato-art.pl", config)).toBe(true);
+    expect(config && isSameAdminOrigin("https://www.moderato-art.pl", config)).toBe(true);
     expect(config && isSameAdminOrigin("https://attacker.example", config)).toBe(false);
   });
 
