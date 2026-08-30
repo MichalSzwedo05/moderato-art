@@ -19,6 +19,7 @@ function LoginForm({ mode, notice }: { mode: "magic_link" | "password"; notice?:
   return (
     <main className="admin-shell">
       <section className="admin-card admin-login-card">
+        <Link className="admin-secondary-button admin-header-home-link" href="/">Strona główna</Link>
         <p className="admin-eyebrow">Moderato Art</p>
         <h1>Panel administracyjny</h1>
         <p>{mode === "password" ? "Podaj nazwę użytkownika i hasło administratora." : "Podaj adres e-mail administratora. Jeśli dostęp jest możliwy, otrzymasz link do logowania."}</p>
@@ -28,7 +29,6 @@ function LoginForm({ mode, notice }: { mode: "magic_link" | "password"; notice?:
           {mode === "password" ? <><label htmlFor="admin-username">Nazwa użytkownika</label><input autoComplete="username" id="admin-username" maxLength={100} name="username" required /><label htmlFor="admin-password">Hasło</label><input autoComplete="current-password" id="admin-password" maxLength={1024} name="password" required type="password" /></> : <><label htmlFor="admin-email">Adres e-mail</label><input autoComplete="email" id="admin-email" name="email" required type="email" /></>}
           <button type="submit">{mode === "password" ? "Zaloguj" : "Wyślij link"}</button>
         </form>
-        <Link className="admin-secondary-button admin-public-link" href="/">Strona główna</Link>
       </section>
     </main>
   );
@@ -40,7 +40,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
   if (!config) {
     return (
       <main className="admin-shell">
-        <section className="admin-card"><p>Panel administracyjny jest chwilowo niedostępny.</p><Link className="admin-secondary-button admin-public-link" href="/">Strona główna</Link></section>
+        <section className="admin-card"><Link className="admin-secondary-button admin-header-home-link" href="/">Strona główna</Link><p>Panel administracyjny jest chwilowo niedostępny.</p></section>
       </main>
     );
   }

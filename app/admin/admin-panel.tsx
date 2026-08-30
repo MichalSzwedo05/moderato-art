@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import Link from "next/link";
 import { DownloadUserGuideButton } from "./download-user-guide-button";
 import { AdminNav } from "./admin-nav";
 
@@ -13,6 +14,8 @@ export function AdminPanel({ children, title }: { children: ReactNode; title: st
           </div>
           <div className="admin-header-actions">
             <DownloadUserGuideButton />
+            <Link className="admin-secondary-button" href="/">Strona główna</Link>
+            <form action="/admin/auth/logout" method="post"><button className="admin-secondary-button" type="submit">Wyloguj</button></form>
           </div>
         </header>
         <AdminNav />

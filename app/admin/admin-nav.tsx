@@ -17,10 +17,6 @@ export function AdminNav() {
       {items.map((item) => (
         <Link className={pathname === item.href ? "admin-nav-link admin-nav-link-active" : "admin-nav-link"} href={item.href} key={item.href}>{item.label}</Link>
       ))}
-      <Link className="admin-nav-link admin-nav-link-public" href="/">Strona główna</Link>
-      <form action="/admin/auth/logout" method="post">
-        <button className="admin-nav-link" type="submit">Wyloguj</button>
-      </form>
     </nav>
   );
 }

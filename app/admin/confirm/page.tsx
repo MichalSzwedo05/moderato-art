@@ -22,6 +22,7 @@ export default async function ConfirmAdminLoginPage({
   return (
     <main className="admin-shell">
       <section className="admin-card admin-login-card">
+        <Link className="admin-secondary-button admin-header-home-link" href="/">Strona główna</Link>
         <p className="admin-eyebrow">Moderato Art</p>
         <h1>Potwierdź logowanie</h1>
         {!isAdminCmsEnabled() || !validToken ? (

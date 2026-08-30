@@ -2213,6 +2213,18 @@ h2 {
   margin-bottom: 0;
 }
 
+.admin-content-card,
+.admin-login-card {
+  position: relative;
+}
+
+.admin-header-home-link {
+  position: absolute;
+  right: 1.25rem;
+  top: 1.25rem;
+  z-index: 1;
+}
+
 .admin-nav {
   border-block: 1px solid var(--border-color);
   display: flex;

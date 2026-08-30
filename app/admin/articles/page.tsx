@@ -48,7 +48,7 @@ export default async function AdminArticlesPage({ searchParams }: ArticlesPagePr
   const params = await searchParams;
   const config = getAdminAuthConfig();
   if (!config) {
-    return <main className="admin-shell"><section className="admin-card"><p>Panel administracyjny jest chwilowo niedostępny.</p><Link className="admin-secondary-button admin-public-link" href="/">Strona główna</Link></section></main>;
+    return <main className="admin-shell"><section className="admin-card"><Link className="admin-secondary-button admin-header-home-link" href="/">Strona główna</Link><p>Panel administracyjny jest chwilowo niedostępny.</p></section></main>;
   }
   if (!(await getAdminSession())) {
     redirect("/admin");
@@ -56,7 +56,7 @@ export default async function AdminArticlesPage({ searchParams }: ArticlesPagePr
 
   const articles = await getArticles();
   if (!articles) {
-    return <main className="admin-shell"><section className="admin-card"><p>Panel administracyjny jest chwilowo niedostępny.</p><Link className="admin-secondary-button admin-public-link" href="/">Strona główna</Link></section></main>;
+    return <main className="admin-shell"><section className="admin-card"><Link className="admin-secondary-button admin-header-home-link" href="/">Strona główna</Link><p>Panel administracyjny jest chwilowo niedostępny.</p></section></main>;
   }
 
   return <AdminPanel title="Zarządzanie artykułami">

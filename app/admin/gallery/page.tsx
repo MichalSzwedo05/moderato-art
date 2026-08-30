@@ -17,7 +17,7 @@ export const metadata: Metadata = {
 export default async function AdminGalleryPage() {
   const config = getAdminAuthConfig();
   if (!config) {
-    return <main className="admin-shell"><section className="admin-card"><p>Panel administracyjny jest chwilowo niedostępny.</p><Link className="admin-secondary-button admin-public-link" href="/">Strona główna</Link></section></main>;
+    return <main className="admin-shell"><section className="admin-card"><Link className="admin-secondary-button admin-header-home-link" href="/">Strona główna</Link><p>Panel administracyjny jest chwilowo niedostępny.</p></section></main>;
   }
   if (!(await getAdminSession())) {
     redirect("/admin");
