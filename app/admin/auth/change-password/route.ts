@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getAdminAuthConfig, getAdminSession, getUserPasswordHash, resolveAdminSessionVersion } from "@/lib/admin-auth";
 import { hashAdminPassword, minimumAdminPasswordLength, verifyAdminPassword } from "@/lib/admin-password";
-import { getPasswordUser, isSameAdminOrigin } from "@/lib/admin-security";
+import { isSameAdminOrigin } from "@/lib/admin-security";
 import { getPrisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
@@ -48,17 +48,18 @@ export async function POST(request: Request) {
   }
 
   const { currentPassword, newPassword } = parsed.data;
-  const sessionUser = getPasswordUser(config, session.adminUsername ?? "");
-  if (!sessionUser || !(await verifyAdminPassword(sessionUser.username, await getUserPasswordHash(config, sessionUser), sessionUser.username, currentPassword))) {
+  const sessionUsername = session.adminUsername ?? config.username;
+  const effectiveHash = await getUserPasswordHash(config, sessionUsername);
+  if (!effectiveHash || !(await verifyAdminPassword(sessionUsername, effectiveHash, sessionUsername, currentPassword))) {
     return new NextResponse("Invalid current password", { status: 403 });
   }
 
   try {
     const newHash = await hashAdminPassword(newPassword);
     await getPrisma().adminPassword.upsert({
-      where: { username: sessionUser.username },
+      where: { username: sessionUsername },
       update: { passwordHash: newHash },
-      create: { username: sessionUser.username, passwordHash: newHash },
+      create: { username: sessionUsername, passwordHash: newHash },
     });
 
     const newVersion = await resolveAdminSessionVersion(config);

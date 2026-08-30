@@ -3,9 +3,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const mocks = vi.hoisted(() => ({
   createAdminSession: vi.fn(),
   getAdminAuthConfig: vi.fn(),
-  getPasswordUser: vi.fn(),
-  getTrustedClientAddress: vi.fn(),
   getUserPasswordHash: vi.fn(),
+  getTrustedClientAddress: vi.fn(),
   isSameAdminOrigin: vi.fn(),
   takePasswordLoginRateLimit: vi.fn(),
   verifyAdminPassword: vi.fn(),
@@ -16,12 +15,12 @@ vi.mock("@/lib/admin-auth", () => ({
   adminSessionCookieName: "__Host-moderato-admin-session",
   createAdminSession: mocks.createAdminSession,
   getAdminAuthConfig: mocks.getAdminAuthConfig,
-  getTrustedClientAddress: mocks.getTrustedClientAddress,
   getUserPasswordHash: mocks.getUserPasswordHash,
+  getTrustedClientAddress: mocks.getTrustedClientAddress,
   takePasswordLoginRateLimit: mocks.takePasswordLoginRateLimit,
 }));
 vi.mock("@/lib/admin-password", () => ({ verifyAdminPassword: mocks.verifyAdminPassword }));
-vi.mock("@/lib/admin-security", () => ({ getPasswordUser: mocks.getPasswordUser, isSameAdminOrigin: mocks.isSameAdminOrigin }));
+vi.mock("@/lib/admin-security", () => ({ isSameAdminOrigin: mocks.isSameAdminOrigin }));
 
 import { POST } from "./route";
 
@@ -47,9 +46,8 @@ describe("POST /admin/auth/password", () => {
   beforeEach(() => {
     vi.resetAllMocks();
     mocks.getAdminAuthConfig.mockReturnValue(config);
-    mocks.getPasswordUser.mockImplementation(() => ({ passwordHash: config.passwordHash, username: config.username }));
-    mocks.getTrustedClientAddress.mockReturnValue("203.0.113.10");
     mocks.getUserPasswordHash.mockResolvedValue(config.passwordHash);
+    mocks.getTrustedClientAddress.mockReturnValue("203.0.113.10");
     mocks.isSameAdminOrigin.mockReturnValue(true);
     mocks.takePasswordLoginRateLimit.mockResolvedValue(true);
     mocks.verifyAdminPassword.mockResolvedValue(false);

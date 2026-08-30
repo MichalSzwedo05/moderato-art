@@ -7,13 +7,10 @@ import {
   getTrustedClientAddress,
   getAdminAuthConfig,
   getAdminSessionVersion,
-  getPasswordUser,
-  getPasswordUsers,
   hashToken,
   isAdminCmsEnabled,
   isMagicToken,
   type AdminAuthConfig,
-  type AdminPasswordUser,
 } from "./admin-security";
 
 const magicLinkLifetimeMs = 15 * 60 * 1000;
@@ -28,29 +25,44 @@ export const adminSessionCookieName = "__Host-moderato-admin-session";
 export { getAdminAuthConfig, isAdminCmsEnabled };
 export { getTrustedClientAddress };
 
-export async function getUserPasswordHash(config: AdminAuthConfig, user: AdminPasswordUser) {
+export async function getUserPasswordHash(
+  config: AdminAuthConfig,
+  username: string,
+): Promise<string | undefined> {
+  if (config.mode !== "password") return undefined;
+  if (username === config.username) {
+    try {
+      const stored = await getPrisma().adminPassword.findUnique({
+        where: { username: config.username },
+        select: { passwordHash: true },
+      });
+      return stored?.passwordHash ?? config.passwordHash;
+    } catch {
+      return config.passwordHash;
+    }
+  }
+  const extra = config.extraUsers.find((user) => user.username === username);
+  if (!extra) return undefined;
   try {
     const stored = await getPrisma().adminPassword.findUnique({
-      where: { username: user.username },
+      where: { username },
       select: { passwordHash: true },
     });
-    return stored?.passwordHash ?? user.passwordHash;
+    return stored?.passwordHash ?? extra.passwordHash;
   } catch {
-    return user.passwordHash;
+    return extra.passwordHash;
   }
 }
 
 export async function getEffectivePasswordHash(config: AdminAuthConfig) {
   if (config.mode !== "password") return undefined;
-  const user = { username: config.username, passwordHash: config.passwordHash };
-  return getUserPasswordHash(config, user);
+  return getUserPasswordHash(config, config.username);
 }
 
 export async function resolveAdminSessionVersion(config: AdminAuthConfig) {
   if (config.mode !== "password") return getAdminSessionVersion(config);
-  const users = getPasswordUsers(config);
-  const hashes = (await Promise.all(users.map((user) => getUserPasswordHash(config, user)))).sort();
-  return hashToken(hashes.join("\n"));
+  const effective = await getEffectivePasswordHash(config);
+  return hashToken(effective ?? config.passwordHash);
 }
 
 function logResendFailure(error: unknown) {
@@ -200,7 +212,7 @@ export async function createAdminSession(config: AdminAuthConfig, username?: str
   const sessionToken = createRandomToken();
   await getPrisma().adminSession.create({
     data: {
-      adminUsername: config.mode === "password" ? username : undefined,
+      adminUsername: username,
       authMode: config.mode,
       credentialVersion: await resolveAdminSessionVersion(config),
       expiresAt: new Date(Date.now() + sessionLifetimeMs),

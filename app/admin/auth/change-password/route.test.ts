@@ -3,7 +3,6 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const mocks = vi.hoisted(() => ({
   getAdminAuthConfig: vi.fn(),
   getAdminSession: vi.fn(),
-  getPasswordUser: vi.fn(),
   getUserPasswordHash: vi.fn(),
   isSameAdminOrigin: vi.fn(),
   resolveAdminSessionVersion: vi.fn(),
@@ -25,7 +24,7 @@ vi.mock("@/lib/admin-password", () => ({
   minimumAdminPasswordLength: 12,
   verifyAdminPassword: mocks.verifyAdminPassword,
 }));
-vi.mock("@/lib/admin-security", () => ({ getPasswordUser: mocks.getPasswordUser, isSameAdminOrigin: mocks.isSameAdminOrigin }));
+vi.mock("@/lib/admin-security", () => ({ isSameAdminOrigin: mocks.isSameAdminOrigin }));
 vi.mock("@/lib/prisma", () => ({
   getPrisma: mocks.getPrisma,
 }));
@@ -65,7 +64,6 @@ describe("POST /admin/auth/change-password", () => {
     vi.resetAllMocks();
     mocks.getAdminAuthConfig.mockReturnValue(config);
     mocks.getAdminSession.mockResolvedValue(session);
-    mocks.getPasswordUser.mockImplementation((_config, username) => ({ passwordHash: config.passwordHash, username }));
     mocks.getUserPasswordHash.mockResolvedValue(config.passwordHash);
     mocks.isSameAdminOrigin.mockReturnValue(true);
     mocks.resolveAdminSessionVersion.mockResolvedValue("new-version");
