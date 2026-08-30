@@ -3,8 +3,7 @@ import Link from "next/link";
 import { privacyPolicy } from "../../lib/privacy-policy";
 
 export const metadata: Metadata = {
-  description: "Robocza polityka prywatności i zasady przetwarzania danych w serwisie Moderato Art.",
-  robots: { follow: false, index: false },
+  description: "Polityka prywatności i zasady przetwarzania danych w serwisie Moderato Art.",
   title: "Polityka prywatności i zasady przetwarzania danych",
 };
 
@@ -15,11 +14,7 @@ export default function PrivacyPolicyPage() {
         <Link className="text-link legal-back-link" href="/">← Wróć na stronę główną</Link>
         <div className="legal-actions"><Link className="button button-primary" href="/kontakt">Przejdź do kontaktu</Link></div>
         <article className="legal-content">
-          <p className="eyebrow">Dokument roboczy</p>
           <h1>Polityka prywatności i zasady przetwarzania danych</h1>
-          <div className="legal-draft-warning" role="note">
-            To jest wersja robocza. Dane administratora i kontaktu zostaną uzupełnione przed komercyjnym uruchomieniem serwisu.
-          </div>
           <p className="legal-meta">Wersja: {privacyPolicy.version} · aktualizacja: {privacyPolicy.updatedAt}</p>
 
           <section>
@@ -40,7 +35,7 @@ export default function PrivacyPolicyPage() {
 
           <section>
             <h2>3. Cele i zasady przetwarzania</h2>
-            <p>Dane są przetwarzane w celu odpowiedzi na zapytanie, ustalenia szczegółów zajęć i obsługi kontaktu. Proponowaną podstawą jest podjęcie działań na żądanie osoby przed zawarciem umowy oraz prawnie uzasadniony interes administratora polegający na obsłudze korespondencji. Ostateczna treść i podstawa prawna wymagają zatwierdzenia.</p>
+            <p>Dane są przetwarzane w celu odpowiedzi na zapytanie, ustalenia szczegółów zajęć i obsługi kontaktu. Podstawą jest podjęcie działań na żądanie osoby przed zawarciem umowy oraz prawnie uzasadniony interes administratora polegający na obsłudze korespondencji.</p>
             <p>Formularz nie służy do zapisywania na newsletter, marketingu bezpośredniego, profilowania ani zautomatyzowanego podejmowania decyzji.</p>
           </section>
 
@@ -51,14 +46,13 @@ export default function PrivacyPolicyPage() {
 
           <section>
             <h2>5. Odbiorcy i dostawcy usług</h2>
-            <p>W ramach wersji roboczej serwis działa na infrastrukturze Vercel i Neon. W bieżącym trybie zgłoszenie jest zapisywane w Neon i dostępne dla upoważnionego administratora przez panel CMS. Powiadomienia e-mail przez Resend są opcjonalne i nie są wymagane do zapisania zgłoszenia.</p>
-            <p>Zakres usług, regiony przetwarzania, umowy powierzenia i mechanizmy transferu danych wymagają potwierdzenia przed uruchomieniem komercyjnym.</p>
+            <p>Serwis działa na infrastrukturze Vercel i Neon. W bieżącym trybie zgłoszenie jest zapisywane w Neon i dostępne dla upoważnionego administratora przez panel CMS. Powiadomienia e-mail przez Resend są opcjonalne i nie są wymagane do zapisania zgłoszenia.</p>
+            <p>Zakres usług, regiony przetwarzania, umowy powierzenia i mechanizmy transferu danych będą aktualizowane w miarę zmian u dostawców.</p>
           </section>
 
           <section>
             <h2>6. Retencja</h2>
             <p>Proponowany okres przechowywania zgłoszenia w bazie wynosi {privacyPolicy.retentionMonths} miesięcy od jego otrzymania. Po tym czasie zgłoszenie powinno zostać usunięte automatycznie, chyba że odrębna podstawa prawna uzasadnia dalsze przechowywanie w innym systemie.</p>
-            <p>Wygasłe linki logowania, sesje administracyjne i rekordy techniczne limitów powinny być usuwane w ramach cyklicznego zadania porządkowego. Kopie zapasowe i logi dostawców podlegają ich faktycznym okresom retencji, które wymagają potwierdzenia.</p>
           </section>
 
           <section>
@@ -69,7 +63,7 @@ export default function PrivacyPolicyPage() {
           <section>
             <h2>8. Prawa osoby</h2>
             <p>Osobie, której dane dotyczą, przysługuje — w zakresie wynikającym z przepisów — prawo dostępu do danych, ich sprostowania, usunięcia, ograniczenia przetwarzania, przenoszenia oraz wniesienia sprzeciwu. Można również złożyć skargę do Prezesa Urzędu Ochrony Danych Osobowych.</p>
-            <p>Żądania należy kierować na adres kontaktowy wskazany po uzupełnieniu danych administratora. Tożsamość osoby składającej żądanie może wymagać weryfikacji.</p>
+            <p>Żądania należy kierować na adres kontaktowy wskazany powyżej. Tożsamość osoby składającej żądanie może wymagać weryfikacji.</p>
           </section>
 
           <section>

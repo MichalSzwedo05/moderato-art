@@ -9,13 +9,13 @@ export const privacyPolicy: {
   updatedAt: string;
   version: string;
 } = {
-  address: "[ADRES ADMINISTRATORA – UZUPEŁNIĆ]",
-  controller: "[ADMINISTRATOR DANYCH – UZUPEŁNIĆ]",
-  privacyContact: "[KONTAKT DS. PRYWATNOŚCI – UZUPEŁNIĆ]",
+  address: "Żołędowo, ul. Krokusowa, 86-021",
+  controller: "Magdalena Warzecha-Hiller",
+  privacyContact: "moderato.art@wp.pl",
   retentionMonths: 12,
-  status: "draft",
-  updatedAt: "25 sierpnia 2026",
-  version: "draft-optional-message-2026-08-25",
+  status: "published",
+  updatedAt: "30 sierpnia 2026",
+  version: "2026-08-30",
 };
 
 export const privacyNoticeVersion = privacyPolicy.version;
