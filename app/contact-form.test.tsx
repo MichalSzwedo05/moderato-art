@@ -99,7 +99,7 @@ describe("ContactForm", () => {
     expect(parsed.paymentAccepted).toBeUndefined();
   });
 
-  it("adapts the standalone form fields to the selected lesson type", () => {
+  it("keeps the standalone form on Junior Voice and offers only that lesson type", () => {
     render(<ContactForm enabled standalone />);
     const offerSelect = screen.getByLabelText(/rodzaj zajęć/i);
 
@@ -109,42 +109,45 @@ describe("ContactForm", () => {
     expect(screen.getByLabelText(/akceptuję warunki/i)).toBeInTheDocument();
     expect(screen.getByText(/wizerunku mojego dziecka/i)).toBeInTheDocument();
 
-    fireEvent.change(offerSelect, { target: { value: "studio-wokalne" } });
-
-    expect(screen.getByText("Imię i nazwisko")).toBeInTheDocument();
-    expect(screen.getByText("Data urodzenia")).toBeInTheDocument();
-    expect(screen.queryByText("Imię i nazwisko dziecka")).not.toBeInTheDocument();
-    expect(screen.queryByText("Data urodzenia dziecka")).not.toBeInTheDocument();
-    expect(screen.queryByText(/przedszkole/i)).not.toBeInTheDocument();
-    expect(screen.queryByText("Grupa")).not.toBeInTheDocument();
-    expect(screen.queryByLabelText(/akceptuję warunki/i)).not.toBeInTheDocument();
-    expect(screen.queryByText(/terminowej zapłaty/i)).not.toBeInTheDocument();
-    expect(screen.getByText(/wizerunku uczestnika/i)).toBeInTheDocument();
+    const options = Array.from(offerSelect.querySelectorAll("option")).map((option) => option.textContent);
+    expect(options).toEqual(["Lekcje śpiewu dla dzieci - Junior Voice"]);
   });
 
-  it("lets the standalone form default to Junior Voice and choose among the enrollable offers", async () => {
+  it("lets the standalone form submit Junior Voice with the child fields", async () => {
     render(<ContactForm enabled standalone />);
 
     const offerSelect = screen.getByLabelText(/rodzaj zajęć/i);
     expect(offerSelect).toBeRequired();
     expect(offerSelect).toHaveValue("junior-voice");
-    expect(Array.from(offerSelect.querySelectorAll("option")).map((option) => option.textContent)).toEqual([
-      "Junior Voice",
-      "Studio Wokalne",
-      "Rehabilitacja zaburzeń głosu",
-    ]);
     expect(Array.from(offerSelect.querySelectorAll("option")).every((option) => option.textContent !== "Rytmisolki")).toBe(true);
-    fireEvent.change(offerSelect, { target: { value: "studio-wokalne" } });
-    fillParticipantRequiredFields();
+    fillChildRequiredFields();
     fireEvent.submit(screen.getByLabelText(/polityką prywatności/i).closest("form")!);
 
     await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
     const [, request] = fetchMock.mock.calls[0] as [string, RequestInit];
     const parsed = JSON.parse(String(request.body));
-    expect(parsed).toMatchObject({ lessonType: "studio-wokalne" });
-    expect(parsed.preschool).toBeUndefined();
-    expect(parsed.group).toBeUndefined();
-    expect(parsed.paymentAccepted).toBeUndefined();
+    expect(parsed).toMatchObject({ lessonType: "junior-voice" });
+    expect(parsed).toMatchObject({ preschool: "Przedszkole Moderato", group: "Motylki", paymentAccepted: true });
+  });
+
+  it("lets the standalone form default to Junior Voice and submit the child fields", async () => {
+    render(<ContactForm enabled standalone />);
+
+    const offerSelect = screen.getByLabelText(/rodzaj zajęć/i);
+    expect(offerSelect).toBeRequired();
+    expect(offerSelect).toHaveValue("junior-voice");
+    expect(Array.from(offerSelect.querySelectorAll("option")).map((option) => option.textContent)).toEqual(["Lekcje śpiewu dla dzieci - Junior Voice"]);
+    expect(Array.from(offerSelect.querySelectorAll("option")).every((option) => option.textContent !== "Rytmisolki")).toBe(true);
+    fillChildRequiredFields();
+    fireEvent.submit(screen.getByLabelText(/polityką prywatności/i).closest("form")!);
+
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+    const [, request] = fetchMock.mock.calls[0] as [string, RequestInit];
+    const parsed = JSON.parse(String(request.body));
+    expect(parsed).toMatchObject({ lessonType: "junior-voice" });
+    expect(parsed.preschool).toBeDefined();
+    expect(parsed.group).toBeDefined();
+    expect(parsed.paymentAccepted).toBe(true);
   });
 
   it("submits the three optional address fields grouped together", async () => {

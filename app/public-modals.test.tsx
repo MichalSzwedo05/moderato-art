@@ -22,28 +22,40 @@ describe("PublicModals", () => {
     render(<><OfferModalLink offerId="junior-voice">Więcej o Junior Voice</OfferModalLink><PublicModals /></>);
 
     fireEvent.click(screen.getByRole("link", { name: "Więcej o Junior Voice" }));
-    expect(screen.getByRole("heading", { name: "Junior Voice" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Lekcje śpiewu dla dzieci - Junior Voice" })).toBeInTheDocument();
     expect(screen.getByText("Grupowe lekcje śpiewu")).toBeInTheDocument();
 
     const dialog = document.querySelector<HTMLDialogElement>(".public-modal")!;
     vi.spyOn(dialog, "getBoundingClientRect").mockReturnValue(new DOMRect(100, 100, 400, 400));
     fireEvent.pointerDown(dialog, { clientX: 50, clientY: 50 });
-    expect(screen.queryByRole("heading", { name: "Junior Voice" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "Lekcje śpiewu dla dzieci - Junior Voice" })).not.toBeInTheDocument();
+  });
+
+  it("redirects Junior Voice to the enrollment page with the chosen lesson type", () => {
+    render(<><OfferModalLink offerId="junior-voice">Otwórz Junior Voice</OfferModalLink><PublicModals /></>);
+
+    fireEvent.click(screen.getByRole("link", { name: "Otwórz Junior Voice" }));
+
+    expect(screen.getByRole("heading", { name: "Lekcje śpiewu dla dzieci - Junior Voice" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /przejdź do formularza zgłoszeniowego/i })).toHaveAttribute("href", "/zgloszenie?zajecia=junior-voice");
+    expect(document.querySelector(".public-modal form")).toBeNull();
+    expect(screen.queryByText("Wybrane zajęcia")).not.toBeInTheDocument();
   });
 
   it.each([
-    ["junior-voice", "Junior Voice", "junior-voice"],
-    ["studio-wokalne", "Studio Wokalne", "studio-wokalne"],
-    ["rehabilitacja-zaburzen-glosu", "Rehabilitacja zaburzeń głosu", "rehabilitacja-zaburzen-glosu"],
-  ] as const)("redirects %s to the enrollment page with the chosen lesson type", (offerId, title, lessonType) => {
+    ["studio-wokalne", "Studio Wokalne"],
+    ["rehabilitacja-zaburzen-glosu", "Rehabilitacja zaburzeń głosu"],
+  ] as const)("shows only contact details for %s", (offerId, title) => {
     render(<><OfferModalLink offerId={offerId}>Otwórz {title}</OfferModalLink><PublicModals /></>);
 
     fireEvent.click(screen.getByRole("link", { name: `Otwórz ${title}` }));
 
     expect(screen.getByRole("heading", { name: title })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /przejdź do formularza zgłoszeniowego/i })).toHaveAttribute("href", `/zgloszenie?zajecia=${lessonType}`);
+    expect(screen.queryByRole("link", { name: /przejdź do formularza zgłoszeniowego/i })).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Pokaż numer telefonu" }));
+    expect(screen.getByRole("link", { name: "+48 605 946 678" })).toHaveAttribute("href", "tel:+48605946678");
+    expect(screen.getByRole("link", { name: "Przejdź do strony kontaktu" })).toHaveAttribute("href", "/kontakt");
     expect(document.querySelector(".public-modal form")).toBeNull();
-    expect(screen.queryByText("Wybrane zajęcia")).not.toBeInTheDocument();
   });
 
   it("shows only contact details for Rytmisolki", () => {

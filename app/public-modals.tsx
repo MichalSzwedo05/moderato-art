@@ -104,7 +104,7 @@ export function PublicModals() {
     <button aria-label="Zamknij okno" className="public-modal-close" onClick={() => dialogRef.current?.close()} ref={closeButtonRef} type="button">×</button>
     {offer && <>
       <section><p className="eyebrow">{offer.subtitle}</p><h2 id={titleId}>{offer.title}</h2><p className="offer-audience">{offer.audience}</p><div className="offer-modal-copy">{offer.modalParagraphs.map((paragraph, index) => <p key={`${offer.id}-${index}`}>{paragraph}</p>)}</div></section>
-      {offer.contactMode === "form" ? <div className="offer-modal-enrollment"><Link className="offer-modal-enrollment-link" href={`/zgloszenie?zajecia=${offer.lessonType}`}>Przejdź do formularza zgłoszeniowego →</Link></div> : <ContactDetails />}
+      {offer.lessonType === "junior-voice" ? <div className="offer-modal-enrollment"><Link className="offer-modal-enrollment-link" href={`/zgloszenie?zajecia=${offer.lessonType}`}>Przejdź do formularza zgłoszeniowego →</Link></div> : <ContactDetails />}
     </>}
   </dialog>;
 }

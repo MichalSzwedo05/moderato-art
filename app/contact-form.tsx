@@ -102,7 +102,7 @@ export function ContactForm(props: ContactFormProps) {
           <label>
             <span>Rodzaj zajęć<RequiredMark /></span>
             <select name="lessonType" onChange={(event) => setSelectedLessonType(event.currentTarget.value as ContactLessonType)} required value={selectedLessonType}>
-              {formLessonOffers.map((offer) => <option key={offer.lessonType} value={offer.lessonType}>{offer.title}</option>)}
+              {formLessonOffers.filter((offer) => offer.lessonType === "junior-voice").map((offer) => <option key={offer.lessonType} value={offer.lessonType}>{offer.title}</option>)}
             </select>
           </label>
         ) : (

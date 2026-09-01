@@ -32,7 +32,7 @@ export const offers = [
     ],
     number: "02",
     subtitle: "Grupowe lekcje śpiewu",
-    title: "Junior Voice",
+    title: "Lekcje śpiewu dla dzieci - Junior Voice",
   },
   {
     audience: "Dla dzieci, młodzieży i dorosłych",

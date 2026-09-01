@@ -55,11 +55,11 @@ export default async function HomePage() {
             <div className="hero-copy">
               <p className="eyebrow">Muzyka, głos, wrażliwość</p>
               <h1 id="hero-title">
-                Daj dziecku <em>głos,</em> który lubi brzmieć.
+                Rozwijaj głos i miłość do muzyki.
               </h1>
               <p className="hero-intro">
                 Zajęcia muzyczno-rytmiczne, grupowe lekcje śpiewu i indywidualna
-                praca z głosem dla dzieci, młodzieży i dorosłych.
+                praca z głosem dla dzieci, młodzieży.
               </p>
               <div className="hero-actions">
                 <a className="text-link" href="#oferta">Sprawdź ofertę <span aria-hidden="true">-&gt;</span></a>
@@ -94,7 +94,7 @@ export default async function HomePage() {
             </ScrollReveal>
             <ScrollReveal className="intro-copy" delay={120} variant="right">
               <p className="eyebrow">Poznaj prowadzącą</p>
-              <h2 id="about-title">Muzyka zaczyna się od uważnego słuchania.</h2>
+              <h2 id="about-title">Daj głos swojej pasji.</h2>
               <p>
                 Magdalena Warzecha-Hiller jest sopranistką, pedagogiem śpiewu i
                 rehabilitantką zaburzeń głosu. W pracy z dziećmi łączy muzyczną
@@ -116,7 +116,7 @@ export default async function HomePage() {
             <div className="section-heading">
               <div>
                 <p className="eyebrow">Co robimy</p>
-                <h2 id="offer-title">Znajdź swój rytm i własny głos.</h2>
+                <h2 id="offer-title">Oferta</h2>
               </div>
               <p>
                 Wybierz program dopasowany do wieku, potrzeb i muzycznych marzeń.
@@ -125,8 +125,9 @@ export default async function HomePage() {
             <div className="offer-grid">
               {offers.map((offer, index) => (
                 <ScrollReveal as="article" className="offer-card" delay={index * 100} key={offer.number}>
-                  <span>{offer.number}</span>
-                  <h3>{offer.title}</h3>
+                  <div className="offer-card-heading">
+                    <h3>{offer.title === "Lekcje śpiewu dla dzieci - Junior Voice" ? <>Lekcje śpiewu dla dzieci - <span className="offer-card-nowrap">Junior Voice</span></> : offer.title}</h3>
+                  </div>
                   <p className="offer-subtitle">{offer.subtitle}</p>
                   <p className="offer-audience">{offer.audience}</p>
                   <p>{offer.description}</p>

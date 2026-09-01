@@ -25,10 +25,10 @@ vi.mock("./public-modals", () => ({
   PublicModals: () => null,
 }));
 vi.mock("./scroll-reveal", () => ({
-  ScrollReveal: ({ as = "div", children }: { as?: "article" | "div" | "figure"; children: ReactNode }) => {
-    if (as === "article") return <article>{children}</article>;
-    if (as === "figure") return <figure>{children}</figure>;
-    return <div>{children}</div>;
+  ScrollReveal: ({ as = "div", className, children }: { as?: "article" | "div" | "figure"; className?: string; children: ReactNode }) => {
+    if (as === "article") return <article className={className}>{children}</article>;
+    if (as === "figure") return <figure className={className}>{children}</figure>;
+    return <div className={className}>{children}</div>;
   },
 }));
 vi.mock("./theme-switcher", () => ({ ThemeSwitcher: () => null }));
