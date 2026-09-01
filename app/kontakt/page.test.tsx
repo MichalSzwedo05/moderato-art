@@ -17,7 +17,7 @@ describe("ContactPage", () => {
     expect(screen.queryByRole("group")).not.toBeInTheDocument();
     expect(screen.getByText("Magdalena Warzecha-Hiller", { selector: "dd" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "moderato.art@wp.pl" })).toHaveAttribute("href", "mailto:moderato.art@wp.pl");
-    expect(screen.getByText("6621786684", { selector: "dd" })).toBeInTheDocument();
+    expect(screen.queryByText("6621786684", { selector: "dd" })).not.toBeInTheDocument();
     expect(screen.queryByRole("link", { name: "+48 605 946 678" })).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Pokaż numer telefonu" }));
     expect(screen.getByRole("link", { name: "+48 605 946 678" })).toHaveAttribute("href", "tel:+48605946678");

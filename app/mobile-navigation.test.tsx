@@ -1,6 +1,5 @@
-import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
-import { describe, expect, it } from "vitest";
+import { fireEvent, render, screen, within } from "@testing-library/react";
+import { describe, expect, it, vi } from "vitest";
 import { MobileNavigation } from "./mobile-navigation";
 import { ThemeSwitcher } from "./theme-switcher";
 
@@ -38,29 +37,6 @@ describe("MobileNavigation", () => {
     expect(button).toHaveFocus();
   });
 
-  it("closes when the appearance switcher opens", async () => {
-    const user = userEvent.setup();
-
-    render(
-      <>
-        <MobileNavigation />
-        <ThemeSwitcher />
-      </>,
-    );
-
-    const button = screen.getByRole("button", { name: "Menu" });
-    const navigation = screen.getByRole("navigation", { hidden: true });
-
-    fireEvent.click(button);
-    expect(navigation).not.toHaveAttribute("hidden");
-
-    await user.click(screen.getByText("Wygląd"));
-
-    await waitFor(() => {
-      expect(navigation).toHaveAttribute("hidden");
-    });
-  });
-
   it("stays open after an inside click and closes after an outside click", () => {
     render(
       <>
@@ -79,48 +55,18 @@ describe("MobileNavigation", () => {
     fireEvent.pointerDown(screen.getByRole("button", { name: "Poza menu" }));
     expect(navigation).toHaveAttribute("hidden");
   });
+});
 
-  it("closes the appearance switcher when mobile navigation opens", () => {
-    const { container } = render(
-      <>
-        <MobileNavigation />
-        <ThemeSwitcher />
-      </>,
-    );
+describe("ThemeSwitcher", () => {
+  it("sets the signature variant from browser preference", () => {
+    render(<ThemeSwitcher />);
 
-    const details = container.querySelector("details");
-    const button = screen.getByRole("button", { name: "Menu" });
-
-    if (!details) {
-      throw new Error("Theme switcher details element was not rendered.");
-    }
-
-    details.open = true;
-    fireEvent.click(button);
-
-    expect(details.open).toBe(false);
+    expect(document.documentElement.dataset.variant).toBe("signature");
   });
 
-  it("closes the appearance switcher after an outside click or Escape", () => {
+  it("renders nothing", () => {
     const { container } = render(<ThemeSwitcher />);
-    const details = container.querySelector("details");
-    const summary = screen.getByText("Wygląd");
 
-    if (!details) {
-      throw new Error("Theme switcher details element was not rendered.");
-    }
-
-    details.open = true;
-    fireEvent.pointerDown(screen.getByLabelText("Wizytówka"));
-    expect(details.open).toBe(true);
-
-    fireEvent.pointerDown(document.body);
-    expect(details.open).toBe(false);
-
-    details.open = true;
-    fireEvent.keyDown(window, { key: "Escape" });
-
-    expect(details.open).toBe(false);
-    expect(summary).toHaveFocus();
+    expect(container).toBeEmptyDOMElement();
   });
 });

@@ -6,7 +6,7 @@ import { formLessonTypes, type ContactLessonType } from "../../lib/offers";
 import { ContactForm } from "../contact-form";
 
 export const metadata: Metadata = {
-  description: "Zapisz dziecko lub siebie na zajęcia wokalne i muzyczne w Moderato Art — Rytmisolki, Junior Voice, Studio Wokalne i rehabilitacja zaburzeń głosu.",
+  description: "Zapisz dziecko na zajęcia wokalne Junior Voice w Moderato Art — grupowe lekcje śpiewu dla przedszkolaków.",
   title: "Zgłoszenie na zajęcia",
 };
 

@@ -42,16 +42,6 @@ export function MobileNavigation({ hasArticles = true }: MobileNavigationProps) 
     };
   }, [isOpen]);
 
-  useEffect(() => {
-    function closeNavigation() {
-      setIsOpen(false);
-    }
-
-    window.addEventListener("theme-switcher-open", closeNavigation);
-
-    return () => window.removeEventListener("theme-switcher-open", closeNavigation);
-  }, []);
-
   function handleToggle() {
     if (!isOpen) {
       window.dispatchEvent(new Event("mobile-navigation-open"));

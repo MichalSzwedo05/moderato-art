@@ -25,10 +25,10 @@ vi.mock("./public-modals", () => ({
   PublicModals: () => null,
 }));
 vi.mock("./scroll-reveal", () => ({
-  ScrollReveal: ({ as = "div", children }: { as?: "article" | "div" | "figure"; children: ReactNode }) => {
-    if (as === "article") return <article>{children}</article>;
-    if (as === "figure") return <figure>{children}</figure>;
-    return <div>{children}</div>;
+  ScrollReveal: ({ as = "div", className, children }: { as?: "article" | "div" | "figure"; className?: string; children: ReactNode }) => {
+    if (as === "article") return <article className={className}>{children}</article>;
+    if (as === "figure") return <figure className={className}>{children}</figure>;
+    return <div className={className}>{children}</div>;
   },
 }));
 vi.mock("./theme-switcher", () => ({ ThemeSwitcher: () => null }));
@@ -55,6 +55,7 @@ describe("HomePage profile", () => {
     expect(screen.getByRole("link", { name: "+48 605 946 678" })).toHaveAttribute("href", "tel:+48605946678");
     expect(screen.getByRole("link", { name: "Przejdź do strony kontaktu" })).toHaveAttribute("href", "/kontakt");
     expect(screen.getByRole("heading", { name: "Rehabilitacja zaburzeń głosu" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Rehabilitacja zaburzeń głosu" }).closest(".offer-card")).toHaveClass("offer-card-center");
     expect(screen.getByText(/created by:/)).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Michał Szwedo" })).toHaveAttribute("href", "https://www.linkedin.com/in/micha%C5%82-szwedo-664337403");
   });

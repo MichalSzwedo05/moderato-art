@@ -24,10 +24,10 @@ describe("ZgloszeniePage", () => {
     expect(screen.queryByRole("button", { name: "Pokaż numer telefonu" })).not.toBeInTheDocument();
   });
 
-  it("preselects the lesson type from the zajecia query parameter", async () => {
+  it("ignores non-Junior Voice lesson types from the zajecia query parameter", async () => {
     render(await ZgloszeniePage({ searchParams: Promise.resolve({ zajecia: "studio-wokalne" }) }));
 
-    expect(screen.getByLabelText(/rodzaj zajęć/i)).toHaveValue("studio-wokalne");
+    expect(screen.getByLabelText(/rodzaj zajęć/i)).toHaveValue("junior-voice");
   });
 
   it("defaults the lesson type when the query parameter is invalid or missing", async () => {
