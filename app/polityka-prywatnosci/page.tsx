@@ -3,7 +3,7 @@ import Link from "next/link";
 import { privacyPolicy } from "../../lib/privacy-policy";
 
 export const metadata: Metadata = {
-  description: "Polityka prywatności i zasady przetwarzania danych w serwisie Moderato Art.",
+  description: "Polityka prywatności i zasady przetwarzania danych w serwisie Moderato.",
   title: "Polityka prywatności i zasady przetwarzania danych",
 };
 

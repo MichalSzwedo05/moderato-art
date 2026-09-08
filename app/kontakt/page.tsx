@@ -4,7 +4,7 @@ import { connection } from "next/server";
 import { ContactDetails } from "../contact-details";
 
 export const metadata: Metadata = {
-  description: "Skontaktuj się bezpośrednio lub przez formularz w sprawie zajęć muzycznych, lekcji śpiewu i pracy z głosem w Moderato Art.",
+  description: "Skontaktuj się bezpośrednio lub przez formularz w sprawie zajęć muzycznych, lekcji śpiewu i pracy z głosem w Moderato.",
   title: "Kontakt",
 };
 

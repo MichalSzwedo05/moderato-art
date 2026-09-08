@@ -20,7 +20,7 @@ function LoginForm({ mode, notice }: { mode: "magic_link" | "password"; notice?:
     <main className="admin-shell">
       <section className="admin-card admin-login-card">
         <Link className="admin-secondary-button admin-header-home-link" href="/">Strona główna</Link>
-        <p className="admin-eyebrow">Moderato Art</p>
+        <p className="admin-eyebrow">Moderato</p>
         <h1>Panel administracyjny</h1>
         <p>{mode === "password" ? "Podaj nazwę użytkownika i hasło administratora." : "Podaj adres e-mail administratora. Jeśli dostęp jest możliwy, otrzymasz link do logowania."}</p>
         {mode === "magic_link" && notice === "sent" ? <p className="admin-success" role="status">Jeśli adres ma dostęp, link do logowania został wysłany.</p> : null}

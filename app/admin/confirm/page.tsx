@@ -23,7 +23,7 @@ export default async function ConfirmAdminLoginPage({
     <main className="admin-shell">
       <section className="admin-card admin-login-card">
         <Link className="admin-secondary-button admin-header-home-link" href="/">Strona główna</Link>
-        <p className="admin-eyebrow">Moderato Art</p>
+        <p className="admin-eyebrow">Moderato</p>
         <h1>Potwierdź logowanie</h1>
         {!isAdminCmsEnabled() || !validToken ? (
           <p>Nie można teraz potwierdzić logowania.</p>

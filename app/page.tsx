@@ -33,7 +33,7 @@ export default async function HomePage() {
       </a>
       <header className="site-header">
         <div className="site-shell navigation">
-          <a className="brand" href="#start" aria-label="Moderato Art - strona główna">
+          <a className="brand" href="#start" aria-label="Moderato - strona główna">
             <Image className="brand-logo" src="/moderato-logo.jpg" alt="Moderato" width={1563} height={600} priority />
             <span className="brand-tagline">Muzyczna Kraina Malucha</span>
           </a>
@@ -166,7 +166,7 @@ export default async function HomePage() {
             <div>
               <p className="eyebrow">Głosy rodziców</p>
               <h2 id="testimonials-title">Dobre słowa zostają z nami na długo.</h2>
-              <p>Tu wkrótce pojawią się opinie osób, które poznały Moderato Art.</p>
+              <p>Tu wkrótce pojawią się opinie osób, które poznały Moderato.</p>
             </div>
             <div className="testimonials-empty"><span aria-hidden="true">“</span><p>Przygotowujemy miejsce na pierwsze opinie rodziców i uczestników zajęć.</p></div>
           </div>
@@ -216,14 +216,14 @@ export default async function HomePage() {
 
       <footer className="site-footer">
         <div className="site-shell footer-content">
-          <a className="brand brand-footer" href="#start" aria-label="Moderato Art - powrót na początek">
+          <a className="brand brand-footer" href="#start" aria-label="Moderato - powrót na początek">
             <span className="footer-brand-name">Moderato</span>
             <span className="brand-tagline">Muzyczna Kraina Malucha</span>
           </a>
           <p>Muzyka, śpiew i praca z głosem.</p>
           <Link className="footer-legal-link" href="/polityka-prywatnosci">Polityka prywatności</Link>
           <p className="footer-credit">created by: <a className="footer-credit-link" href="https://www.linkedin.com/in/micha%C5%82-szwedo-664337403">Michał Szwedo</a></p>
-          <p>© <CurrentYear /> Moderato Art</p>
+          <p>© <CurrentYear /> Moderato</p>
         </div>
       </footer>
     </>
