@@ -2793,4 +2793,9 @@ h2 {
   .admin-card {
     padding: 1.25rem;
   }
+
+  .admin-header-home-link {
+    margin-bottom: 1rem;
+    position: static;
+  }
 }
