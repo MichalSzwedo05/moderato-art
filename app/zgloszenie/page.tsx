@@ -6,7 +6,7 @@ import { formLessonTypes, type ContactLessonType } from "../../lib/offers";
 import { ContactForm } from "../contact-form";
 
 export const metadata: Metadata = {
-  description: "Zapisz dziecko na zajęcia wokalne Junior Voice w Moderato Art — grupowe lekcje śpiewu dla przedszkolaków.",
+  description: "Zapisz dziecko na zajęcia wokalne Junior Voice w Moderato — grupowe lekcje śpiewu dla przedszkolaków.",
   title: "Zgłoszenie na zajęcia",
 };
 
@@ -28,7 +28,7 @@ export default async function ZgloszeniePage({ searchParams }: ZgloszeniePagePro
         <div className="contact-page-single">
           <header className="contact-page-intro">
             <p className="eyebrow">Zgłoszenie na zajęcia</p>
-            <h1>Zapisz się na zajęcia w Moderato Art.</h1>
+            <h1>Zapisz się na zajęcia w Moderato.</h1>
             <p>Wybierz rodzaj zajęć i wypełnij formularz zgłoszeniowy. Wrócimy do Ciebie z potwierdzeniem i szczegółami.</p>
             <p className="contact-page-note">Nie podawaj w formularzu danych wrażliwych uczestnika.</p>
           </header>

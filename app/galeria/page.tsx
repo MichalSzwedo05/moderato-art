@@ -5,7 +5,7 @@ import { getGalleryPhotos } from "../../lib/gallery-data";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
-export const metadata: Metadata = { description: "Galeria przestrzeni muzycznej Moderato Art.", title: "Galeria" };
+export const metadata: Metadata = { description: "Galeria przestrzeni muzycznej Moderato.", title: "Galeria" };
 
 export default async function GalleryPage() {
   const galleryPhotos = await getGalleryPhotos();

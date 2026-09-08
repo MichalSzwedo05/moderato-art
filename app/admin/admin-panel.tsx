@@ -9,7 +9,7 @@ export function AdminPanel({ children, title }: { children: ReactNode; title: st
       <section className="admin-card admin-content-card">
         <header className="admin-header">
           <div>
-            <p className="admin-eyebrow">Moderato Art</p>
+            <p className="admin-eyebrow">Moderato</p>
             <h1>{title}</h1>
           </div>
           <div className="admin-header-actions">
