@@ -2,12 +2,11 @@ import type { GoogleSheetsConfig } from "./google-sheets";
 
 type ContactFormEnvironment = {
   CONTACT_FORM_ENABLED?: string;
-  CONTACT_FORM_RECIPIENT?: string;
   CONTACT_FORM_RESEND_FROM?: string;
   CONTACT_RATE_LIMIT_SECRET?: string;
   CRON_SECRET?: string;
   DATABASE_URL?: string;
-  RESEND_API_KEY?: string;
+  RESEND_TOKEN?: string;
   GOOGLE_SHEETS_SPREADSHEET_ID?: string;
   GOOGLE_SHEETS_RANGE?: string;
   GOOGLE_SERVICE_ACCOUNT_EMAIL?: string;
@@ -17,7 +16,6 @@ type ContactFormEnvironment = {
 export type ContactFormConfig = {
   rateLimitSecret: string;
   notification?: {
-    recipient: string;
     resendFrom: string;
     resendKey: string;
   };
@@ -79,15 +77,14 @@ function getSheetsConfig(environment: ContactFormEnvironment) {
 }
 
 export function getContactFormConfig(environment: ContactFormEnvironment = process.env as ContactFormEnvironment): ContactFormConfig | undefined {
-  const resendKey = environment.RESEND_API_KEY;
-  const recipient = environment.CONTACT_FORM_RECIPIENT?.trim();
+  const resendKey = environment.RESEND_TOKEN;
   const resendFrom = environment.CONTACT_FORM_RESEND_FROM?.trim();
   const rateLimitSecret = environment.CONTACT_RATE_LIMIT_SECRET?.trim();
   const cronSecret = environment.CRON_SECRET?.trim();
-  const notificationConfigured = Boolean(resendKey || recipient || resendFrom);
+  const notificationConfigured = Boolean(resendKey || resendFrom);
   const notification = notificationConfigured
-    ? (isResendKey(resendKey) && isEmail(recipient) && isSender(resendFrom)
-      ? { recipient: recipient!, resendFrom: resendFrom!, resendKey: resendKey!.trim() }
+    ? (isResendKey(resendKey) && isSender(resendFrom)
+      ? { resendFrom: resendFrom!, resendKey: resendKey!.trim() }
       : undefined)
       : undefined;
   const sheets = getSheetsConfig(environment);

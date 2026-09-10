@@ -2,20 +2,20 @@
 
 ## Scope
 
-The contact form implementation is prepared for non-commercial draft use. When `CONTACT_FORM_ENABLED=true`, it accepts enquiries from the selected offer modal and stores them in Neon without a test password. Resend notification is optional: all three Resend variables must be configured together to enable it. The public privacy notice is available at `/polityka-prywatnosci` and is intentionally marked as a draft until the controller details and provider review are complete.
+The contact form implementation is prepared for non-commercial draft use. When `CONTACT_FORM_ENABLED=true`, it accepts enquiries from the selected offer modal and stores them in Neon without a test password. Resend confirmation email is optional: `RESEND_TOKEN` and `CONTACT_FORM_RESEND_FROM` must be configured together to enable it. The public privacy notice is available at `/polityka-prywatnosci` and is intentionally marked as a draft until the controller details and provider review are complete.
 
 ## Data flow
 
 1. The browser submits JSON only from the same origin and must acknowledge the draft privacy notice.
 2. The route validates the body with Zod, applies a best-effort HMAC-keyed in-memory rate limit, and ignores filled honeypots without saving them.
 3. Valid submissions are stored in `ContactSubmission` with the notice version, acknowledgement timestamp, and a 12-month deletion deadline.
-4. Resend sends a plain-text notification to the configured administrator address. The sender and recipient are server-only configuration.
+4. Resend sends a plain-text confirmation to the address submitted in the form. The sender and token are server-only configuration.
 5. The daily Vercel Cron job removes expired submissions and expired administrative authentication records.
 
 ## Security decisions
 
 - No password or visitor test token is required in the non-commercial draft stage.
-- The route fails closed if the feature flag, Resend key, recipient, or rate-limit secret is missing or still a placeholder.
+- The route fails closed if the feature flag, Resend token, sender, or rate-limit secret is missing or still a placeholder.
 - Same-origin, JSON content type, bounded body size, strict schema validation, a honeypot, and rate limiting are enforced server-side.
 - Raw client addresses are not persisted; the draft rate limiter receives only an HMAC-derived identifier and is bounded per runtime instance.
 - Request bodies and personal fields are not logged.
@@ -32,7 +32,7 @@ The contact form implementation is prepared for non-commercial draft use. When `
 
 ## Required configuration
 
-Configure `CONTACT_FORM_ENABLED=true`, `DATABASE_URL`, `CONTACT_RATE_LIMIT_SECRET`, and `CRON_SECRET` in the intended non-commercial Vercel/Neon environment. Configure all three Resend variables only if e-mail notifications are desired. Apply the privacy-notice Prisma migration before activation. Replace and review all placeholders before commercial use.
+Configure `CONTACT_FORM_ENABLED=true`, `DATABASE_URL`, `CONTACT_RATE_LIMIT_SECRET`, and `CRON_SECRET` in the intended non-commercial Vercel/Neon environment. Configure `RESEND_TOKEN` and `CONTACT_FORM_RESEND_FROM` only if confirmation e-mails are desired. Apply the privacy-notice Prisma migration before activation. Replace and review all placeholders before commercial use.
 
 ## Commercial-readiness gate
 
