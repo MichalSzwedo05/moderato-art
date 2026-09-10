@@ -134,12 +134,12 @@ The Neon-only implementation is intended for the small Vercel/Neon test gallery.
 
 ## Contact Form and Draft Privacy Mode
 
-The implementation for `POST /api/contact` validates input, requires same-origin requests and a privacy acknowledgement, applies a bounded best-effort per-runtime rate limit, and stores submissions in Neon. Optional Resend configuration sends a confirmation email to the address submitted in the form; collection is intended only for the non-commercial draft stage while the policy contains placeholders.
+The implementation for `POST /api/contact` validates input, requires same-origin requests and a privacy acknowledgement, applies a bounded best-effort per-runtime rate limit, and stores submissions in Neon. Optional Resend configuration sends a confirmation email to the address submitted in the form and a lesson-type notification to the configured owner address; collection is intended only for the non-commercial draft stage while the policy contains placeholders.
 
 Configure these server-only variables in Vercel or the equivalent runtime:
 
 - `CONTACT_FORM_ENABLED=true` only for the explicitly non-commercial draft stage after the database migration and cleanup scheduler are verified
-- `RESEND_TOKEN` and `CONTACT_FORM_RESEND_FROM` are optional and must either both be configured or both be empty; the sender domain used by `CONTACT_FORM_RESEND_FROM` must be verified in Resend
+- `RESEND_TOKEN` and `CONTACT_FORM_RESEND_FROM` are optional and must either both be configured or both be empty; `CONTACT_FORM_RECIPIENT` optionally enables the owner notification; the sender domain used by `CONTACT_FORM_RESEND_FROM` must be verified in Resend
 - `CONTACT_RATE_LIMIT_SECRET` with a random value of at least 32 characters
 - `CRON_SECRET` for the daily retention cleanup job
 

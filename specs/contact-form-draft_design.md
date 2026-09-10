@@ -2,14 +2,14 @@
 
 ## Scope
 
-The contact form implementation is prepared for non-commercial draft use. When `CONTACT_FORM_ENABLED=true`, it accepts enquiries from the selected offer modal and stores them in Neon without a test password. Resend confirmation email is optional: `RESEND_TOKEN` and `CONTACT_FORM_RESEND_FROM` must be configured together to enable it. The public privacy notice is available at `/polityka-prywatnosci` and is intentionally marked as a draft until the controller details and provider review are complete.
+The contact form implementation is prepared for non-commercial draft use. When `CONTACT_FORM_ENABLED=true`, it accepts enquiries from the selected offer modal and stores them in Neon without a test password. Resend confirmation email is optional: `RESEND_TOKEN` and `CONTACT_FORM_RESEND_FROM` must be configured together to enable it. `CONTACT_FORM_RECIPIENT` optionally enables a lesson-type notification to the owner. The public privacy notice is available at `/polityka-prywatnosci` and is intentionally marked as a draft until the controller details and provider review are complete.
 
 ## Data flow
 
 1. The browser submits JSON only from the same origin and must acknowledge the draft privacy notice.
 2. The route validates the body with Zod, applies a best-effort HMAC-keyed in-memory rate limit, and ignores filled honeypots without saving them.
 3. Valid submissions are stored in `ContactSubmission` with the notice version, acknowledgement timestamp, and a 12-month deletion deadline.
-4. Resend sends a plain-text confirmation to the address submitted in the form. The sender and token are server-only configuration.
+4. Resend sends a plain-text confirmation to the address submitted in the form and, when configured, a separate lesson-type notification to the owner. The sender, recipient, and token are server-only configuration.
 5. The daily Vercel Cron job removes expired submissions and expired administrative authentication records.
 
 ## Security decisions
