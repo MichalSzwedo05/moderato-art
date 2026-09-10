@@ -14,6 +14,7 @@ export const runtime = "nodejs";
 
 const maxRequestBytes = 10_000;
 const notificationTimeoutMs = 5_000;
+const contactFormSpreadsheetUrl = "https://docs.google.com/spreadsheets/d/1tek0IUfI64-xh0WTHq_fDGfskz91eNcg6lxGlduG25M/edit?gid=373454200#gid=373454200";
 
 function normalizePhone(value: string) {
   return value.replace(/[\s\-().]/g, "");
@@ -165,6 +166,43 @@ async function sendContactConfirmation(
   }
 }
 
+async function sendContactOwnerNotification(
+  notification: NonNullable<ReturnType<typeof getContactFormConfig>>["notification"],
+  lessonType: ContactLessonType,
+) {
+  if (!notification?.recipient) return;
+
+  let timeout: ReturnType<typeof setTimeout> | undefined;
+  try {
+    const resend = new Resend(notification.resendKey);
+    const result = await Promise.race([
+      resend.emails.send({
+        from: notification.resendFrom,
+        to: [notification.recipient],
+        subject: "Nowe zgłoszenie na zajęcia | Moderato",
+        text: [
+          "Wpłynęło nowe zgłoszenie na zajęcia.",
+          "",
+          `Typ zajęć: ${lessonTypeTabs[lessonType]}`,
+          "",
+          `Formularz do zapisów: ${contactFormSpreadsheetUrl}`,
+        ].join("\n"),
+      }),
+      new Promise<never>((_, reject) => {
+        timeout = setTimeout(() => reject(new Error("Contact owner notification timed out")), notificationTimeoutMs);
+      }),
+    ]);
+
+    if (result.error) {
+      console.error("Contact owner notification failed");
+    }
+  } catch {
+    console.error("Contact owner notification failed");
+  } finally {
+    if (timeout) clearTimeout(timeout);
+  }
+}
+
 async function appendContactSheetRow(
   sheets: NonNullable<ReturnType<typeof getContactFormConfig>>["sheets"],
   submission: {
@@ -255,6 +293,7 @@ export async function POST(request: Request) {
 
   await Promise.all([
     sendContactConfirmation(config.notification, submission.email, submission.lessonType),
+    sendContactOwnerNotification(config.notification, submission.lessonType),
     appendContactSheetRow(config.sheets, {
       addressStreet: submission.addressStreet,
       birthDate: submission.birthDate,

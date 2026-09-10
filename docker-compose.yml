@@ -8,6 +8,7 @@ services:
       DATABASE_URL: postgresql://${POSTGRES_USER:-moderato}:${POSTGRES_PASSWORD:-moderato_dev_password}@db:5432/${POSTGRES_DB:-moderato}?schema=public
       CONTACT_FORM_ENABLED: ${CONTACT_FORM_ENABLED:-true}
       RESEND_TOKEN: ${RESEND_TOKEN:-}
+      CONTACT_FORM_RECIPIENT: ${CONTACT_FORM_RECIPIENT:-}
       CONTACT_FORM_RESEND_FROM: ${CONTACT_FORM_RESEND_FROM:-}
       CONTACT_RATE_LIMIT_SECRET: ${CONTACT_RATE_LIMIT_SECRET:-local-contact-rate-limit-secret-for-development-only}
       CRON_SECRET: ${CRON_SECRET:-local-cron-secret-for-development-only}
