@@ -5,7 +5,7 @@ import { createRateLimitIdentifier } from "../../../lib/admin-security";
 import { getContactFormConfig } from "../../../lib/contact-config";
 import { isContactRateLimited } from "../../../lib/contact-rate-limit";
 import { createContactSubmission } from "../../../lib/contact-submissions";
-import { type ContactLessonType } from "../../../lib/offers";
+import { lessonTypeTabs, type ContactLessonType } from "../../../lib/offers";
 import { privacyNoticeVersion } from "../../../lib/privacy-policy";
 import { appendContactSubmissionToSheet } from "../../../lib/google-sheets";
 
@@ -122,18 +122,10 @@ async function parseJsonBody(request: Request) {
   }
 }
 
-function formatEmailText(submissionId: string) {
-  return [
-    "Nowe zapytanie z formularza Moderato Art.",
-    `Identyfikator zgłoszenia: ${submissionId}`,
-    "",
-    "Szczegóły są dostępne wyłącznie w uwierzytelnionym panelu CMS.",
-  ].join("\n");
-}
-
-async function sendContactNotification(
+async function sendContactConfirmation(
   notification: NonNullable<ReturnType<typeof getContactFormConfig>>["notification"],
-  submissionId: string,
+  email: string,
+  lessonType: ContactLessonType,
 ) {
   if (!notification) return;
 
@@ -143,20 +135,31 @@ async function sendContactNotification(
     const result = await Promise.race([
       resend.emails.send({
         from: notification.resendFrom,
-        to: [notification.recipient],
-        subject: "Nowe zapytanie z formularza Moderato Art",
-        text: formatEmailText(submissionId),
+        to: [email],
+        subject: "Potwierdzenie otrzymania zgłoszenia | Moderato",
+        text: [
+          "Dzień dobry,",
+          "",
+          "potwierdzamy otrzymanie zgłoszenia przesłanego przez formularz kontaktowy Moderato.",
+          "",
+          `Rodzaj zajęć: ${lessonTypeTabs[lessonType]}`,
+          "",
+          "To wiadomość wygenerowana automatycznie. Prosimy na nią nie odpowiadać.",
+          "",
+          "Pozdrawiamy",
+          "Zespół Moderato",
+        ].join("\n"),
       }),
       new Promise<never>((_, reject) => {
-        timeout = setTimeout(() => reject(new Error("Contact notification timed out")), notificationTimeoutMs);
+        timeout = setTimeout(() => reject(new Error("Contact confirmation timed out")), notificationTimeoutMs);
       }),
     ]);
 
     if (result.error) {
-      console.error("Contact submission notification failed");
+      console.error("Contact submission confirmation failed");
     }
   } catch {
-    console.error("Contact submission notification failed");
+    console.error("Contact submission confirmation failed");
   } finally {
     if (timeout) clearTimeout(timeout);
   }
@@ -230,9 +233,8 @@ export async function POST(request: Request) {
     .filter((part) => part?.trim())
     .join(", ");
 
-  let savedSubmission: { id: string };
   try {
-    savedSubmission = await createContactSubmission({
+    await createContactSubmission({
       address: consolidatedAddress || undefined,
       birthDate: submission.birthDate,
       childName: submission.childName,
@@ -252,7 +254,7 @@ export async function POST(request: Request) {
   }
 
   await Promise.all([
-    sendContactNotification(config.notification, savedSubmission.id),
+    sendContactConfirmation(config.notification, submission.email, submission.lessonType),
     appendContactSheetRow(config.sheets, {
       addressStreet: submission.addressStreet,
       birthDate: submission.birthDate,

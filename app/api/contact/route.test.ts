@@ -29,8 +29,7 @@ describe("POST /api/contact", () => {
 
   beforeEach(() => {
     delete process.env.CONTACT_FORM_ENABLED;
-    delete process.env.RESEND_API_KEY;
-    delete process.env.CONTACT_FORM_RECIPIENT;
+    delete process.env.RESEND_TOKEN;
     delete process.env.CONTACT_RATE_LIMIT_SECRET;
     delete process.env.CONTACT_FORM_RESEND_FROM;
     delete process.env.DATABASE_URL;
@@ -49,8 +48,7 @@ describe("POST /api/contact", () => {
   }
 
   function enableNotifications() {
-    process.env.RESEND_API_KEY = "re_test-key-that-is-long-enough-for-tests";
-    process.env.CONTACT_FORM_RECIPIENT = "owner@moderato-art.pl";
+    process.env.RESEND_TOKEN = "re_test-key-that-is-long-enough-for-tests";
     process.env.CONTACT_FORM_RESEND_FROM = "Moderato Art <kontakt@moderato-art.pl>";
   }
 
@@ -95,14 +93,15 @@ describe("POST /api/contact", () => {
       }));
     expect(sendEmail).toHaveBeenCalledWith(expect.objectContaining({
       from: "Moderato Art <kontakt@moderato-art.pl>",
-      to: ["owner@moderato-art.pl"],
+      to: ["anna@example.com"],
+      subject: "Potwierdzenie otrzymania zgłoszenia | Moderato",
     }));
-    const notification = sendEmail.mock.calls[0][0] as { replyTo?: string; text: string };
-    expect(notification.replyTo).toBeUndefined();
-    expect(notification.text).toContain("submission-id");
-    expect(notification.text).not.toContain("Anna Kowalska");
-    expect(notification.text).not.toContain("anna@example.com");
-    expect(notification.text).not.toContain("Proszę o informacje");
+    const confirmation = sendEmail.mock.calls.find(([email]) => email.to?.includes("anna@example.com"))?.[0] as { text: string };
+    expect(confirmation.text).toContain("potwierdzamy otrzymanie zgłoszenia przesłanego przez formularz kontaktowy Moderato.");
+    expect(confirmation.text).toContain("Junior Voice");
+    expect(confirmation.text).toContain("To wiadomość wygenerowana automatycznie. Prosimy na nią nie odpowiadać.");
+    expect(confirmation.text).toContain("Zespół Moderato");
+    expect(confirmation.text).not.toContain("submission-id");
   });
 
   it("requires the privacy acknowledgement before saving or sending", async () => {
@@ -236,7 +235,7 @@ describe("POST /api/contact", () => {
     expect(plusCountryCode.status).toBe(200);
   });
 
-  it("keeps the saved submission accepted when notification delivery fails", async () => {
+  it("keeps the saved submission accepted when confirmation delivery fails", async () => {
     enableForm();
     enableNotifications();
     sendEmail.mockResolvedValue({ data: null, error: { name: "provider_error" } });
@@ -248,7 +247,7 @@ describe("POST /api/contact", () => {
     expect(createSubmission).toHaveBeenCalledTimes(1);
   });
 
-  it("keeps the saved submission accepted when notification delivery times out", async () => {
+  it("keeps the saved submission accepted when confirmation delivery times out", async () => {
     enableForm();
     enableNotifications();
     vi.useFakeTimers();
