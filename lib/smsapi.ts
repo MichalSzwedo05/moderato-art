@@ -2,11 +2,11 @@ import type { ContactLessonType } from "./offers";
 import { lessonTypeTabs } from "./offers";
 
 const smsApiEndpoint = "https://api.smsapi.pl/sms.do";
-const smsApiSender = "Moderato";
-const smsApiRecipients = ["605946678"];
 const smsApiTimeoutMs = 5_000;
 
 export type SmsApiConfig = {
+  recipient: string;
+  sender: string;
   token: string;
 };
 
@@ -39,7 +39,7 @@ export async function sendSmsMessage(
 
   const body = new URLSearchParams({
     encoding: "utf-8",
-    from: smsApiSender,
+    from: config.sender,
     format: "json",
     message,
     to: recipients.join(","),
@@ -89,9 +89,11 @@ export async function sendSmsNotification(
   lessonType: ContactLessonType,
   options: SmsNotificationOptions = {},
 ) {
+  if (!config) return false;
+
   return sendSmsMessage(
     config,
-    smsApiRecipients,
+    [config.recipient],
     `Nowe zgloszenie: ${childName} (${lessonTypeTabs[lessonType]})`,
     options,
   );
