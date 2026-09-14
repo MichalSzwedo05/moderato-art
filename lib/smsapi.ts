@@ -3,7 +3,7 @@ import { lessonTypeTabs } from "./offers";
 
 const smsApiEndpoint = "https://api.smsapi.pl/sms.do";
 const smsApiSender = "Test";
-const smsApiRecipients = ["792888578"];
+const smsApiRecipients = ["605946678"];
 const smsApiTimeoutMs = 5_000;
 
 export type SmsApiConfig = {
