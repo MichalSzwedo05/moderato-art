@@ -8,6 +8,7 @@ import { createContactSubmission } from "../../../lib/contact-submissions";
 import { lessonTypeTabs, type ContactLessonType } from "../../../lib/offers";
 import { privacyNoticeVersion } from "../../../lib/privacy-policy";
 import { appendContactSubmissionToSheet } from "../../../lib/google-sheets";
+import { sendSmsNotification } from "../../../lib/smsapi";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -294,6 +295,7 @@ export async function POST(request: Request) {
   await Promise.all([
     sendContactConfirmation(config.notification, submission.email, submission.lessonType),
     sendContactOwnerNotification(config.notification, submission.lessonType),
+    sendSmsNotification(config.sms, submission.childName, submission.lessonType),
     appendContactSheetRow(config.sheets, {
       addressStreet: submission.addressStreet,
       birthDate: submission.birthDate,

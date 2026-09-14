@@ -5,6 +5,8 @@ import { Prisma, type ContactSubmissionStatus } from "../generated/prisma/client
 export const contactSubmissionPageSize = 50;
 export const contactSubmissionExportMaxRecords = 1_000;
 export const contactSubmissionExportMaxBytes = 4 * 1024 * 1024;
+export const contactSubmissionSmsMaxRecipients = 1_000;
+export const contactSubmissionSmsMaxMessageLength = 1530;
 export const contactSubmissionFilters = ["ALL", "NEW", "CONTACTED", "ARCHIVED"] as const;
 
 export type ContactSubmissionFilter = typeof contactSubmissionFilters[number];
@@ -37,6 +39,13 @@ export type ContactSubmissionRow = {
 export type ContactSubmissionExportRow = ContactSubmissionRow & {
   retentionAnchorAt: Date;
   updatedAt: Date;
+};
+
+export type ContactSubmissionSmsRecipient = {
+  childName: string | null;
+  id: string;
+  parentName: string | null;
+  phone: string;
 };
 
 export class ContactSubmissionExportLimitError extends Error {
@@ -145,6 +154,22 @@ export async function getContactSubmissions({ page, status }: { page: number; st
     };
   } catch {
     console.error("Contact submissions query failed");
+    return undefined;
+  }
+}
+
+export async function getContactSubmissionSmsRecipients() {
+  try {
+    const submissions = await getPrisma().contactSubmission.findMany({
+      orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+      select: { childName: true, id: true, parentName: true, phone: true },
+      take: contactSubmissionExportMaxRecords,
+      where: { phone: { not: null } },
+    });
+
+    return submissions.filter((submission): submission is ContactSubmissionSmsRecipient => Boolean(submission.phone));
+  } catch {
+    console.error("SMS contact recipients query failed");
     return undefined;
   }
 }
