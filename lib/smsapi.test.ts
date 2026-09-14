@@ -23,7 +23,7 @@ describe("SMSAPI notifications", () => {
       },
     }));
     const [, request] = fetchMock.mock.calls[0] as [string, { body: URLSearchParams }];
-    expect(request.body.get("from")).toBe("Test");
+    expect(request.body.get("from")).toBe("Moderato");
     expect(request.body.get("to")).toBe("605946678");
     expect(request.body.get("format")).toBe("json");
     expect(request.body.get("message")).toBe("Nowe zgloszenie: Anna Kowalska (Junior Voice)");

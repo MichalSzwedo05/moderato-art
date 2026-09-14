@@ -2,7 +2,7 @@ import type { ContactLessonType } from "./offers";
 import { lessonTypeTabs } from "./offers";
 
 const smsApiEndpoint = "https://api.smsapi.pl/sms.do";
-const smsApiSender = "Test";
+const smsApiSender = "Moderato";
 const smsApiRecipients = ["605946678"];
 const smsApiTimeoutMs = 5_000;
 
