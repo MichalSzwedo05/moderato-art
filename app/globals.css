@@ -2967,6 +2967,18 @@ h2 {
   .admin-submissions-filter { grid-template-columns: 1fr; }
   .admin-submission-details { grid-template-columns: 1fr; }
   .admin-submission-card-header { flex-direction: column; }
+  .admin-sms-toolbar { flex-direction: column; }
+  .admin-sms-toolbar > button,
+  .admin-sms-form > button { margin-top: 0; width: 100%; }
+  .admin-sms-picker { grid-template-columns: 1fr; }
+  .admin-sms-picker-panel { padding: .75rem; }
+  .admin-sms-recipient,
+  .admin-form label.admin-sms-recipient { align-items: flex-start; }
+  .admin-sms-recipient span,
+  .admin-sms-selected-list span { flex: 1 1 auto; min-width: 0; }
+  .admin-sms-recipient strong,
+  .admin-sms-selected-list strong { overflow-wrap: anywhere; }
+  .admin-sms-selected-list li { align-items: flex-start; }
 }
 
 @media (max-width: 600px) {
