@@ -9,6 +9,8 @@ type ContactFormEnvironment = {
   DATABASE_URL?: string;
   RESEND_TOKEN?: string;
   SMSAPI_TOKEN?: string;
+  SMSAPI_SENDER?: string;
+  SMSAPI_RECIPIENT?: string;
   GOOGLE_SHEETS_SPREADSHEET_ID?: string;
   GOOGLE_SHEETS_RANGE?: string;
   GOOGLE_SERVICE_ACCOUNT_EMAIL?: string;
@@ -23,6 +25,8 @@ export type ContactFormConfig = {
     resendKey: string;
   };
   sms?: {
+    recipient: string;
+    sender: string;
     token: string;
   };
   sheets?: GoogleSheetsConfig;
@@ -89,6 +93,8 @@ export function getContactFormConfig(environment: ContactFormEnvironment = proce
   const rateLimitSecret = environment.CONTACT_RATE_LIMIT_SECRET?.trim();
   const cronSecret = environment.CRON_SECRET?.trim();
   const smsToken = environment.SMSAPI_TOKEN?.trim();
+  const smsSender = environment.SMSAPI_SENDER?.trim();
+  const smsRecipient = environment.SMSAPI_RECIPIENT?.trim();
   // Recipient/from values do not enable e-mail by themselves; this keeps other
   // contact integrations usable when Resend is intentionally left disabled.
   const notificationConfigured = Boolean(resendKey);
@@ -99,6 +105,9 @@ export function getContactFormConfig(environment: ContactFormEnvironment = proce
       : undefined;
   const sheets = getSheetsConfig(environment);
   const smsConfigured = Boolean(smsToken);
+  const sms = smsToken && smsSender && smsRecipient
+    ? { recipient: smsRecipient, sender: smsSender, token: smsToken }
+    : undefined;
 
   if (environment.CONTACT_FORM_ENABLED !== "true"
     || !rateLimitSecret
@@ -109,13 +118,16 @@ export function getContactFormConfig(environment: ContactFormEnvironment = proce
     || cronSecret!.length < 16) return undefined;
 
   if (notificationConfigured && !notification) return undefined;
-  if (smsConfigured && !hasUsableValue(smsToken)) return undefined;
+  if (smsConfigured && (!hasUsableValue(smsToken)
+    || !sms
+    || !/^[A-Za-z0-9 .-]{1,11}$/.test(smsSender ?? "")
+    || !/^\+?[0-9 ()-]{8,20}$/.test(smsRecipient ?? ""))) return undefined;
   if (sheets === null) return undefined;
 
   return {
     notification,
     rateLimitSecret: rateLimitSecret!,
-    ...(smsToken ? { sms: { token: smsToken } } : {}),
+    ...(sms ? { sms } : {}),
     ...(sheets ? { sheets } : {}),
   };
 }

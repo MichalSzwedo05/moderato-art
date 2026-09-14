@@ -63,6 +63,8 @@ describe("POST /api/contact", () => {
 
   function enableSms() {
     process.env.SMSAPI_TOKEN = "smsapi-token";
+    process.env.SMSAPI_SENDER = "Moderato";
+    process.env.SMSAPI_RECIPIENT = "605946678";
   }
 
   const validSubmission = {
@@ -133,7 +135,11 @@ describe("POST /api/contact", () => {
     const response = await POST(request(validSubmission));
 
     expect(response.status).toBe(200);
-    expect(sendSms).toHaveBeenCalledWith({ token: "smsapi-token" }, "Anna Kowalska", "junior-voice");
+    expect(sendSms).toHaveBeenCalledWith({
+      recipient: "605946678",
+      sender: "Moderato",
+      token: "smsapi-token",
+    }, "Anna Kowalska", "junior-voice");
   });
 
   it("requires the privacy acknowledgement before saving or sending", async () => {

@@ -18,7 +18,7 @@ vi.mock("@/lib/smsapi", () => ({ normalizeSmsApiPhone: (value: string) => value 
 import { POST } from "./route";
 
 const authConfig = { authOrigin: "https://moderato-art.example" };
-const contactConfig = { sms: { token: "smsapi-token" } };
+const contactConfig = { sms: { recipient: "605946678", sender: "Moderato", token: "smsapi-token" } };
 
 function request(body: unknown, origin = "https://moderato-art.example") {
   return new Request("https://moderato-art.example/api/admin/sms", {

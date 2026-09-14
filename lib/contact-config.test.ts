@@ -48,8 +48,10 @@ describe("contact form configuration", () => {
     expect(getContactFormConfig({
       ...validEnvironment,
       SMSAPI_TOKEN: "smsapi-token",
+      SMSAPI_SENDER: "Moderato",
+      SMSAPI_RECIPIENT: "605946678",
     })).toMatchObject({
-      sms: { token: "smsapi-token" },
+      sms: { recipient: "605946678", sender: "Moderato", token: "smsapi-token" },
     });
   });
 
@@ -59,9 +61,11 @@ describe("contact form configuration", () => {
       CONTACT_FORM_RESEND_FROM: "Moderato Art <kontakt@moderato-art.pl>",
       RESEND_TOKEN: undefined,
       SMSAPI_TOKEN: "smsapi-token",
+      SMSAPI_SENDER: "Moderato",
+      SMSAPI_RECIPIENT: "605946678",
     })).toMatchObject({
       notification: undefined,
-      sms: { token: "smsapi-token" },
+      sms: { recipient: "605946678", sender: "Moderato", token: "smsapi-token" },
     });
   });
 

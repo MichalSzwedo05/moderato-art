@@ -13,7 +13,7 @@ describe("SMSAPI notifications", () => {
     });
     vi.stubGlobal("fetch", fetchMock);
 
-    await sendSmsNotification({ token: "smsapi-token" }, "Anna Kowalska", "junior-voice");
+    await sendSmsNotification({ recipient: "605946678", sender: "Moderato", token: "smsapi-token" }, "Anna Kowalska", "junior-voice");
 
     expect(fetchMock).toHaveBeenCalledWith("https://api.smsapi.pl/sms.do", expect.objectContaining({
       method: "POST",
@@ -53,7 +53,7 @@ describe("SMSAPI notifications", () => {
     });
     vi.stubGlobal("fetch", fetchMock);
 
-    await expect(sendSmsMessage({ token: "smsapi-token" }, ["48792888578", "48600123456"], "Wiadomość testowa", { throwOnError: true }))
+    await expect(sendSmsMessage({ recipient: "605946678", sender: "Moderato", token: "smsapi-token" }, ["48792888578", "48600123456"], "Wiadomość testowa", { throwOnError: true }))
       .resolves.toBe(true);
 
     const [, request] = fetchMock.mock.calls[0] as [string, { body: URLSearchParams }];
