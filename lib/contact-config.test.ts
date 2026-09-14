@@ -44,6 +44,27 @@ describe("contact form configuration", () => {
     });
   });
 
+  it("enables SMS notifications when an API token is configured", () => {
+    expect(getContactFormConfig({
+      ...validEnvironment,
+      SMSAPI_TOKEN: "smsapi-token",
+    })).toMatchObject({
+      sms: { token: "smsapi-token" },
+    });
+  });
+
+  it("keeps SMS available when optional Resend is disabled", () => {
+    expect(getContactFormConfig({
+      ...validEnvironment,
+      CONTACT_FORM_RESEND_FROM: "Moderato Art <kontakt@moderato-art.pl>",
+      RESEND_TOKEN: undefined,
+      SMSAPI_TOKEN: "smsapi-token",
+    })).toMatchObject({
+      notification: undefined,
+      sms: { token: "smsapi-token" },
+    });
+  });
+
   it("fails closed when Google Sheets configuration is incomplete", () => {
     expect(isContactFormConfigured({
       ...validEnvironment,

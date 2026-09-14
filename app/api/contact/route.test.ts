@@ -1,6 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-const { createSubmission, sendEmail } = vi.hoisted(() => ({ createSubmission: vi.fn(), sendEmail: vi.fn() }));
+const { createSubmission, sendEmail, sendSms } = vi.hoisted(() => ({
+  createSubmission: vi.fn(),
+  sendEmail: vi.fn(),
+  sendSms: vi.fn(),
+}));
 
 vi.mock("resend", () => ({
   Resend: class {
@@ -8,6 +12,7 @@ vi.mock("resend", () => ({
   },
 }));
 vi.mock("../../../lib/contact-submissions", () => ({ createContactSubmission: createSubmission }));
+vi.mock("../../../lib/smsapi", () => ({ sendSmsNotification: sendSms }));
 vi.mock("../../../lib/privacy-policy", () => ({ privacyNoticeVersion: "draft-optional-message-2026-08-25", privacyPolicy: { status: "published" } }));
 
 import { POST } from "./route";
@@ -35,9 +40,11 @@ describe("POST /api/contact", () => {
     delete process.env.CONTACT_FORM_RESEND_FROM;
     delete process.env.DATABASE_URL;
     delete process.env.CRON_SECRET;
+    delete process.env.SMSAPI_TOKEN;
     createSubmission.mockReset();
     createSubmission.mockResolvedValue({ id: "submission-id" });
     sendEmail.mockReset();
+    sendSms.mockReset();
     resetContactRateLimitForTests();
   });
 
@@ -52,6 +59,10 @@ describe("POST /api/contact", () => {
     process.env.RESEND_TOKEN = "re_test-key-that-is-long-enough-for-tests";
     process.env.CONTACT_FORM_RECIPIENT = "moderato.artis@gmail.com";
     process.env.CONTACT_FORM_RESEND_FROM = "Moderato Art <kontakt@moderato-art.pl>";
+  }
+
+  function enableSms() {
+    process.env.SMSAPI_TOKEN = "smsapi-token";
   }
 
   const validSubmission = {
@@ -113,6 +124,16 @@ describe("POST /api/contact", () => {
     expect(ownerNotification.text).toContain("Wpłynęło nowe zgłoszenie na zajęcia.");
     expect(ownerNotification.text).toContain("Typ zajęć: Junior Voice");
     expect(ownerNotification.text).toContain("https://docs.google.com/spreadsheets/d/1tek0IUfI64-xh0WTHq_fDGfskz91eNcg6lxGlduG25M/edit?gid=373454200#gid=373454200");
+  });
+
+  it("sends an SMS notification when SMSAPI is configured", async () => {
+    enableForm();
+    enableSms();
+
+    const response = await POST(request(validSubmission));
+
+    expect(response.status).toBe(200);
+    expect(sendSms).toHaveBeenCalledWith({ token: "smsapi-token" }, "Anna Kowalska", "junior-voice");
   });
 
   it("requires the privacy acknowledgement before saving or sending", async () => {

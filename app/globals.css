@@ -2230,6 +2230,190 @@ h2 {
   margin: 1.25rem 0 0;
 }
 
+.admin-sms-intro {
+  margin-top: 1.5rem;
+}
+
+.admin-sms-intro p {
+  margin: .5rem 0;
+}
+
+.admin-sms-form {
+  border-top: 1px solid var(--border-color);
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+}
+
+.admin-sms-toolbar {
+  align-items: flex-start;
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+}
+
+.admin-sms-toolbar h2 {
+  margin: 0;
+}
+
+.admin-sms-toolbar p {
+  color: var(--gray-light);
+  margin: .5rem 0 0;
+}
+
+.admin-sms-picker {
+  align-items: stretch;
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: minmax(0, 1.15fr) minmax(16rem, .85fr);
+  margin-top: 1.5rem;
+}
+
+.admin-sms-picker-panel {
+  border: 1px solid var(--border-color);
+  min-width: 0;
+  padding: 1rem;
+}
+
+.admin-sms-picker-panel h3 {
+  color: var(--dark-blue);
+  font-size: 1rem;
+  margin: 0;
+}
+
+.admin-sms-recipient-list {
+  display: grid;
+  gap: .5rem;
+  margin-top: 1rem;
+  max-height: 24rem;
+  overflow: auto;
+}
+
+.admin-sms-recipient {
+  align-items: center;
+  background: color-mix(in srgb, var(--cream) 65%, var(--surface));
+  border: 1px solid transparent;
+  border-radius: .55rem;
+  cursor: pointer;
+  display: flex;
+  gap: .75rem;
+  padding: .7rem;
+}
+
+.admin-form label.admin-sms-recipient {
+  align-items: center;
+  display: flex;
+  gap: .75rem;
+  margin: 0;
+}
+
+.admin-sms-recipient:has(input:checked) {
+  background: color-mix(in srgb, var(--blue) 16%, var(--surface));
+  border-color: var(--blue);
+}
+
+.admin-sms-recipient input {
+  flex: 0 0 auto;
+  width: auto;
+}
+
+.admin-sms-recipient span {
+  align-items: baseline;
+  display: flex;
+  flex-wrap: wrap;
+  gap: .2rem .65rem;
+}
+
+.admin-sms-recipient small {
+  color: var(--gray-light);
+}
+
+.admin-sms-selected-panel {
+  background: color-mix(in srgb, var(--cream) 42%, var(--surface));
+}
+
+.admin-sms-selected-heading {
+  align-items: center;
+  display: flex;
+  gap: .5rem;
+  justify-content: space-between;
+}
+
+.admin-sms-selected-heading > span {
+  align-items: center;
+  background: var(--blue);
+  border-radius: 999px;
+  color: #fff;
+  display: inline-flex;
+  font-size: .75rem;
+  font-weight: 800;
+  min-height: 1.5rem;
+  min-width: 1.5rem;
+  justify-content: center;
+  padding: 0 .35rem;
+}
+
+.admin-sms-empty-selected {
+  color: var(--gray-light);
+  margin: 1rem 0 0;
+}
+
+.admin-sms-selected-list {
+  display: grid;
+  gap: .5rem;
+  list-style: none;
+  margin: 1rem 0 0;
+  max-height: 24rem;
+  overflow: auto;
+  padding: 0;
+}
+
+.admin-sms-selected-list li {
+  align-items: center;
+  background: var(--surface);
+  border: 1px solid var(--border-color);
+  border-radius: .55rem;
+  display: flex;
+  gap: .75rem;
+  justify-content: space-between;
+  padding: .65rem;
+}
+
+.admin-sms-selected-list span {
+  display: grid;
+  gap: .2rem;
+  min-width: 0;
+}
+
+.admin-sms-selected-list small {
+  color: var(--gray-light);
+}
+
+.admin-sms-selected-list button {
+  background: transparent;
+  border: 0;
+  color: var(--dark-blue);
+  cursor: pointer;
+  flex: 0 0 auto;
+  font: inherit;
+  font-size: .8rem;
+  font-weight: 800;
+  margin: 0;
+  padding: .35rem;
+  width: auto;
+}
+
+.admin-sms-selected-list button:hover,
+.admin-sms-selected-list button:focus-visible {
+  color: #c0392b;
+  text-decoration: underline;
+}
+
+.admin-sms-counter {
+  color: var(--gray-light);
+  font-size: .8rem;
+  margin: -.25rem 0 0;
+}
+
 .admin-submissions-filter {
   align-items: end;
   border-bottom: 1px solid var(--border-color);

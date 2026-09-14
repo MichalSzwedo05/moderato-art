@@ -15,6 +15,7 @@
     "typecheck": "tsc --noEmit",
     "typecheck:fast": "tsc --noEmit",
     "test": "vitest run",
+    "test:sms": "SMSAPI_LIVE_TEST=true vitest run lib/smsapi.integration.test.ts",
     "test:related": "vitest related --run",
     "db:generate": "PRISMA_GENERATE=true prisma generate",
     "db:migrate:deploy": "prisma migrate deploy",

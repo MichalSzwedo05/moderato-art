@@ -8,6 +8,7 @@ type ContactFormEnvironment = {
   CRON_SECRET?: string;
   DATABASE_URL?: string;
   RESEND_TOKEN?: string;
+  SMSAPI_TOKEN?: string;
   GOOGLE_SHEETS_SPREADSHEET_ID?: string;
   GOOGLE_SHEETS_RANGE?: string;
   GOOGLE_SERVICE_ACCOUNT_EMAIL?: string;
@@ -20,6 +21,9 @@ export type ContactFormConfig = {
     recipient?: string;
     resendFrom: string;
     resendKey: string;
+  };
+  sms?: {
+    token: string;
   };
   sheets?: GoogleSheetsConfig;
 };
@@ -84,13 +88,17 @@ export function getContactFormConfig(environment: ContactFormEnvironment = proce
   const resendFrom = environment.CONTACT_FORM_RESEND_FROM?.trim();
   const rateLimitSecret = environment.CONTACT_RATE_LIMIT_SECRET?.trim();
   const cronSecret = environment.CRON_SECRET?.trim();
-  const notificationConfigured = Boolean(resendKey || recipient || resendFrom);
+  const smsToken = environment.SMSAPI_TOKEN?.trim();
+  // Recipient/from values do not enable e-mail by themselves; this keeps other
+  // contact integrations usable when Resend is intentionally left disabled.
+  const notificationConfigured = Boolean(resendKey);
   const notification = notificationConfigured
     ? (isResendKey(resendKey) && (!recipient || isEmail(recipient)) && isSender(resendFrom)
       ? { recipient: recipient || undefined, resendFrom: resendFrom!, resendKey: resendKey!.trim() }
       : undefined)
       : undefined;
   const sheets = getSheetsConfig(environment);
+  const smsConfigured = Boolean(smsToken);
 
   if (environment.CONTACT_FORM_ENABLED !== "true"
     || !rateLimitSecret
@@ -101,11 +109,13 @@ export function getContactFormConfig(environment: ContactFormEnvironment = proce
     || cronSecret!.length < 16) return undefined;
 
   if (notificationConfigured && !notification) return undefined;
+  if (smsConfigured && !hasUsableValue(smsToken)) return undefined;
   if (sheets === null) return undefined;
 
   return {
     notification,
     rateLimitSecret: rateLimitSecret!,
+    ...(smsToken ? { sms: { token: smsToken } } : {}),
     ...(sheets ? { sheets } : {}),
   };
 }
