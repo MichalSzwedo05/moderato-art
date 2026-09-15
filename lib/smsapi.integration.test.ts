@@ -11,7 +11,7 @@ describe.skipIf(!liveTestEnabled)("SMSAPI live integration", () => {
 
     await expect(sendSmsNotification({
       recipient: process.env.SMSAPI_RECIPIENT?.trim() || "605946678",
-      sender: process.env.SMSAPI_SENDER?.trim() || "Test",
+      sender: process.env.SMSAPI_SENDER?.trim() || "Moderato",
       token: token!,
     }, "Test SMS", "studio-wokalne", { throwOnError: true }))
       .resolves.toBe(true);
