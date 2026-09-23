@@ -9,6 +9,7 @@ const items = [
   { href: "/admin/password", label: "Hasło" },
   { href: "/admin/sms", label: "SMS" },
   { href: "/admin/submissions", label: "Zgłoszenia" },
+  { external: true, href: "https://docs.google.com/spreadsheets/d/1tek0IUfI64-xh0WTHq_fDGfskz91eNcg6lxGlduG25M/edit?usp=drive_web&ouid=106431518942586011282", label: "Zapisy Excel" },
 ];
 
 export function AdminNav() {
@@ -16,7 +17,11 @@ export function AdminNav() {
   return (
     <nav aria-label="Nawigacja panelu administracyjnego" className="admin-nav">
       {items.map((item) => (
-        <Link className={pathname === item.href ? "admin-nav-link admin-nav-link-active" : "admin-nav-link"} href={item.href} key={item.href}>{item.label}</Link>
+        item.external ? (
+          <a className="admin-nav-link" href={item.href} key={item.href} rel="noreferrer" target="_blank">{item.label}</a>
+        ) : (
+          <Link className={pathname === item.href ? "admin-nav-link admin-nav-link-active" : "admin-nav-link"} href={item.href} key={item.href}>{item.label}</Link>
+        )
       ))}
     </nav>
   );

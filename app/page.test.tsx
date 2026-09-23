@@ -45,7 +45,13 @@ describe("HomePage profile", () => {
 
     expect(screen.getByRole("img", { name: "Magdalena Warzecha-Hiller" })).toHaveAttribute("src", "/magdalena-warzecha-hiller.jpg");
     expect(screen.getByText("Magdalena Warzecha-Hiller", { selector: "figcaption" })).toBeInTheDocument();
-    expect(screen.getByText(/Magdalena Warzecha-Hiller jest sopranistką/)).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Magdalena Warzecha-Hiller – sopran, pedagog śpiewu" })).toBeInTheDocument();
+    expect(screen.getAllByText(/Magdalena Warzecha-Hiller jest sopranem, pedagogiem śpiewu/)).toHaveLength(2);
+    expect(screen.getByText(/Jej celem jest nie tylko rozwijanie umiejętności wokalnych/)).toBeInTheDocument();
+    expect(screen.getByText("Dowiedz się więcej")).toBeInTheDocument();
+    expect(document.querySelector(".biography-details")).not.toHaveAttribute("open");
+    fireEvent.click(screen.getByText("Dowiedz się więcej"));
+    expect(document.querySelector(".biography-details")).toHaveAttribute("open");
     expect(screen.queryByText(/Magdalena Kwiatkowska/)).not.toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Kontakt" })).toHaveAttribute("href", "/kontakt");
     expect(screen.getByRole("link", { name: "Zapisz się" })).toHaveAttribute("href", "/zgloszenie");
@@ -55,8 +61,9 @@ describe("HomePage profile", () => {
     expect(screen.getByRole("link", { name: "+48 605 946 678" })).toHaveAttribute("href", "tel:+48605946678");
     expect(screen.getByRole("link", { name: "Przejdź do strony kontaktu" })).toHaveAttribute("href", "/kontakt");
     expect(screen.getByRole("heading", { name: "Rehabilitacja zaburzeń głosu" })).toBeInTheDocument();
-    expect(screen.getByText(/created by:/)).toBeInTheDocument();
+    expect(screen.getByText(/Autorzy strony:/)).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Michał Szwedo" })).toHaveAttribute("href", "https://www.linkedin.com/in/micha%C5%82-szwedo-664337403");
+    expect(screen.getByRole("link", { name: "Łukasz Karłowski" })).toHaveAttribute("href", "https://www.linkedin.com/in/lukasz-karlowski-3981619a/");
   });
 
   it("does not apply blur or scale masking to the portrait image", () => {
