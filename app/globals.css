@@ -205,16 +205,6 @@ textarea {
   filter: var(--brand-filter);
 }
 
-.brand-tagline {
-  max-width: 7.5rem;
-  color: var(--nav-text);
-  font-size: 0.6rem;
-  font-weight: 900;
-  letter-spacing: 0.07em;
-  line-height: 1.2;
-  text-transform: uppercase;
-}
-
 .footer-brand-name {
   color: #fff;
   font-family: var(--font-nunito), "DIN Round Pro", sans-serif;
@@ -1899,10 +1889,6 @@ h2 {
 
   .brand-logo {
     width: 12rem;
-  }
-
-  .brand-tagline {
-    display: none;
   }
 
   .hero-grid {

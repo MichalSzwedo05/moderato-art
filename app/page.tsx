@@ -35,7 +35,6 @@ export default async function HomePage() {
         <div className="site-shell navigation">
           <a className="brand" href="#start" aria-label="Moderato - strona główna">
             <Image className="brand-logo" src="/moderato-logo.jpg" alt="Moderato" width={1563} height={600} priority />
-            <span className="brand-tagline">Muzyczna Kraina Malucha</span>
           </a>
           <nav aria-label="Główna nawigacja">
             <a href="#o-mnie">O mnie</a>
@@ -94,17 +93,47 @@ export default async function HomePage() {
             </ScrollReveal>
             <ScrollReveal className="intro-copy" delay={120} variant="right">
               <p className="eyebrow">Poznaj prowadzącą</p>
-              <h2 id="about-title">Daj głos swojej pasji.</h2>
+              <h2 id="about-title">Magdalena Warzecha-Hiller – sopran, pedagog śpiewu</h2>
               <p>
-                Magdalena Warzecha-Hiller jest sopranistką, pedagogiem śpiewu i
-                rehabilitantką zaburzeń głosu. W pracy z dziećmi łączy muzyczną
-                wrażliwość z wiedzą o świadomej, bezpiecznej pracy z głosem.
+                Magdalena Warzecha-Hiller jest sopranem, pedagogiem śpiewu oraz
+                rehabilitantem zaburzeń głosu. W swojej pracy łączy doświadczenie
+                artystyczne, pedagogiczne i wiedzę o świadomej pracy z głosem.
               </p>
               <details className="biography-details">
                 <summary>Dowiedz się więcej <span aria-hidden="true">↓</span></summary>
                 <div>
-                  <p>Każde spotkanie jest dopasowane do wieku, możliwości i tempa dziecka. Bez pośpiechu, za to z dużą dozą ciekawości, ruchu i wspólnego muzykowania.</p>
-                  <p>Najważniejsze są swoboda, radość z muzykowania i budowanie pewności siebie — krok po kroku, w bezpiecznej atmosferze.</p>
+                  <p>
+                    Magdalena Warzecha-Hiller jest sopranem, pedagogiem śpiewu oraz
+                    rehabilitantem zaburzeń głosu. Ukończyła Wydział Wokalno-Aktorski
+                    Akademii Muzycznej im. Feliksa Nowowiejskiego w Bydgoszczy oraz
+                    Akademii Muzycznej im. Ignacego Jana Paderewskiego w Poznaniu,
+                    kształcąc się w klasie śpiewu solowego. Jest również absolwentką
+                    Uniwersytetu Jana Kochanowskiego w Kielcach na kierunku pedagogika
+                    z nauczaniem języka angielskiego oraz Państwowej Szkoły Muzycznej
+                    I i II stopnia w Kielcach.
+                  </p>
+                  <p>
+                    Swoje umiejętności artystyczne doskonaliła podczas licznych kursów
+                    mistrzowskich w Polsce i za granicą, pracując z wybitnymi pedagogami
+                    i artystami. Ukończyła II stopień kursu gordonowskiego „Improwizuję,
+                    czyli audiuję”, a także studia podyplomowe z zakresu rehabilitacji
+                    zaburzeń głosu, poszerzając swoje kompetencje w zakresie świadomej
+                    emisji głosu i pracy z aparatem głosowym.
+                  </p>
+                  <p>
+                    Jako solistka brała udział w wielu konkursach, koncertach i festiwalach
+                    muzycznych w Polsce oraz za granicą, zdobywając bogate doświadczenie
+                    sceniczne i artystyczne.
+                  </p>
+                  <p>
+                    Obecnie z powodzeniem łączy działalność artystyczną z pracą pedagogiczną.
+                    Prowadzi indywidualne lekcje śpiewu oraz zajęcia muzyczne dla dzieci,
+                    młodzieży i dorosłych. W swojej pracy stawia na indywidualne podejście
+                    do każdego ucznia, łącząc wiedzę z zakresu wokalistyki, pedagogiki oraz
+                    rehabilitacji głosu. Jej celem jest nie tylko rozwijanie umiejętności
+                    wokalnych, ale również budowanie muzycznej wrażliwości, świadomości
+                    własnego głosu i pewności siebie.
+                  </p>
                 </div>
               </details>
             </ScrollReveal>
@@ -218,11 +247,10 @@ export default async function HomePage() {
         <div className="site-shell footer-content">
           <a className="brand brand-footer" href="#start" aria-label="Moderato - powrót na początek">
             <span className="footer-brand-name">Moderato</span>
-            <span className="brand-tagline">Muzyczna Kraina Malucha</span>
           </a>
           <p>Muzyka, śpiew i praca z głosem.</p>
           <Link className="footer-legal-link" href="/polityka-prywatnosci">Polityka prywatności</Link>
-          <p className="footer-credit">created by: <a className="footer-credit-link" href="https://www.linkedin.com/in/micha%C5%82-szwedo-664337403">Michał Szwedo</a></p>
+          <p className="footer-credit">Autorzy strony: <a className="footer-credit-link" href="https://www.linkedin.com/in/micha%C5%82-szwedo-664337403">Michał Szwedo</a> oraz <a className="footer-credit-link" href="https://www.linkedin.com/in/lukasz-karlowski-3981619a/">Łukasz Karłowski</a></p>
           <p>© <CurrentYear /> Moderato</p>
         </div>
       </footer>

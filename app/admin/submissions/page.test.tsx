@@ -64,6 +64,8 @@ describe("SubmissionsPage", () => {
     expect(screen.getByText(/Brak ustawionego terminu retencji/)).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Strona główna" })).toHaveAttribute("href", "/");
     expect(screen.getByRole("link", { name: "Galeria" })).toHaveAttribute("href", "/admin/gallery");
+    expect(screen.getByRole("link", { name: "Zapisy Excel" })).toHaveAttribute("href", "https://docs.google.com/spreadsheets/d/1tek0IUfI64-xh0WTHq_fDGfskz91eNcg6lxGlduG25M/edit?usp=drive_web&ouid=106431518942586011282");
+    expect(screen.getByRole("link", { name: "Zapisy Excel" })).toHaveAttribute("target", "_blank");
     expect(screen.getByRole("button", { name: "Pobierz XML" }).closest("form")).toHaveAttribute("action", "/api/admin/submissions/export");
   });
 
