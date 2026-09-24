@@ -8,6 +8,8 @@ const items = [
   { href: "/admin/articles", label: "Artykuły" },
   { href: "/admin/password", label: "Hasło" },
   { href: "/admin/sms", label: "SMS" },
+  { href: "/admin/email", label: "E-mail" },
+  { href: "/admin/groups", label: "Grupy" },
   { href: "/admin/submissions", label: "Zgłoszenia" },
   { external: true, href: "https://docs.google.com/spreadsheets/d/1tek0IUfI64-xh0WTHq_fDGfskz91eNcg6lxGlduG25M/edit?usp=drive_web&ouid=106431518942586011282", label: "Zapisy Excel" },
 ];

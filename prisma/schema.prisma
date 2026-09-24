@@ -53,10 +53,30 @@ model ContactSubmission {
   deleteAfter              DateTime?
   createdAt                DateTime                @default(now())
   updatedAt                DateTime                @updatedAt
+  groups                   ContactGroupMembership[]
 
   @@index([deleteAfter])
   @@index([createdAt, id])
   @@index([status, createdAt, id])
+}
+
+model ContactGroup {
+  id          String                   @id @default(cuid())
+  name        String                   @unique @db.VarChar(120)
+  createdAt   DateTime                 @default(now())
+  updatedAt   DateTime                 @updatedAt
+  memberships ContactGroupMembership[]
+}
+
+model ContactGroupMembership {
+  groupId      String
+  submissionId String
+  createdAt    DateTime          @default(now())
+  group        ContactGroup      @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  submission   ContactSubmission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+
+  @@id([groupId, submissionId])
+  @@index([submissionId, groupId])
 }
 
 model Article {
