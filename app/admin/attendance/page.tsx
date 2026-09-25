@@ -11,10 +11,15 @@ export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 export const metadata: Metadata = { robots: { follow: false, index: false }, title: "Obecność · Panel administracyjny" };
 
-export default async function AttendancePage() {
+type AttendancePageProps = { searchParams: Promise<{ activity?: string; date?: string }> };
+
+export default async function AttendancePage({ searchParams }: AttendancePageProps) {
   const config = getAdminAuthConfig();
   if (!config) return <main className="admin-shell"><section className="admin-card"><Link className="admin-secondary-button admin-header-home-link" href="/">Strona główna</Link><p>Panel administracyjny jest chwilowo niedostępny.</p></section></main>;
   if (!(await getAdminSession())) redirect("/admin");
+  const params = await searchParams;
+  const selectedDate = params.date;
+  const selectedActivityId = params.activity;
 
   const result = await Promise.allSettled([getAttendanceData(), getContactGroups()]);
   if (result.some((item) => item.status === "rejected")) {
@@ -41,6 +46,8 @@ export default async function AttendancePage() {
       }))}
       groups={groups.map((group) => ({ id: group.id, name: group.name, submissionIds: group.memberships.map((membership) => membership.submissionId) }))}
       recipients={recipients}
+      selectedActivityId={selectedActivityId}
+      selectedDate={selectedDate}
     />
   </AdminPanel>;
 }

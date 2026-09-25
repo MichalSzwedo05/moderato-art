@@ -20,17 +20,17 @@ function nextLessonName(activities: Activity[]) {
 }
 function addHour(time: string) { const [hours, minutes] = time.split(":").map(Number); return `${String((hours + 1) % 24).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`; }
 
-export function AttendanceManager({ activities: initialActivities, groups, recipients }: { activities: Activity[]; groups: Group[]; recipients: Recipient[] }) {
+export function AttendanceManager({ activities: initialActivities, groups, recipients, selectedActivityId, selectedDate }: { activities: Activity[]; groups: Group[]; recipients: Recipient[]; selectedActivityId?: string; selectedDate?: string }) {
   const [activities, setActivities] = useState(initialActivities);
   const [savedParticipants, setSavedParticipants] = useState<Record<string, Participant[]>>(() => Object.fromEntries(initialActivities.map((activity) => [activity.id, activity.participants])));
-  const [activityDate, setActivityDate] = useState(localDateValue);
+  const [activityDate, setActivityDate] = useState(selectedDate || localDateValue);
   const [startsAt, setStartsAt] = useState("16:00");
   const [endsAt, setEndsAt] = useState(addHour("16:00"));
   const [name, setName] = useState(() => nextLessonName(initialActivities));
   const [groupId, setGroupId] = useState("");
   const [submissionIds, setSubmissionIds] = useState<string[]>([]);
   const [presentSubmissionIds, setPresentSubmissionIds] = useState<string[]>([]);
-  const [expandedActivityId, setExpandedActivityId] = useState<string>();
+  const [expandedActivityId, setExpandedActivityId] = useState<string | undefined>(selectedActivityId);
   const [pendingId, setPendingId] = useState<string>();
   const [feedback, setFeedback] = useState<{ error: boolean; message: string }>();
 
@@ -120,10 +120,10 @@ export function AttendanceManager({ activities: initialActivities, groups, recip
       <button disabled={pendingId === "new" || !name.trim() || !groupId || submissionIds.length === 0} type="submit">{pendingId === "new" ? "Zapisywanie…" : "Zapisz obecność"}</button>
     </form>
     {feedback ? <p className={feedback.error ? "admin-notice" : "admin-success"} role={feedback.error ? "alert" : "status"}>{feedback.message}</p> : null}
-    <div className="attendance-list">{visibleActivities.length === 0 ? <p className="admin-submissions-empty">Brak aktywności dla wybranej daty.</p> : visibleActivities.map((activity) => <details className="attendance-card" key={activity.id} open={expandedActivityId === activity.id} onToggle={(event) => setExpandedActivityId(event.currentTarget.open ? activity.id : undefined)}>
+    <div className="attendance-list">{visibleActivities.length === 0 ? <p className="admin-submissions-empty">Brak aktywności dla wybranej daty.</p> : visibleActivities.map((activity) => <details className={selectedActivityId === activity.id ? "attendance-card attendance-card-highlighted" : "attendance-card"} key={activity.id} open={expandedActivityId === activity.id} onToggle={(event) => setExpandedActivityId(event.currentTarget.open ? activity.id : undefined)}>
        <summary className="attendance-card-summary"><div className="attendance-card-summary-info"><h2>{activity.name}</h2><p>{dateValue(activity.activityDate)} · {timeValue(activity.startsAt)}{activity.endsAt ? `–${timeValue(activity.endsAt)}` : ""}</p></div><span aria-hidden="true" className="attendance-card-summary-toggle">+</span></summary>
        <div className="attendance-participants">{sortedParticipants(activity).map((participant) => { const item = recipient(participant.submissionId); if (!item) return null; const status = participant.present ? "Obecny" : "Nieobecny"; return <button aria-label={`${displayName(item)}, ${status}`} aria-pressed={participant.present} className={participant.present ? "attendance-participant attendance-participant-present" : "attendance-participant attendance-participant-absent"} key={participant.submissionId} onClick={() => toggleAttendance(activity.id, participant.submissionId)} type="button"><span>{displayName(item)}<small>{item.email}</small></span><strong aria-hidden="true">{participant.present ? "✓ Obecny" : "✕ Nieobecny"}</strong></button>; })}</div>
-       <div className="attendance-card-footer">{hasAttendanceChanges(activity) ? <button className="admin-group-action-button attendance-update-button" disabled={pendingId === activity.id} onClick={() => saveActivity(activity)} type="button">{pendingId === activity.id ? "Zapisywanie…" : "Aktualizuj obecność"}</button> : null}<button className="admin-destructive-button attendance-delete-button" disabled={pendingId === activity.id} onClick={() => void deleteActivity(activity)} type="button">Usuń zajęcia</button></div>
+       <div className="attendance-card-footer">{hasAttendanceChanges(activity) ? <button className="admin-group-action-button attendance-update-button" disabled={pendingId === activity.id} onClick={() => saveActivity(activity)} type="button">{pendingId === activity.id ? "Zapisywanie…" : "Aktualizuj obecność"}</button> : null}<button className="admin-destructive-button attendance-delete-button" disabled={pendingId === activity.id} onClick={() => void deleteActivity(activity)} type="button">Usuń zajęcia</button><a className="admin-secondary-button attendance-calendar-link" href="/admin/calendar">Kalendarz</a></div>
      </details>)}</div>
   </>;
 }
