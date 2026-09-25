@@ -55,6 +55,18 @@ describe("contact form configuration", () => {
     });
   });
 
+  it("accepts the standard Resend API key environment variable", () => {
+    expect(getContactFormConfig({
+      ...validEnvironment,
+      RESEND_TOKEN: undefined,
+      RESEND_API_KEY: "re_live-key-that-is-long-enough-for-tests",
+    })).toMatchObject({
+      notification: {
+        resendFrom: "Moderato Art <kontakt@moderato-art.pl>",
+      },
+    });
+  });
+
   it("keeps SMS available when optional Resend is disabled", () => {
     expect(getContactFormConfig({
       ...validEnvironment,
