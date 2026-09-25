@@ -54,10 +54,40 @@ model ContactSubmission {
   createdAt                DateTime                @default(now())
   updatedAt                DateTime                @updatedAt
   groups                   ContactGroupMembership[]
+  attendance               AttendanceParticipant[]
 
   @@index([deleteAfter])
   @@index([createdAt, id])
   @@index([status, createdAt, id])
+}
+
+model AttendanceActivity {
+  id           String                  @id @default(cuid())
+  name         String                  @db.VarChar(160)
+  activityDate DateTime
+  startsAt     DateTime
+  endsAt       DateTime?
+  invalid      Boolean                 @default(false)
+  createdAt    DateTime                @default(now())
+  updatedAt    DateTime                @updatedAt
+  participants AttendanceParticipant[]
+
+  @@unique([name, activityDate])
+  @@index([activityDate, startsAt])
+  @@index([updatedAt])
+}
+
+model AttendanceParticipant {
+  activityId   String
+  submissionId String
+  present      Boolean           @default(false)
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+  activity     AttendanceActivity @relation(fields: [activityId], references: [id], onDelete: Cascade)
+  submission   ContactSubmission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+
+  @@id([activityId, submissionId])
+  @@index([submissionId, activityId])
 }
 
 model ContactGroup {
