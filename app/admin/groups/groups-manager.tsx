@@ -24,7 +24,7 @@ export function GroupsManager({ groups: initialGroups, recipients }: { groups: G
   const [feedback, setFeedback] = useState<Feedback>();
   const [pendingId, setPendingId] = useState<string>();
   const [addingGroupId, setAddingGroupId] = useState<string>();
-  const [newMemberId, setNewMemberId] = useState("");
+  const [newMemberIds, setNewMemberIds] = useState<string[]>([]);
   const [memberSearch, setMemberSearch] = useState("");
   const [expandedGroupId, setExpandedGroupId] = useState<string>();
 
@@ -128,22 +128,22 @@ export function GroupsManager({ groups: initialGroups, recipients }: { groups: G
   function startAddingMember(groupId: string) {
     setExpandedGroupId(groupId);
     setAddingGroupId(groupId);
-    setNewMemberId("");
+    setNewMemberIds([]);
     setMemberSearch("");
     setFeedback(undefined);
   }
 
   function cancelAddingMember() {
     setAddingGroupId(undefined);
-    setNewMemberId("");
+    setNewMemberIds([]);
     setMemberSearch("");
   }
 
   function addMember(group: Group) {
-    if (!newMemberId) return;
+    if (newMemberIds.length === 0) return;
     const ids = group.memberships.map((membership) => membership.submissionId);
-    if (!ids.includes(newMemberId)) {
-      const nextIds = [...ids, newMemberId];
+    const nextIds = [...ids, ...newMemberIds.filter((id) => !ids.includes(id))];
+    if (nextIds.length !== ids.length) {
       updateGroup(group.id, { memberships: nextIds.map((submissionId) => ({ submissionId })) });
       void updateMembers(group, nextIds);
     }
@@ -200,8 +200,8 @@ export function GroupsManager({ groups: initialGroups, recipients }: { groups: G
               return [name, recipient.email, recipient.phone || ""].some((value) => value.toLocaleLowerCase("pl-PL").includes(search));
             }).map((recipient) => {
               const name = recipient.childName || recipient.parentName || "Bez podanego imienia";
-              const selected = newMemberId === recipient.id;
-              return <button className={selected ? "admin-group-member-search-result admin-group-member-search-result-selected" : "admin-group-member-search-result"} key={recipient.id} onClick={() => setNewMemberId(recipient.id)} type="button">
+              const selected = newMemberIds.includes(recipient.id);
+              return <button aria-pressed={selected} className={selected ? "admin-group-member-search-result admin-group-member-search-result-selected" : "admin-group-member-search-result"} key={recipient.id} onClick={() => setNewMemberIds((current) => selected ? current.filter((id) => id !== recipient.id) : [...current, recipient.id])} type="button">
                 <strong>{name}</strong><small>{recipient.email}{recipient.phone ? ` · ${recipient.phone}` : ""}</small>
               </button>;
             })}
@@ -214,7 +214,7 @@ export function GroupsManager({ groups: initialGroups, recipients }: { groups: G
             }).length === 0 ? <p className="admin-submissions-empty">Nie znaleziono osoby.</p> : null}
           </div>
           <div className="admin-group-add-member-actions">
-            <button className="admin-group-action-button" disabled={!newMemberId} onClick={() => addMember(group)} type="button">Dodaj użytkownika</button>
+            <button className="admin-group-action-button" disabled={newMemberIds.length === 0} onClick={() => addMember(group)} type="button">Dodaj użytkowników ({newMemberIds.length})</button>
             <button className="admin-secondary-button" onClick={cancelAddingMember} type="button">Anuluj</button>
           </div>
         </div> : null}

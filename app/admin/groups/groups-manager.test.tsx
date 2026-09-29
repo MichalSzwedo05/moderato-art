@@ -26,12 +26,13 @@ describe("GroupsManager", () => {
 
     await user.click(screen.getAllByRole("button", { name: "Dodaj użytkownika" })[1]);
     expect(screen.getByRole("button", { name: /Anna.*anna@example.com/ })).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: /Anna.*anna@example.com/ }));
     await user.click(screen.getByRole("button", { name: /Ola.*ola@example.com/ }));
-    await user.click(screen.getAllByRole("button", { name: "Dodaj użytkownika" })[1]);
+    await user.click(screen.getByRole("button", { name: "Dodaj użytkowników (2)" }));
 
     expect(screen.getByText("Ola")).toBeInTheDocument();
     expect(fetch).toHaveBeenCalledWith("/api/admin/groups/two/members", expect.objectContaining({
-      body: JSON.stringify({ submissionIds: ["other"] }),
+      body: JSON.stringify({ submissionIds: ["person", "other"] }),
       method: "PUT",
     }));
   });

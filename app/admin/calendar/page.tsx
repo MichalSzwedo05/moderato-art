@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { getAdminAuthConfig, getAdminSession } from "@/lib/admin-auth";
 import { attendanceDateString, getAttendanceCalendarData, parseAttendanceWeek, shiftAttendanceWeek } from "@/lib/attendance";
 import { AdminPanel } from "../admin-panel";
+import { CalendarScroller } from "./calendar-scroller";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -37,6 +38,7 @@ export default async function CalendarPage({ searchParams }: CalendarPageProps) 
   const previousWeek = attendanceDateString(shiftAttendanceWeek(weekStart, -1));
   const nextWeek = attendanceDateString(shiftAttendanceWeek(weekStart, 1));
   const currentWeek = attendanceDateString(parseAttendanceWeek(undefined));
+  const currentDate = attendanceDateString(new Date());
 
   return <AdminPanel title="Kalendarz">
     <section className="admin-calendar-toolbar">
@@ -44,12 +46,12 @@ export default async function CalendarPage({ searchParams }: CalendarPageProps) 
       <div><h2>{weekLabel(weekStart)}</h2><Link href={`/admin/calendar?week=${currentWeek}`}>Bieżący tydzień</Link></div>
       <Link className="admin-secondary-button" href={`/admin/calendar?week=${nextWeek}`}>Następny tydzień →</Link>
     </section>
-    <div className="admin-calendar-grid">
+    <CalendarScroller currentDate={currentDate}>
       {dayNames.map((dayName, index) => {
         const day = new Date(weekStart);
         day.setUTCDate(day.getUTCDate() + index);
         const dayActivities = activities.filter((activity) => attendanceDateString(activity.activityDate) === attendanceDateString(day));
-        return <section className="admin-calendar-day" key={dayName}>
+        return <section className="admin-calendar-day" data-calendar-date={attendanceDateString(day)} key={dayName}>
           <header><h2>{dayName}</h2><p>{formatDay(day)}</p></header>
           {dayActivities.length === 0 ? <p className="admin-calendar-empty">Brak zajęć</p> : <div className="admin-calendar-activities">{dayActivities.map((activity) => {
             const present = activity.participants.filter((participant) => participant.present).length;
@@ -57,6 +59,6 @@ export default async function CalendarPage({ searchParams }: CalendarPageProps) 
           })}</div>}
         </section>;
       })}
-    </div>
+    </CalendarScroller>
   </AdminPanel>;
 }
