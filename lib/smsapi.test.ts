@@ -39,7 +39,7 @@ describe("SMSAPI notifications", () => {
     const [, request] = fetchMock.mock.calls[0] as [string, { body: URLSearchParams }];
     const smil = request.body.get("smil") || "";
     expect(smil).toContain("region=\"Image\"");
-    expect(smil).toContain("https://moderato-art.example/moderato-logo.jpg");
+    expect(smil).toContain("https://www.moderato-art.pl/moderato-logo.jpg");
     expect(smil).toContain("region=\"Text\"");
   });
 

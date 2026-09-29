@@ -106,7 +106,7 @@ export async function sendMmsMessage(config: SmsApiConfig | undefined, recipient
   if (!config) return false;
   const contentToken = createMmsContentToken(message, config.token);
   const contentUrl = `${contentOrigin}/api/mms-content/${contentToken}`;
-  const imageUrl = `${contentOrigin}/moderato-logo.jpg`;
+  const imageUrl = "https://www.moderato-art.pl/moderato-logo.jpg";
   const smil = `<smil><head><layout><root-layout backgroundColor="#FFFFFF" height="100%" width="100%"/><region id="Image" top="0" left="0" height="50%" width="100%" fit="meet"/><region id="Text" top="50%" left="0" height="50%" width="100%" fit="scroll"/></layout></head><body><par dur="5000ms"><img src="${escapeXml(imageUrl)}" region="Image"/></par><par dur="5000ms"><text src="${escapeXml(contentUrl)}" region="Text"/></par></body></smil>`;
   try {
     for (const recipient of recipients) {
@@ -114,7 +114,10 @@ export async function sendMmsMessage(config: SmsApiConfig | undefined, recipient
       const timeout = setTimeout(() => controller.abort(), smsApiTimeoutMs);
       try {
         const response = await fetch(mmsApiEndpoint, { body: new URLSearchParams({ format: "json", smil, subject: config.sender, to: recipient }), headers: { Authorization: `Bearer ${config.token}`, "Content-Type": "application/x-www-form-urlencoded" }, method: "POST", signal: controller.signal });
-        if (!response.ok) throw new Error(`SMSAPI MMS request failed with status ${response.status}`);
+        if (!response.ok) {
+          const responseText = await response.text();
+          throw new Error(`SMSAPI MMS request failed with status ${response.status}: ${responseText.slice(0, 500)}`);
+        }
         const result = await response.json() as { error?: number; message?: string };
         if (result.error) throw new Error(`SMSAPI MMS rejected the message: ${result.message ?? result.error}`);
       } finally { clearTimeout(timeout); }
