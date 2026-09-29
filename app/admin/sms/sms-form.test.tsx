@@ -30,7 +30,7 @@ describe("SmsForm", () => {
 
     await user.click(screen.getByRole("checkbox", { name: /Junior Voice/ }));
 
-    expect(screen.getByText(/\/1530 znaków · wybrano\s+2/)).toBeInTheDocument();
+    expect(screen.getByText(/\/10000 znaków · do 2 części SMS, dłuższe wiadomości MMS · wybrano\s+2/)).toBeInTheDocument();
   });
 
   it("removes a contact from the selected recipients box", async () => {

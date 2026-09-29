@@ -5,16 +5,17 @@ import { isSameAdminOrigin } from "@/lib/admin-security";
 import { getContactFormConfig } from "@/lib/contact-config";
 import { getPrisma } from "@/lib/prisma";
 import {
+  contactSubmissionMmsMaxMessageLength,
   contactSubmissionSmsMaxMessageLength,
   contactSubmissionSmsMaxRecipients,
 } from "@/lib/contact-submissions";
-import { normalizeSmsApiPhone, sendSmsMessage } from "@/lib/smsapi";
+import { isSmsMessageWithinLimit, normalizeSmsApiPhone, sendMmsMessage, sendSmsMessage } from "@/lib/smsapi";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
 const smsRequestSchema = z.object({
-  message: z.string().trim().min(1).max(contactSubmissionSmsMaxMessageLength),
+  message: z.string().trim().min(1).max(contactSubmissionMmsMaxMessageLength),
   submissionIds: z.array(z.string().trim().min(1).max(100))
     .min(1)
     .max(contactSubmissionSmsMaxRecipients)
@@ -71,8 +72,10 @@ export async function POST(request: Request) {
   }
 
   try {
-    await sendSmsMessage(contactConfig.sms, recipients as string[], parsedRequest.data.message, { throwOnError: true });
-    return NextResponse.json({ message: `Wiadomość wysłano do ${recipients.length} odbiorców.` }, {
+    const message = parsedRequest.data.message;
+    if (isSmsMessageWithinLimit(message)) await sendSmsMessage(contactConfig.sms, recipients as string[], message, { throwOnError: true });
+    else await sendMmsMessage(contactConfig.sms, recipients as string[], message, new URL(request.url).origin, { throwOnError: true });
+    return NextResponse.json({ message: `${isSmsMessageWithinLimit(message) ? "SMS" : "MMS"} wysłano do ${recipients.length} odbiorców.` }, {
       headers: { "Cache-Control": "private, no-store, max-age=0" },
       status: 200,
     });
