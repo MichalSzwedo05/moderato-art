@@ -2608,12 +2608,14 @@ h2 {
 
 .admin-calendar-toolbar {
   align-items: center;
-  border-bottom: 1px solid var(--border-color);
+  background: color-mix(in srgb, var(--cream) 48%, var(--surface));
+  border: 1px solid var(--border-color);
+  border-radius: .85rem;
   display: flex;
   gap: 1rem;
   justify-content: space-between;
   margin-top: 1.5rem;
-  padding-bottom: 1rem;
+  padding: .85rem;
 }
 
 .admin-calendar-toolbar > div {
@@ -2622,14 +2624,26 @@ h2 {
 
 .admin-calendar-toolbar h2 {
   color: var(--dark-blue);
-  font-size: 1.15rem;
+  font-size: 1.2rem;
+  font-weight: 900;
   margin: 0;
 }
 
 .admin-calendar-toolbar a:not(.admin-secondary-button) {
-  color: var(--blue);
-  font-size: .8rem;
+  color: var(--dark-blue);
+  display: inline-block;
+  font-size: .82rem;
   font-weight: 800;
+  margin-top: .25rem;
+  text-decoration: underline;
+  text-decoration-color: var(--green);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
+}
+
+.admin-calendar-toolbar a:not(.admin-secondary-button):hover,
+.admin-calendar-toolbar a:not(.admin-secondary-button):focus-visible {
+  color: var(--green-hover);
 }
 
 .admin-calendar-grid {
@@ -2638,6 +2652,9 @@ h2 {
   grid-template-columns: repeat(7, minmax(8rem, 1fr));
   margin-top: 1.5rem;
   overflow-x: auto;
+  overscroll-behavior-inline: contain;
+  scroll-behavior: smooth;
+  scroll-snap-type: inline mandatory;
 }
 
 .admin-calendar-day {
@@ -2647,6 +2664,7 @@ h2 {
   min-height: 15rem;
   min-width: 8rem;
   padding: .75rem;
+  scroll-snap-align: center;
 }
 
 .admin-calendar-day header {
