@@ -7,6 +7,9 @@ export const contactSubmissionExportMaxRecords = 1_000;
 export const contactSubmissionExportMaxBytes = 4 * 1024 * 1024;
 export const contactSubmissionSmsMaxRecipients = 1_000;
 export const contactSubmissionSmsMaxMessageLength = 1530;
+export const contactSubmissionEmailMaxRecipients = 1_000;
+export const contactSubmissionEmailMaxSubjectLength = 200;
+export const contactSubmissionEmailMaxMessageLength = 20_000;
 export const contactSubmissionFilters = ["ALL", "NEW", "CONTACTED", "ARCHIVED"] as const;
 
 export type ContactSubmissionFilter = typeof contactSubmissionFilters[number];
@@ -46,6 +49,13 @@ export type ContactSubmissionSmsRecipient = {
   id: string;
   parentName: string | null;
   phone: string;
+};
+
+export type ContactSubmissionEmailRecipient = {
+  childName: string | null;
+  email: string;
+  id: string;
+  parentName: string | null;
 };
 
 export class ContactSubmissionExportLimitError extends Error {
@@ -170,6 +180,21 @@ export async function getContactSubmissionSmsRecipients() {
     return submissions.filter((submission): submission is ContactSubmissionSmsRecipient => Boolean(submission.phone));
   } catch {
     console.error("SMS contact recipients query failed");
+    return undefined;
+  }
+}
+
+export async function getContactSubmissionEmailRecipients() {
+  try {
+    const submissions = await getPrisma().contactSubmission.findMany({
+      orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+      select: { childName: true, email: true, id: true, parentName: true },
+      take: contactSubmissionExportMaxRecords,
+    });
+
+    return submissions.filter((submission): submission is ContactSubmissionEmailRecipient => Boolean(submission.email));
+  } catch {
+    console.error("Email contact recipients query failed");
     return undefined;
   }
 }

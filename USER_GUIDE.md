@@ -29,6 +29,8 @@ W górnej części panelu znajdziesz:
 
 - **Pobierz instrukcję** — pobiera ten przewodnik jako plik Markdown,
 - **Zgłoszenia kontaktowe** — otwiera skrzynkę wiadomości z formularza,
+- **E-mail** — pozwala wysłać wiadomość do wybranych osób ze zgłoszeń,
+- **Grupy** — pozwala tworzyć grupy kontaktów i przypisywać do nich osoby,
 - **Wyloguj** — kończy sesję administratora.
 
 Niżej znajdują się dwa główne obszary:
@@ -125,6 +127,24 @@ Kliknij **Zgłoszenia kontaktowe** w nagłówku panelu.
 - Kliknięcie adresu e-mail lub telefonu otwiera odpowiednią aplikację.
 
 Panel pokazuje statusy i pozwala je filtrować, ale obecna wersja nie ma przycisku do zmiany statusu zgłoszenia.
+
+### Wysyłanie wiadomości e-mail
+
+1. Otwórz **E-mail** w nawigacji panelu.
+2. Zaznacz jedną lub więcej osób z listy kontaktów albo użyj **Zaznacz wszystkich**.
+3. Wpisz temat i treść wiadomości.
+4. Sprawdź listę odbiorców i kliknij **Wyślij e-mail**.
+
+Każda osoba otrzymuje osobną wiadomość, więc adresy pozostałych odbiorców nie są widoczne. Funkcja wymaga skonfigurowanej usługi Resend; jeśli konfiguracja jest niepełna, panel pokaże komunikat o niedostępności.
+
+### Grupy kontaktów
+
+1. Otwórz **Grupy** w nawigacji panelu.
+2. Wpisz nazwę i kliknij **Utwórz grupę**.
+3. Zaznacz osoby należące do grupy i kliknij **Zapisz członków**.
+4. Użyj **Zmień nazwę** albo **Usuń**, aby utrzymywać grupę.
+
+Ta sama osoba może być zaznaczona w wielu grupach. Usunięcie grupy usuwa tylko jej przypisania, nie usuwa kontaktów ani zgłoszeń.
 
 ### Retencja i usuwanie danych
 

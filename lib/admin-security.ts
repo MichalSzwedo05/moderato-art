@@ -190,11 +190,13 @@ export function isMagicToken(token: string) {
 
 function stripWwwPrefix(origin: string | null) {
   if (!origin) return "";
-  const parts = origin.split("://");
-  if (parts.length !== 2) return origin;
-  const [scheme, rest] = parts;
-  const host = rest.startsWith("www.") ? rest.slice("www.".length) : rest;
-  return `${scheme}://${host}`;
+  try {
+    const parsed = new URL(origin);
+    const hostname = parsed.hostname.startsWith("www.") ? parsed.hostname.slice("www.".length) : parsed.hostname;
+    return `${parsed.protocol}//${hostname}${parsed.port ? `:${parsed.port}` : ""}`;
+  } catch {
+    return "";
+  }
 }
 
 export function isSameAdminOrigin(origin: string | null, config: AdminAuthConfig) {

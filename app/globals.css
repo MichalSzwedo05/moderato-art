@@ -2274,6 +2274,31 @@ h2 {
   overflow: auto;
 }
 
+.admin-recipient-groups {
+  border-bottom: 1px solid var(--border-color);
+  display: grid;
+  gap: .5rem;
+  padding-bottom: .75rem;
+}
+
+.admin-recipient-groups h4,
+.admin-recipient-list-heading {
+  color: var(--dark-blue);
+  font-size: .82rem;
+  letter-spacing: .03em;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.admin-recipient-list-heading {
+  margin: .25rem 0 0;
+}
+
+.admin-group-recipient {
+  background: color-mix(in srgb, var(--blue) 10%, var(--surface));
+  border-color: color-mix(in srgb, var(--blue) 35%, var(--border-color));
+}
+
 .admin-sms-recipient {
   align-items: center;
   background: color-mix(in srgb, var(--cream) 65%, var(--surface));
@@ -2398,6 +2423,743 @@ h2 {
   color: var(--gray-light);
   font-size: .8rem;
   margin: -.25rem 0 0;
+}
+
+.admin-group-create-form {
+  align-items: end;
+  border-top: 1px solid var(--border-color);
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: minmax(0, 1fr) auto;
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+}
+
+.admin-groups-list {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.admin-group-card {
+  border: 1px solid var(--border-color);
+  padding: 1rem;
+}
+
+.admin-group-card-header {
+  align-items: flex-start;
+  cursor: pointer;
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+  list-style: none;
+}
+
+.admin-group-card-header::-webkit-details-marker {
+  display: none;
+}
+
+.admin-group-card-header::before {
+  color: var(--blue);
+  content: "+";
+  flex: 0 0 auto;
+  font-size: 1.35rem;
+  font-weight: 800;
+  line-height: 1;
+  order: 2;
+}
+
+.admin-group-card[open] .admin-group-card-header::before {
+  content: "−";
+}
+
+.admin-group-card-header h2 {
+  color: var(--dark-blue);
+  margin: 0;
+}
+
+.admin-group-expanded-actions {
+  display: flex;
+  gap: .75rem;
+  justify-content: flex-end;
+  margin-top: 1rem;
+}
+
+.admin-group-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .75rem;
+}
+
+.admin-group-actions button {
+  margin: 0;
+  width: auto;
+}
+
+.admin-group-action-button {
+  align-items: center;
+  background: var(--dark-blue);
+  border: 0;
+  border-radius: .7rem;
+  color: #fff;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 800;
+  margin: 0;
+  padding: .75rem 1rem;
+  width: auto;
+}
+
+.admin-group-action-button:hover,
+.admin-group-action-button:focus-visible {
+  background: #4b2d75;
+}
+
+.admin-group-action-button:disabled {
+  cursor: wait;
+  opacity: .65;
+}
+
+.admin-group-members-list {
+  display: grid;
+  gap: .5rem;
+  margin-top: 1rem;
+}
+
+.admin-group-member {
+  align-items: center;
+  background: color-mix(in srgb, var(--cream) 65%, var(--surface));
+  border: 1px solid var(--border-color);
+  border-radius: .55rem;
+  display: flex;
+  gap: .75rem;
+  justify-content: space-between;
+  padding: .7rem;
+}
+
+.admin-group-member > span {
+  display: grid;
+  gap: .2rem;
+  min-width: 0;
+}
+
+.admin-group-member small {
+  color: var(--gray-light);
+  overflow-wrap: anywhere;
+}
+
+.admin-group-remove-member {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  color: var(--dark-blue);
+  display: inline-flex;
+  flex: 0 0 auto;
+  font-size: 1.35rem;
+  height: 2rem;
+  justify-content: center;
+  margin: 0;
+  padding: 0;
+  width: 2rem;
+}
+
+.admin-group-remove-member:hover,
+.admin-group-remove-member:focus-visible {
+  color: #c0392b;
+}
+
+.admin-group-add-member {
+  align-items: stretch;
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  gap: .75rem;
+  inline-size: min(50%, 32rem);
+  margin-top: 1rem;
+  padding-top: 1rem;
+}
+
+.admin-group-add-member label {
+  display: grid;
+  gap: .55rem;
+}
+
+.admin-group-add-member select {
+  background: color-mix(in srgb, var(--cream) 88%, var(--surface));
+  border: 1px solid var(--border-color);
+  border-radius: .6rem;
+  box-sizing: border-box;
+  color: var(--gray-text);
+  font: inherit;
+  padding: .65rem .75rem;
+  width: 100%;
+}
+
+.admin-group-add-member select:focus {
+  outline: 2px solid color-mix(in srgb, var(--blue) 55%, transparent);
+  outline-offset: 1px;
+}
+
+.attendance-create-form {
+  border-top: 1px solid var(--border-color);
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+}
+
+.admin-calendar-toolbar {
+  align-items: center;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+  margin-top: 1.5rem;
+  padding-bottom: 1rem;
+}
+
+.admin-calendar-toolbar > div {
+  text-align: center;
+}
+
+.admin-calendar-toolbar h2 {
+  color: var(--dark-blue);
+  font-size: 1.15rem;
+  margin: 0;
+}
+
+.admin-calendar-toolbar a:not(.admin-secondary-button) {
+  color: var(--blue);
+  font-size: .8rem;
+  font-weight: 800;
+}
+
+.admin-calendar-grid {
+  display: grid;
+  gap: .75rem;
+  grid-template-columns: repeat(7, minmax(8rem, 1fr));
+  margin-top: 1.5rem;
+  overflow-x: auto;
+}
+
+.admin-calendar-day {
+  background: color-mix(in srgb, var(--cream) 42%, var(--surface));
+  border: 1px solid var(--border-color);
+  border-radius: .75rem;
+  min-height: 15rem;
+  min-width: 8rem;
+  padding: .75rem;
+}
+
+.admin-calendar-day header {
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: .65rem;
+}
+
+.admin-calendar-day h2 {
+  color: var(--dark-blue);
+  font-size: .9rem;
+  margin: 0;
+}
+
+.admin-calendar-day header p {
+  color: var(--gray-light);
+  font-size: .8rem;
+  margin: .2rem 0 0;
+}
+
+.admin-calendar-empty {
+  color: var(--gray-light);
+  font-size: .8rem;
+  margin: 1rem 0 0;
+}
+
+.admin-calendar-activities {
+  display: grid;
+  gap: .5rem;
+  margin-top: .75rem;
+}
+
+.admin-calendar-activity {
+  background: var(--surface);
+  border-left: .25rem solid var(--blue);
+  border-radius: .45rem;
+  color: var(--gray-text);
+  display: grid;
+  gap: .2rem;
+  padding: .6rem;
+  text-decoration: none;
+}
+
+.admin-calendar-activity:hover,
+.admin-calendar-activity:focus-visible {
+  border-left-color: var(--green);
+  outline: 2px solid color-mix(in srgb, var(--blue) 45%, transparent);
+  outline-offset: 1px;
+}
+
+.admin-calendar-activity strong { color: var(--dark-blue); font-size: .8rem; overflow-wrap: anywhere; }
+.admin-calendar-activity span { font-size: .78rem; font-weight: 800; }
+.admin-calendar-activity small { color: var(--gray-light); }
+
+.attendance-create-form h2,
+.attendance-card h2 {
+  color: var(--dark-blue);
+  margin: 0;
+}
+
+.attendance-time-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: 1.5fr 1fr 1fr;
+}
+
+.attendance-create-people {
+  background: color-mix(in srgb, var(--cream) 42%, var(--surface));
+  box-sizing: border-box;
+  border: 1px solid var(--border-color);
+  border-radius: .75rem;
+  display: grid;
+  gap: .5rem;
+  max-height: 18rem;
+  overflow: auto;
+  padding: 1.25rem;
+  width: 100%;
+}
+
+.attendance-create-people-heading {
+  align-items: center;
+  color: var(--dark-blue);
+  display: flex;
+  flex-wrap: wrap;
+  gap: .65rem;
+  justify-content: space-between;
+  padding-bottom: .75rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.attendance-create-people-heading .attendance-bulk-button {
+  background: var(--blue);
+  border: 0;
+  border-radius: .6rem;
+  box-sizing: border-box;
+  color: #fff;
+  cursor: pointer;
+  font: inherit;
+  font-size: .8rem;
+  font-weight: 800;
+  margin-left: auto;
+  margin-top: 0;
+  padding: .45rem .65rem;
+  width: auto;
+}
+
+.attendance-create-people-heading .attendance-bulk-button:hover,
+.attendance-create-people-heading .attendance-bulk-button:focus-visible {
+  background: var(--dark-blue);
+}
+
+.attendance-create-people-heading > span {
+  align-items: center;
+  background: var(--blue);
+  border-radius: 999px;
+  color: #fff;
+  display: inline-flex;
+  font-size: .8rem;
+  font-weight: 800;
+  justify-content: center;
+  min-height: 1.5rem;
+  min-width: 1.5rem;
+  padding: 0 .35rem;
+}
+
+.attendance-create-person {
+  align-items: center;
+  background: color-mix(in srgb, var(--cream) 65%, var(--surface));
+  border: 1px solid var(--border-color);
+  border-radius: .55rem;
+  color: var(--gray-text);
+  cursor: pointer;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  gap: .2rem 1rem;
+  font: inherit;
+  justify-content: space-between;
+  min-width: 0;
+  padding: .7rem .8rem;
+  text-align: left;
+  box-sizing: border-box;
+  max-width: none;
+  width: 100%;
+}
+
+.attendance-create-person input {
+  align-self: center;
+  grid-column: 3;
+  grid-row: 1 / span 2;
+  margin: 0;
+  width: auto;
+}
+
+.attendance-create-person span {
+  display: grid;
+  grid-column: 1;
+  grid-row: 1 / span 2;
+  gap: .15rem;
+  min-width: 0;
+}
+
+.attendance-create-person .attendance-create-status {
+  align-self: center;
+  grid-column: 2;
+  grid-row: 2;
+  margin-left: 0;
+}
+
+.attendance-create-person small {
+  color: var(--gray-light);
+  overflow-wrap: anywhere;
+}
+
+.attendance-create-status {
+  align-items: center;
+  cursor: pointer;
+  border-radius: .4rem;
+  border: 1px solid transparent;
+  display: inline-flex;
+  flex: 0 0 auto;
+  font-size: .78rem;
+  font-weight: 800;
+  justify-content: center;
+  padding: .35rem .5rem;
+  white-space: nowrap;
+}
+
+.admin-form .attendance-create-status:hover,
+.admin-form .attendance-create-status:focus-visible {
+  filter: brightness(.9);
+  outline: 2px solid color-mix(in srgb, var(--blue) 55%, transparent);
+  outline-offset: 1px;
+}
+
+.admin-form .attendance-create-status-present {
+  background: #237a4b;
+  color: #fff;
+}
+
+.admin-form .attendance-create-status-absent {
+  background: #6b7280;
+  color: #fff;
+}
+
+.attendance-create-person + .attendance-create-person {
+  border-top-color: color-mix(in srgb, var(--border-color) 75%, transparent);
+}
+
+.attendance-create-person:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--blue) 55%, transparent);
+  outline-offset: 1px;
+}
+
+.attendance-create-people label,
+.attendance-participants label {
+  align-items: center;
+  background: color-mix(in srgb, var(--cream) 65%, var(--surface));
+  border: 1px solid transparent;
+  border-radius: .55rem;
+  cursor: pointer;
+  display: flex;
+  gap: .65rem;
+  padding: .65rem;
+}
+
+.attendance-create-people label:has(input:checked),
+.attendance-participants label:has(input:checked),
+.attendance-participants button[aria-pressed="true"] {
+  background: color-mix(in srgb, var(--blue) 12%, var(--surface));
+  border-color: var(--blue);
+}
+
+.attendance-create-people small,
+.attendance-participants small {
+  color: var(--gray-light);
+}
+
+.attendance-list {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.attendance-card {
+  border: 1px solid var(--border-color);
+  overflow: hidden;
+  padding: 1rem;
+}
+
+.attendance-card-highlighted {
+  border-color: var(--green);
+  box-shadow: 0 0 0 .2rem color-mix(in srgb, var(--green) 20%, transparent);
+}
+
+.attendance-card-summary {
+  align-items: center;
+  cursor: pointer;
+  display: flex;
+  gap: .75rem;
+  justify-content: space-between;
+  list-style: none;
+}
+
+.attendance-card-summary::-webkit-details-marker {
+  display: none;
+}
+
+.attendance-card-summary::after {
+  content: none;
+}
+
+.attendance-card-summary-info {
+  min-width: 0;
+}
+
+.attendance-card-summary-toggle {
+  display: inline-block;
+  flex: 0 0 auto;
+  color: var(--blue);
+  font-size: 1.35rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.attendance-card[open] .attendance-card-summary-toggle {
+  font-size: 0;
+}
+
+.attendance-card[open] .attendance-card-summary-toggle::after {
+  content: "−";
+  font-size: 1.35rem;
+}
+
+.attendance-card-footer {
+  align-items: center;
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  flex-wrap: wrap;
+  gap: .75rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
+}
+
+.attendance-calendar-link {
+  margin-left: auto;
+}
+
+.attendance-card-footer button {
+  margin: 0;
+}
+
+.attendance-delete-button {
+  margin-left: 0;
+}
+
+.attendance-card-footer .attendance-delete-button {
+  background: #c0392b;
+  border: 1px solid #c0392b;
+  border-radius: .7rem;
+  color: #fff;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 800;
+  padding: .75rem 1rem;
+  width: auto;
+}
+
+.attendance-card-footer .attendance-delete-button:hover,
+.attendance-card-footer .attendance-delete-button:focus-visible {
+  background: #a93226;
+  border-color: #a93226;
+}
+
+.attendance-card-footer .attendance-delete-button:disabled {
+  cursor: wait;
+  opacity: .65;
+}
+
+.attendance-card[open] .attendance-card-summary::after {
+  content: "−";
+}
+
+.attendance-card-summary h2,
+.attendance-card-expanded-header h2 {
+  margin: 0;
+}
+
+.attendance-card-summary p,
+.attendance-card-expanded-header p {
+  color: var(--gray-light);
+  margin: .35rem 0 0;
+}
+
+.attendance-card-expanded-header {
+  align-items: center;
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 1rem;
+  padding-top: 1rem;
+}
+
+.attendance-card > header {
+  align-items: flex-start;
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+}
+
+.attendance-card > header p {
+  color: var(--gray-light);
+  margin: .35rem 0 0;
+}
+
+.attendance-participants {
+  display: grid;
+  gap: .5rem;
+  margin-top: 1rem;
+  width: 100%;
+}
+
+.attendance-participants label,
+.attendance-participants button {
+  align-items: center;
+  background: color-mix(in srgb, var(--cream) 65%, var(--surface));
+  border: 1px solid var(--border-color);
+  border-radius: .55rem;
+  cursor: pointer;
+  display: flex;
+  gap: 1rem;
+  padding: .7rem .8rem;
+}
+
+.attendance-participants button {
+  box-sizing: border-box;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  max-width: none;
+  width: 100%;
+}
+
+.attendance-participants button:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--blue) 55%, transparent);
+  outline-offset: 1px;
+}
+
+.attendance-participants label span,
+.attendance-participants button span {
+  display: grid;
+  flex: 1 1 auto;
+  gap: .15rem;
+  min-width: 0;
+}
+
+.attendance-participants button small {
+  color: var(--gray-light);
+  overflow-wrap: anywhere;
+}
+
+.attendance-participants label > strong,
+.attendance-participants button > strong {
+  border-radius: .45rem;
+  display: inline-flex;
+  flex: 0 0 auto;
+  font-size: .78rem;
+  font-weight: 800;
+  justify-content: center;
+  padding: .35rem .5rem;
+  white-space: nowrap;
+}
+
+.attendance-participant-present > strong {
+  background: #237a4b;
+  color: #fff;
+}
+
+.attendance-participant-absent > strong {
+  background: #c0392b;
+  color: #fff;
+}
+
+.attendance-card > button {
+  margin-top: 1rem;
+}
+
+.attendance-card > .attendance-update-button {
+  margin-top: 1rem;
+}
+
+.admin-group-member-search-results {
+  background: var(--surface);
+  border: 1px solid var(--border-color);
+  border-radius: .6rem;
+  display: grid;
+  gap: .35rem;
+  max-height: 14rem;
+  overflow-y: auto;
+  padding: .5rem;
+  width: 100%;
+}
+
+.admin-group-member-search-result {
+  align-items: flex-start;
+  background: color-mix(in srgb, var(--cream) 65%, var(--surface));
+  border: 1px solid transparent;
+  border-radius: .55rem;
+  color: var(--gray-text);
+  cursor: pointer;
+  display: grid;
+  font: inherit;
+  gap: .2rem;
+  justify-items: start;
+  margin: 0;
+  padding: .65rem .75rem;
+  text-align: left;
+  width: 100%;
+}
+
+.admin-group-member-search-result:hover,
+.admin-group-member-search-result:focus-visible,
+.admin-group-member-search-result-selected {
+  background: color-mix(in srgb, var(--blue) 16%, var(--surface));
+  border-color: var(--blue);
+}
+
+.admin-group-member-search-result small {
+  color: var(--gray-light);
+  overflow-wrap: anywhere;
+}
+
+.admin-group-add-member-actions {
+  display: flex;
+  gap: .5rem;
+}
+
+.admin-group-add-member-actions button {
+  margin: 0;
+  width: auto;
+}
+
+.admin-group-add-button,
+.admin-group-member-actions > button {
+  margin-top: 1rem;
+}
+
+.admin-group-member-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .75rem;
+}
+
+.admin-group-member-actions button {
+  width: auto;
 }
 
 .admin-submissions-filter {
@@ -2941,6 +3703,9 @@ h2 {
 .admin-article-list details .admin-article-form { margin-top: 1rem; }
 
 @media (max-width: 700px) {
+  .admin-calendar-toolbar { align-items: stretch; flex-direction: column; }
+  .admin-calendar-toolbar .admin-secondary-button { justify-content: center; width: 100%; }
+  .admin-calendar-grid { grid-template-columns: repeat(7, minmax(12rem, 1fr)); }
   .admin-header { flex-direction: column; }
   .admin-editor-grid { grid-template-columns: 1fr; }
   .admin-editor-heading { align-items: flex-start; flex-direction: column; }
@@ -2965,6 +3730,18 @@ h2 {
   .admin-sms-recipient strong,
   .admin-sms-selected-list strong { overflow-wrap: anywhere; }
   .admin-sms-selected-list li { align-items: flex-start; }
+  .admin-group-create-form { grid-template-columns: 1fr; }
+  .admin-group-create-form button { margin-top: 0; width: 100%; }
+  .admin-group-card-header { align-items: center; }
+  .admin-group-actions { width: 100%; }
+  .admin-group-actions { gap: .75rem; }
+  .admin-group-actions button { flex: 1 1 auto; }
+  .admin-group-add-member { inline-size: 100%; }
+  .admin-group-add-member-actions button { flex: 1 1 auto; }
+  .admin-group-member-actions button { flex: 1 1 auto; margin-top: 0; }
+  .attendance-time-grid { grid-template-columns: 1fr; }
+  .attendance-card > header { flex-direction: column; }
+  .attendance-card > header button { margin-top: 0; }
 }
 
 @media (max-width: 600px) {

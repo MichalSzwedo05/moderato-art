@@ -7,6 +7,7 @@ type ContactFormEnvironment = {
   CONTACT_RATE_LIMIT_SECRET?: string;
   CRON_SECRET?: string;
   DATABASE_URL?: string;
+  RESEND_API_KEY?: string;
   RESEND_TOKEN?: string;
   SMSAPI_TOKEN?: string;
   SMSAPI_SENDER?: string;
@@ -87,7 +88,7 @@ function getSheetsConfig(environment: ContactFormEnvironment) {
 }
 
 export function getContactFormConfig(environment: ContactFormEnvironment = process.env as ContactFormEnvironment): ContactFormConfig | undefined {
-  const resendKey = environment.RESEND_TOKEN;
+  const resendKey = environment.RESEND_TOKEN?.trim() || environment.RESEND_API_KEY?.trim();
   const recipient = environment.CONTACT_FORM_RECIPIENT?.trim();
   const resendFrom = environment.CONTACT_FORM_RESEND_FROM?.trim();
   const rateLimitSecret = environment.CONTACT_RATE_LIMIT_SECRET?.trim();
