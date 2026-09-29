@@ -1,6 +1,6 @@
 import type { ContactLessonType } from "./offers";
 import { lessonTypeTabs } from "./offers";
-import { createMmsContentToken } from "./mms-content";
+import { createMmsContent } from "./mms-content";
 
 const smsApiEndpoint = "https://api.smsapi.pl/sms.do";
 const smsApiTimeoutMs = 5_000;
@@ -120,8 +120,8 @@ export async function sendMmsMessage(
 ) {
   if (!config) return false;
 
-  const contentToken = createMmsContentToken(message, config.token);
-  const contentUrl = `${contentOrigin}/api/mms-content/${contentToken}`;
+  const contentId = await createMmsContent(message);
+  const contentUrl = `${contentOrigin}/api/mms-content/${contentId}`;
   const imageUrl = "https://www.moderato-art.pl/moderato-logo.jpg";
   const smil = `<smil><head><layout><root-layout backgroundColor="#FFFFFF" height="100%" width="100%"/><region id="Image" top="0" left="0" height="50%" width="100%" fit="meet"/><region id="Text" top="50%" left="0" height="50%" width="100%" fit="scroll"/></layout></head><body><par dur="5000ms"><img src="${escapeXml(imageUrl)}" region="Image"/></par><par dur="5000ms"><text src="${escapeXml(contentUrl)}" region="Text"/></par></body></smil>`;
 

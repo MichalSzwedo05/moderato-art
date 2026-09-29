@@ -6,6 +6,7 @@ const mocks = vi.hoisted(() => ({
   adminSessionDeleteMany: vi.fn(),
   contactSubmissionDeleteMany: vi.fn(),
   contactSubmissionFindMany: vi.fn(),
+  mmsContentDeleteMany: vi.fn(),
 }));
 
 vi.mock("./prisma", () => ({
@@ -17,6 +18,7 @@ vi.mock("./prisma", () => ({
       deleteMany: mocks.contactSubmissionDeleteMany,
       findMany: mocks.contactSubmissionFindMany,
     },
+    mmsContent: { deleteMany: mocks.mmsContentDeleteMany },
   }),
 }));
 
@@ -30,6 +32,7 @@ describe("cleanupExpiredContactData", () => {
     mocks.adminMagicLinkDeleteMany.mockResolvedValue({ count: 2 });
     mocks.adminSessionDeleteMany.mockResolvedValue({ count: 3 });
     mocks.adminLoginRateLimitDeleteMany.mockResolvedValue({ count: 4 });
+    mocks.mmsContentDeleteMany.mockResolvedValue({ count: 5 });
   });
 
   it("deletes expired contact data and authentication records", async () => {
@@ -39,9 +42,11 @@ describe("cleanupExpiredContactData", () => {
       contactSubmissions: 1,
       loginRateLimits: 4,
       magicLinks: 2,
+      mmsContent: 5,
       sessions: 3,
     });
     expect(mocks.contactSubmissionFindMany).toHaveBeenCalledWith(expect.objectContaining({ take: 100 }));
     expect(mocks.adminMagicLinkDeleteMany).toHaveBeenCalledWith({ where: { expiresAt: { lte: now } } });
+    expect(mocks.mmsContentDeleteMany).toHaveBeenCalledWith({ where: { expiresAt: { lte: now } } });
   });
 });

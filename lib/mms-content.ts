@@ -1,30 +1,29 @@
-import { createHmac, timingSafeEqual } from "node:crypto";
+import { getPrisma } from "./prisma";
 
-const mmsTokenLifetimeMs = 10 * 60 * 1000;
+const mmsContentLifetimeMs = 60 * 60 * 1000;
 
-function signature(value: string, secret: string) {
-  return createHmac("sha256", secret).update(value).digest("base64url");
+export async function createMmsContent(message: string, now = new Date()) {
+  const prisma = getPrisma();
+  const content = await prisma.mmsContent.create({
+    data: { expiresAt: new Date(now.getTime() + mmsContentLifetimeMs), message },
+    select: { id: true },
+  });
+
+  return content.id;
 }
 
-export function createMmsContentToken(message: string, secret: string, now = Date.now()) {
-  const expiresAt = String(now + mmsTokenLifetimeMs);
-  const payload = Buffer.from(message, "utf8").toString("base64url");
-  const unsigned = `${expiresAt}.${payload}`;
-  return `${unsigned}.${signature(unsigned, secret)}`;
-}
+export async function readMmsContent(id: string, now = new Date()) {
+  const prisma = getPrisma();
+  const content = await prisma.mmsContent.findUnique({
+    select: { expiresAt: true, message: true },
+    where: { id },
+  });
 
-export function readMmsContentToken(token: string, secret: string, now = Date.now()) {
-  const [expiresAt, payload, receivedSignature] = token.split(".");
-  if (!expiresAt || !payload || !receivedSignature || Number(expiresAt) < now) return undefined;
-
-  const expectedSignature = signature(`${expiresAt}.${payload}`, secret);
-  const expectedBuffer = Buffer.from(expectedSignature);
-  const receivedBuffer = Buffer.from(receivedSignature);
-  if (expectedBuffer.length !== receivedBuffer.length || !timingSafeEqual(expectedBuffer, receivedBuffer)) return undefined;
-
-  try {
-    return Buffer.from(payload, "base64url").toString("utf8");
-  } catch {
+  if (!content) return undefined;
+  if (content.expiresAt.getTime() <= now.getTime()) {
+    await prisma.mmsContent.deleteMany({ where: { id } });
     return undefined;
   }
+
+  return content.message;
 }

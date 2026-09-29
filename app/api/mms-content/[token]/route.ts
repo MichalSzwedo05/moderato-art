@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { readMmsContentToken } from "@/lib/mms-content";
+import { readMmsContent } from "@/lib/mms-content";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -7,8 +7,8 @@ export const runtime = "nodejs";
 type RouteContext = { params: Promise<{ token: string }> };
 
 export async function GET(_request: Request, context: RouteContext) {
-  const token = (await context.params).token;
-  const message = process.env.SMSAPI_TOKEN ? readMmsContentToken(token, process.env.SMSAPI_TOKEN) : undefined;
+  const id = (await context.params).token;
+  const message = await readMmsContent(id);
   if (!message) return new NextResponse("Not found", { status: 404 });
 
   return new NextResponse(message, {

@@ -6,7 +6,6 @@ import { getContactFormConfig } from "@/lib/contact-config";
 import { getPrisma } from "@/lib/prisma";
 import {
   contactSubmissionMmsMaxMessageLength,
-  contactSubmissionSmsMaxMessageLength,
   contactSubmissionSmsMaxRecipients,
 } from "@/lib/contact-submissions";
 import { isSmsMessageWithinLimit, normalizeSmsApiPhone, sendMmsMessage, sendSmsMessage } from "@/lib/smsapi";

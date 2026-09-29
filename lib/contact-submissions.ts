@@ -7,7 +7,6 @@ export const contactSubmissionExportMaxRecords = 1_000;
 export const contactSubmissionExportMaxBytes = 4 * 1024 * 1024;
 export const contactSubmissionSmsMaxRecipients = 1_000;
 // Longer messages use the MMS fallback after two SMS parts.
-export const contactSubmissionSmsMaxMessageLength = 10_000;
 export const contactSubmissionMmsMaxMessageLength = 10_000;
 export const contactSubmissionEmailMaxRecipients = 1_000;
 export const contactSubmissionEmailMaxSubjectLength = 200;
