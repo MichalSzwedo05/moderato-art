@@ -73,13 +73,17 @@ export async function POST(request: Request) {
 
   try {
     const message = parsedRequest.data.message;
-    if (isSmsMessageWithinLimit(message)) await sendSmsMessage(contactConfig.sms, recipients as string[], message, { throwOnError: true });
-    else await sendMmsMessage(contactConfig.sms, recipients as string[], message, new URL(request.url).origin, { throwOnError: true });
+    if (isSmsMessageWithinLimit(message)) {
+      await sendSmsMessage(contactConfig.sms, recipients as string[], message, { throwOnError: true });
+    } else {
+      await sendMmsMessage(contactConfig.sms, recipients as string[], message, new URL(request.url).origin, { throwOnError: true });
+    }
     return NextResponse.json({ message: `${isSmsMessageWithinLimit(message) ? "SMS" : "MMS"} wysłano do ${recipients.length} odbiorców.` }, {
       headers: { "Cache-Control": "private, no-store, max-age=0" },
       status: 200,
     });
-  } catch {
+  } catch (error) {
+    console.error("Admin SMS/MMS sending failed", error instanceof Error ? error.message : String(error));
     return errorResponse("Nie udało się wysłać wiadomości SMS.", 502);
   }
 }

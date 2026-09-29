@@ -1,9 +1,30 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { normalizeSmsApiPhone, sendSmsMessage, sendSmsNotification } from "./smsapi";
+import { isSmsMessageWithinLimit, normalizeSmsApiPhone, sendSmsMessage, sendSmsNotification } from "./smsapi";
 
 describe("SMSAPI notifications", () => {
   afterEach(() => {
     vi.unstubAllGlobals();
+  });
+
+  it("switches to MMS above the multipart SMS limit", () => {
+    expect(isSmsMessageWithinLimit("a".repeat(306))).toBe(true);
+    expect(isSmsMessageWithinLimit("a".repeat(307))).toBe(false);
+    expect(isSmsMessageWithinLimit("ą".repeat(137))).toBe(true);
+    expect(isSmsMessageWithinLimit("ą".repeat(138))).toBe(false);
+  });
+
+  it("sends MMS with the public logo and signed text content", async () => {
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true, json: vi.fn().mockResolvedValue({ count: 1, list: [{ status: "QUEUE" }] }) });
+    vi.stubGlobal("fetch", fetchMock);
+
+    const { sendMmsMessage } = await import("./smsapi");
+    await sendMmsMessage({ recipient: "605946678", sender: "Moderato", token: "smsapi-token" }, ["48792888578"], "message", "https://moderato-art.example", { throwOnError: true });
+
+    const [, request] = fetchMock.mock.calls[0] as [string, { body: URLSearchParams }];
+    const smil = request.body.get("smil") || "";
+    expect(smil).toContain("region=\"Image\"");
+    expect(smil).toContain("https://www.moderato-art.pl/moderato-logo.jpg");
+    expect(smil).toContain("region=\"Text\"");
   });
 
   it("sends one notification to the configured recipient list", async () => {
@@ -26,6 +47,7 @@ describe("SMSAPI notifications", () => {
     expect(request.body.get("from")).toBe("Moderato");
     expect(request.body.get("to")).toBe("605946678");
     expect(request.body.get("format")).toBe("json");
+    expect(request.body.get("max_parts")).toBe("2");
     expect(request.body.get("message")).toBe("Nowe zgloszenie: Anna Kowalska (Junior Voice)");
   });
 
