@@ -9,7 +9,7 @@
     "predev": "npm run db:generate",
     "dev": "next dev",
     "build": "npm run db:generate && next build --webpack",
-    "vercel-build": "npm run db:migrate:deploy && npm run build",
+    "vercel-build": "if [ \"$VERCEL_ENV\" = \"production\" ]; then npm run db:migrate:deploy; fi; npm run build",
     "start": "next start",
     "lint": "eslint .",
     "pretypecheck": "npm run db:generate",
