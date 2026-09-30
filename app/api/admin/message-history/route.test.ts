@@ -11,14 +11,12 @@ const mocks = vi.hoisted(() => ({
 
 vi.mock("@/lib/admin-auth", () => ({ getAdminAuthConfig: mocks.getAdminAuthConfig, getAdminSession: mocks.getAdminSession }));
 vi.mock("@/lib/admin-security", () => ({ isSameAdminOrigin: mocks.isSameAdminOrigin }));
+vi.mock("@/lib/message-history-channels", async (importOriginal) => await importOriginal());
 vi.mock("@/lib/message-history-fake", () => ({
   createFakeMessageHistory: mocks.createFakeMessageHistory,
   isFakeMessageHistoryEnabled: mocks.isFakeMessageHistoryEnabled,
 }));
-vi.mock("@/lib/message-history", async (importOriginal) => {
-  const actual = await importOriginal() as { parseMessageHistoryChannels: (value: string | null) => unknown[] | undefined };
-  return { getMessageHistory: mocks.getMessageHistory, parseMessageHistoryChannels: actual.parseMessageHistoryChannels };
-});
+vi.mock("@/lib/message-history", () => ({ getMessageHistory: mocks.getMessageHistory }));
 
 import { GET } from "./route";
 

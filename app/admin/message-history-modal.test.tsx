@@ -2,7 +2,7 @@ import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { MessageHistoryModal } from "./message-history-modal";
-import { emailHistoryChannels, smsHistoryChannels } from "@/lib/message-history";
+import { emailHistoryChannels, smsHistoryChannels } from "@/lib/message-history-channels";
 
 const fetchMock = vi.fn();
 

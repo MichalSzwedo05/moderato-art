@@ -14,15 +14,14 @@ vi.mock("./prisma", () => ({
   }),
 }));
 
+import { getMessageHistory, recordMessage } from "./message-history";
 import {
   emailHistoryChannels,
-  getMessageHistory,
   messageHistoryMaxRecords,
   messageHistoryPreviewLength,
   parseMessageHistoryChannels,
-  recordMessage,
   smsHistoryChannels,
-} from "./message-history";
+} from "./message-history-channels";
 
 describe("message history", () => {
   beforeEach(() => {

@@ -2,7 +2,7 @@
 
 import { useState, type FormEvent } from "react";
 import { MessageHistoryModal } from "../message-history-modal";
-import { emailHistoryChannels } from "@/lib/message-history";
+import { emailHistoryChannels } from "@/lib/message-history-channels";
 
 type EmailRecipient = {
   childName: string | null;

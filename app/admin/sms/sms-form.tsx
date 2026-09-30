@@ -2,7 +2,7 @@
 
 import { useState, type FormEvent } from "react";
 import { MessageHistoryModal } from "../message-history-modal";
-import { smsHistoryChannels } from "@/lib/message-history";
+import { smsHistoryChannels } from "@/lib/message-history-channels";
 
 type SmsRecipient = {
   childName: string | null;

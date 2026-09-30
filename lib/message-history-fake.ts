@@ -1,4 +1,4 @@
-import { messageHistoryPreviewLength, type MessageHistoryChannel, type MessageHistoryEntry } from "./message-history";
+import { messageHistoryPreviewLength, type MessageHistoryChannel, type MessageHistoryEntry } from "./message-history-channels";
 
 export const fakeMessageHistoryEnvVar = "SMS_HISTORY_FAKE_DATA";
 
