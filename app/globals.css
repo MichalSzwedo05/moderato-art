@@ -2247,16 +2247,17 @@ h2 {
 }
 
 .admin-sms-intro {
-  align-items: center;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
-  justify-content: space-between;
   margin-top: 1.5rem;
 }
 
 .admin-sms-intro p {
   margin: .5rem 0;
+}
+
+.admin-sms-history {
+  border-top: 1px solid var(--border-color);
+  margin-top: 1.5rem;
+  padding-top: 1rem;
 }
 
 .admin-modal {
@@ -2307,12 +2308,16 @@ h2 {
   width: 100%;
 }
 
-.admin-history-table caption {
-  caption-side: bottom;
+.admin-history-caption {
   color: var(--gray-light);
   font-size: .78rem;
-  padding-top: .6rem;
-  text-align: left;
+  margin: .6rem 0 0;
+}
+
+.admin-history-subject {
+  color: var(--dark-blue);
+  display: block;
+  font-weight: 800;
 }
 
 .admin-history-table th,
@@ -2332,11 +2337,12 @@ h2 {
 }
 
 .admin-history-table td:nth-child(1),
-.admin-history-table td:nth-child(3) {
+.admin-history-table td:nth-child(2),
+.admin-history-table td:nth-child(4) {
   white-space: nowrap;
 }
 
-.admin-history-table td:nth-child(2) {
+.admin-history-table td:nth-child(3) {
   overflow-wrap: anywhere;
   white-space: pre-wrap;
 }

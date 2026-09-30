@@ -1,13 +1,7 @@
 "use client";
 
 import { useEffect, useId, useRef, useState, type PointerEvent as ReactPointerEvent, type SyntheticEvent } from "react";
-
-type SmsHistoryEntry = {
-  createdAt: string;
-  messagePreview: string;
-  recipientCount: number;
-  truncated: boolean;
-};
+import { messageHistoryPreviewLength, type MessageHistoryEntry } from "@/lib/message-history";
 
 const dateFormatter = new Intl.DateTimeFormat("pl-PL", { dateStyle: "short", timeStyle: "short" });
 
@@ -16,7 +10,7 @@ function formatDate(value: string) {
   return Number.isNaN(date.getTime()) ? value : dateFormatter.format(date);
 }
 
-export function SmsHistoryModal() {
+export function MessageHistoryModal() {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
@@ -24,7 +18,7 @@ export function SmsHistoryModal() {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
-  const [messages, setMessages] = useState<SmsHistoryEntry[]>();
+  const [messages, setMessages] = useState<MessageHistoryEntry[]>();
 
   useEffect(() => {
     const dialog = dialogRef.current;
@@ -37,9 +31,9 @@ export function SmsHistoryModal() {
     if (!isOpen || messages) return;
     let active = true;
 
-    fetch("/api/admin/sms/history")
+    fetch("/api/admin/message-history")
       .then(async (response) => {
-        const body = await response.json() as { message?: string; messages?: SmsHistoryEntry[] };
+        const body = await response.json() as { message?: string; messages?: MessageHistoryEntry[] };
         if (!response.ok) throw new Error(body.message || "Nie udało się wczytać historii wiadomości.");
         if (active) setMessages(body.messages ?? []);
       })
@@ -78,7 +72,7 @@ export function SmsHistoryModal() {
   return <>
     <button aria-haspopup="dialog" className="admin-secondary-button" onClick={open} ref={triggerRef} type="button">Historia wiadomości</button>
     <dialog aria-labelledby={titleId} className="admin-modal" onCancel={closeFromCancel} onPointerDown={closeFromBackdrop} ref={dialogRef}>
-      <button className="admin-modal-close" onClick={close} ref={closeButtonRef} type="button" aria-label="Zamknij okno">×</button>
+      <button aria-label="Zamknij okno" className="admin-modal-close" onClick={close} ref={closeButtonRef} type="button">×</button>
       <h2 id={titleId}>Historia wiadomości</h2>
       {isLoading ? <p className="admin-submissions-empty">Wczytywanie historii…</p> : null}
       {error ? <p className="admin-notice" role="alert">{error}</p> : null}
@@ -88,18 +82,24 @@ export function SmsHistoryModal() {
           <thead>
             <tr>
               <th scope="col">Data</th>
+              <th scope="col">Kanał</th>
               <th scope="col">Początek wiadomości</th>
               <th scope="col">Liczba odbiorców</th>
             </tr>
           </thead>
           <tbody>
-            {messages.map((entry) => <tr key={`${entry.createdAt}-${entry.messagePreview}`}>
+            {messages.map((entry) => <tr key={`${entry.createdAt}-${entry.channel}-${entry.messagePreview}`}>
               <td>{formatDate(entry.createdAt)}</td>
-              <td>{entry.messagePreview}{entry.truncated ? "…" : ""}</td>
+              <td>{entry.channel}</td>
+              <td>
+                {entry.subject ? <span className="admin-history-subject">{entry.subject}</span> : null}
+                {entry.messagePreview}{entry.truncated ? "…" : ""}
+              </td>
               <td>{entry.recipientCount}</td>
             </tr>)}
           </tbody>
         </table>
+        <p className="admin-history-caption">Początek wiadomości pokazuje pierwsze {messageHistoryPreviewLength} znaków.</p>
       </div> : null}
     </dialog>
   </>;

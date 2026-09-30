@@ -7,7 +7,6 @@ import { getContactGroups } from "@/lib/contact-groups";
 import { normalizeSmsApiPhone } from "@/lib/smsapi";
 import { AdminPanel } from "../admin-panel";
 import { SmsForm } from "./sms-form";
-import { SmsHistoryModal } from "./sms-history-modal";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -41,7 +40,6 @@ export default async function SmsPage() {
   return <AdminPanel title="SMS">
     <section className="admin-sms-intro">
       <p>Wyślij wiadomość SMS do wybranych osób zapisanych w bazie zgłoszeń.</p>
-      <SmsHistoryModal />
     </section>
     {recipients === undefined
       ? <p className="admin-notice" role="alert">Nie udało się wczytać odbiorców SMS.</p>

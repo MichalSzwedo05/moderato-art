@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getAdminAuthConfig, getAdminSession } from "@/lib/admin-auth";
 import { isSameAdminOrigin } from "@/lib/admin-security";
-import { getSmsHistory } from "@/lib/sms-history";
+import { getMessageHistory } from "@/lib/message-history";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -21,12 +21,12 @@ export async function GET(request: Request) {
   }
 
   try {
-    return NextResponse.json({ messages: await getSmsHistory() }, {
+    return NextResponse.json({ messages: await getMessageHistory() }, {
       headers: { "Cache-Control": "private, no-store, max-age=0" },
       status: 200,
     });
   } catch {
-    console.error("SMS history query failed");
+    console.error("Message history query failed");
     return errorResponse("Nie udało się wczytać historii wiadomości.", 503);
   }
 }

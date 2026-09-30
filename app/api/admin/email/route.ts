@@ -10,6 +10,7 @@ import {
   contactSubmissionEmailMaxSubjectLength,
 } from "@/lib/contact-submissions";
 import { sendEmailMessage } from "@/lib/email";
+import { recordMessage } from "@/lib/message-history";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -80,6 +81,13 @@ export async function POST(request: Request) {
       parsedRequest.data.message,
       { throwOnError: true },
     );
+
+    try {
+      await recordMessage("EMAIL", parsedRequest.data.message, recipients.length, parsedRequest.data.subject);
+    } catch {
+      console.error("Admin email history record failed");
+    }
+
     return NextResponse.json({ message: `Wiadomość wysłano do ${recipients.length} odbiorców.` }, {
       headers: { "Cache-Control": "private, no-store, max-age=0" },
       status: 200,

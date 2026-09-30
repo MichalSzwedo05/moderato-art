@@ -98,11 +98,12 @@ model ContactGroup {
   memberships ContactGroupMembership[]
 }
 
-model SmsMessage {
+model MessageLog {
   id             String   @id @default(cuid())
+  channel        String   @db.VarChar(5)
   message        String   @db.Text
-  channel        String   @db.VarChar(3)
   recipientCount Int
+  subject        String?  @db.VarChar(200)
   createdAt      DateTime @default(now())
 
   @@index([createdAt])
