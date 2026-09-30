@@ -2130,6 +2130,36 @@ h2 {
   color: #c0392b;
 }
 
+.admin-panel-footer {
+  border-top: 1px solid rgb(0 0 0 / 8%);
+  margin-top: 2rem;
+  padding-top: 1rem;
+}
+
+.admin-guide-link {
+  align-items: baseline;
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+}
+
+.admin-text-link {
+  background: none;
+  border: 0;
+  color: var(--dark-blue);
+  cursor: pointer;
+  font: inherit;
+  font-size: .9rem;
+  padding: 0;
+  text-decoration: underline;
+  width: auto;
+}
+
+.admin-text-link:hover,
+.admin-text-link:focus-visible {
+  color: var(--blue);
+}
+
 .admin-header h1 {
   margin-bottom: 0;
 }

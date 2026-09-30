@@ -3,6 +3,7 @@
 import { useState } from "react";
 
 const userGuideFilename = "instrukcja-cms-moderato-art.md";
+const userGuideUrl = "/api/admin/user-guide";
 
 async function getErrorMessage(response: Response) {
   try {
@@ -13,17 +14,20 @@ async function getErrorMessage(response: Response) {
   }
 }
 
-export function DownloadUserGuideButton() {
+export function DownloadUserGuideLink() {
   const [isDownloading, setIsDownloading] = useState(false);
   const [error, setError] = useState("");
   const [isDownloaded, setIsDownloaded] = useState(false);
 
-  async function downloadGuide() {
+  async function downloadGuide(event: React.MouseEvent<HTMLAnchorElement>) {
+    if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+
+    event.preventDefault();
     setError("");
     setIsDownloaded(false);
     setIsDownloading(true);
     try {
-      const response = await fetch("/api/admin/user-guide", { method: "POST" });
+      const response = await fetch(userGuideUrl);
       if (!response.ok) throw new Error(await getErrorMessage(response));
 
       const objectUrl = URL.createObjectURL(await response.blob());
@@ -44,11 +48,11 @@ export function DownloadUserGuideButton() {
     }
   }
 
-  return <>
-    <button aria-busy={isDownloading} className="admin-secondary-button" disabled={isDownloading} onClick={downloadGuide} type="button">
+  return <div className="admin-guide-link">
+    <a aria-busy={isDownloading} className="admin-text-link" href={userGuideUrl} onClick={downloadGuide}>
       {isDownloading ? "Pobieranie…" : "Pobierz instrukcję"}
-    </button>
+    </a>
     {isDownloaded ? <span className="admin-download-feedback" role="status">Instrukcja została pobrana.</span> : null}
     {error ? <span className="admin-download-feedback admin-download-feedback-error" role="alert">{error}</span> : null}
-  </>;
+  </div>;
 }

@@ -1,6 +1,6 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { DownloadUserGuideButton } from "./download-user-guide-button";
+import { DownloadUserGuideLink } from "./download-user-guide-link";
 
 const fetchMock = vi.fn();
 
@@ -17,18 +17,21 @@ afterEach(() => {
   vi.clearAllMocks();
 });
 
-describe("DownloadUserGuideButton", () => {
-  it("downloads the guide and announces success", async () => {
-    render(<DownloadUserGuideButton />);
+describe("DownloadUserGuideLink", () => {
+  it("is a link that downloads the guide and announces success", async () => {
+    render(<DownloadUserGuideLink />);
 
-    fireEvent.click(screen.getByRole("button", { name: "Pobierz instrukcję" }));
+    const link = screen.getByRole("link", { name: "Pobierz instrukcję" });
+    expect(link).toHaveAttribute("href", "/api/admin/user-guide");
 
-    await waitFor(() => expect(fetchMock).toHaveBeenCalledWith("/api/admin/user-guide", { method: "POST" }));
+    fireEvent.click(link);
+
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledWith("/api/admin/user-guide"));
     expect(await screen.findByRole("status")).toHaveTextContent("Instrukcja została pobrana.");
     expect(URL.createObjectURL).toHaveBeenCalledTimes(1);
     expect(URL.revokeObjectURL).toHaveBeenCalledWith("blob:guide");
     expect(HTMLAnchorElement.prototype.click).toHaveBeenCalledTimes(1);
-    expect(screen.getByRole("button", { name: "Pobierz instrukcję" })).toBeEnabled();
+    expect(screen.getByRole("link", { name: "Pobierz instrukcję" })).toBeInTheDocument();
   });
 
   it("keeps the dashboard and shows an error when download fails", async () => {
@@ -36,11 +39,19 @@ describe("DownloadUserGuideButton", () => {
       headers: { "Content-Type": "application/json" },
       status: 403,
     }));
-    render(<DownloadUserGuideButton />);
+    render(<DownloadUserGuideLink />);
 
-    fireEvent.click(screen.getByRole("button", { name: "Pobierz instrukcję" }));
+    fireEvent.click(screen.getByRole("link", { name: "Pobierz instrukcję" }));
 
     expect(await screen.findByRole("alert")).toHaveTextContent("Brak dostępu.");
-    expect(screen.getByRole("button", { name: "Pobierz instrukcję" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Pobierz instrukcję" })).toBeInTheDocument();
+  });
+
+  it("lets the browser handle modified clicks", () => {
+    render(<DownloadUserGuideLink />);
+
+    fireEvent.click(screen.getByRole("link", { name: "Pobierz instrukcję" }), { ctrlKey: true });
+
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 });
