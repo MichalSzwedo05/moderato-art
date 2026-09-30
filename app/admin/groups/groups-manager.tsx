@@ -159,7 +159,7 @@ export function GroupsManager({ groups: initialGroups, recipients }: { groups: G
 
   return <>
     <form className="admin-form admin-group-create-form" onSubmit={createGroup}>
-      <label htmlFor="new-contact-group">Nowa grupa
+      <label htmlFor="new-contact-group">Nazwa nowej grupy
         <input id="new-contact-group" maxLength={120} onChange={(event) => setNewName(event.target.value)} required value={newName} />
       </label>
       <button disabled={pendingId === "new" || !newName.trim()} type="submit">{pendingId === "new" ? "Tworzenie…" : "Utwórz grupę"}</button>
