@@ -2652,6 +2652,19 @@ h2 {
   text-align: center;
 }
 
+.admin-calendar-toolbar-week {
+  display: flex;
+  flex-direction: column;
+  gap: .6rem;
+  margin-inline: auto;
+  max-width: 22rem;
+}
+
+.admin-calendar-toolbar-week h2 {
+  letter-spacing: .01em;
+  white-space: nowrap;
+}
+
 .admin-calendar-toolbar h2 {
   color: var(--dark-blue);
   font-size: 1.2rem;
@@ -2660,11 +2673,12 @@ h2 {
 }
 
 .admin-calendar-toolbar a:not(.admin-secondary-button) {
+  align-self: center;
   color: var(--dark-blue);
   display: inline-block;
   font-size: .82rem;
   font-weight: 800;
-  margin-top: .25rem;
+  margin-top: 0;
   text-decoration: underline;
   text-decoration-color: var(--green);
   text-decoration-thickness: 2px;
@@ -3753,6 +3767,7 @@ h2 {
 @media (max-width: 700px) {
   .admin-calendar-toolbar { align-items: stretch; flex-direction: column; }
   .admin-calendar-toolbar .admin-secondary-button { justify-content: center; width: 100%; }
+  .admin-calendar-toolbar-week { margin-inline: auto; max-width: none; width: 100%; }
   .admin-calendar-grid { grid-template-columns: repeat(7, minmax(12rem, 1fr)); }
   .admin-header { flex-direction: column; }
   .admin-editor-grid { grid-template-columns: 1fr; }
