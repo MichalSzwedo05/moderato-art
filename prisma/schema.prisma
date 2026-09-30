@@ -68,12 +68,14 @@ model AttendanceActivity {
   startsAt     DateTime
   endsAt       DateTime?
   invalid      Boolean                 @default(false)
+  seriesId     String?                 @db.VarChar(64)
   createdAt    DateTime                @default(now())
   updatedAt    DateTime                @updatedAt
   participants AttendanceParticipant[]
 
   @@unique([name, activityDate])
   @@index([activityDate, startsAt])
+  @@index([seriesId, activityDate])
   @@index([updatedAt])
 }
 

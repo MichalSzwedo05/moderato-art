@@ -14,6 +14,7 @@ vi.mock("@/lib/admin-auth", () => ({ getAdminAuthConfig: mocks.getAdminAuthConfi
 vi.mock("@/lib/admin-security", () => ({ isSameAdminOrigin: mocks.isSameAdminOrigin }));
 vi.mock("@/lib/prisma", () => ({ getPrisma: () => ({ attendanceActivity: { create: mocks.create, delete: mocks.delete, updateMany: mocks.updateMany }, contactSubmission: { findMany: mocks.findMany } }) }));
 
+
 import { POST } from "./route";
 
 function request(body: unknown) {
@@ -49,5 +50,49 @@ describe("POST /api/admin/attendance", () => {
 
     expect(response.status).toBe(409);
     expect(await response.json()).toMatchObject({ message: "Aktywność o tej nazwie i dacie już istnieje." });
+  });
+
+  it("repeats the activity on the same weekday for the requested weeks", async () => {
+    mocks.create.mockImplementation(async ({ data }: { data: { activityDate: Date } }) => ({ activityDate: data.activityDate, id: `activity-${data.activityDate.toISOString().slice(0, 10)}` }));
+
+    const response = await POST(request({ activityDate: "2026-09-28", endsAt: "17:00", name: "Lekcja 1", participants: [{ present: false, submissionId: "one" }], repeatWeeks: 3, startsAt: "16:00" }));
+
+    expect(response.status).toBe(201);
+    const body = await response.json() as { activities: Array<{ activityDate: string }>; seriesId: string | null; skippedDates: string[] };
+    expect(body.activities.map((activity) => activity.activityDate)).toEqual(["2026-09-28", "2026-10-05", "2026-10-12"]);
+    expect(body.skippedDates).toEqual([]);
+    expect(body.seriesId).toEqual(expect.any(String));
+    const calls = mocks.create.mock.calls.map((call) => (call[0] as { data: { seriesId: string | null; startsAt: Date } }).data);
+    expect(new Set(calls.map((data) => data.seriesId)).size).toBe(1);
+    expect(calls.map((data) => data.startsAt.toISOString())).toEqual(["2026-09-28T16:00:00.000Z", "2026-10-05T16:00:00.000Z", "2026-10-12T16:00:00.000Z"]);
+  });
+
+  it("keeps the dates that are free and reports the ones that already exist", async () => {
+    mocks.create.mockImplementation(async ({ data }: { data: { activityDate: Date } }) => {
+      if (data.activityDate.toISOString().slice(0, 10) === "2026-10-05") throw Object.assign(new Error("duplicate"), { code: "P2002" });
+      return { activityDate: data.activityDate, id: `activity-${data.activityDate.toISOString().slice(0, 10)}` };
+    });
+
+    const response = await POST(request({ activityDate: "2026-09-28", endsAt: "17:00", name: "Lekcja 1", participants: [{ present: false, submissionId: "one" }], repeatWeeks: 3, startsAt: "16:00" }));
+
+    expect(response.status).toBe(201);
+    const body = await response.json() as { activities: Array<{ activityDate: string }>; skippedDates: string[] };
+    expect(body.activities.map((activity) => activity.activityDate)).toEqual(["2026-09-28", "2026-10-12"]);
+    expect(body.skippedDates).toEqual(["2026-10-05"]);
+  });
+
+  it("rejects a repeat that is too long", async () => {
+    const response = await POST(request({ activityDate: "2026-09-28", name: "Lekcja 1", participants: [{ present: false, submissionId: "one" }], repeatWeeks: 60, startsAt: "16:00" }));
+
+    expect(response.status).toBe(400);
+    expect(mocks.create).not.toHaveBeenCalled();
+  });
+
+  it("creates a single activity without a series", async () => {
+    const response = await POST(request({ activityDate: "2026-09-28", endsAt: "17:00", name: "Lekcja 1", participants: [{ present: false, submissionId: "one" }], startsAt: "16:00" }));
+
+    expect(response.status).toBe(201);
+    expect(await response.json()).toMatchObject({ seriesId: null, skippedDates: [] });
+    expect(mocks.create).toHaveBeenCalledTimes(1);
   });
 });
