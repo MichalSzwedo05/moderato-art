@@ -2733,11 +2733,19 @@ h2 {
   background: color-mix(in srgb, var(--cream) 48%, var(--surface));
   border: 1px solid var(--border-color);
   border-radius: .85rem;
-  display: flex;
+  display: grid;
   gap: 1rem;
-  justify-content: space-between;
+  grid-template-columns: 1fr auto 1fr;
   margin-top: 1.5rem;
   padding: .85rem;
+}
+
+.admin-calendar-toolbar > a:first-child {
+  justify-self: start;
+}
+
+.admin-calendar-toolbar > a:last-child {
+  justify-self: end;
 }
 
 .admin-calendar-toolbar > div {
@@ -2754,6 +2762,7 @@ h2 {
 
 .admin-calendar-toolbar-week h2 {
   letter-spacing: .01em;
+  text-align: center;
   white-space: nowrap;
 }
 
@@ -3857,7 +3866,7 @@ h2 {
 .admin-article-list details .admin-article-form { margin-top: 1rem; }
 
 @media (max-width: 700px) {
-  .admin-calendar-toolbar { align-items: stretch; flex-direction: column; }
+  .admin-calendar-toolbar { align-items: stretch; display: flex; flex-direction: column; }
   .admin-calendar-toolbar .admin-secondary-button { justify-content: center; width: 100%; }
   .admin-calendar-toolbar-week { margin-inline: auto; max-width: none; width: 100%; }
   .admin-calendar-grid { grid-template-columns: repeat(7, minmax(12rem, 1fr)); }
