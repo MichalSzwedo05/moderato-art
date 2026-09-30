@@ -1,0 +1,65 @@
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
+const mocks = vi.hoisted(() => ({
+  getAdminAuthConfig: vi.fn(),
+  getAdminSession: vi.fn(),
+  getSmsHistory: vi.fn(),
+  isSameAdminOrigin: vi.fn(),
+}));
+
+vi.mock("@/lib/admin-auth", () => ({ getAdminAuthConfig: mocks.getAdminAuthConfig, getAdminSession: mocks.getAdminSession }));
+vi.mock("@/lib/admin-security", () => ({ isSameAdminOrigin: mocks.isSameAdminOrigin }));
+vi.mock("@/lib/sms-history", () => ({ getSmsHistory: mocks.getSmsHistory }));
+
+import { GET } from "./route";
+
+const authConfig = { authOrigin: "https://moderato-art.example", authUrl: "https://moderato-art.example", mode: "password", passwordHash: "hash", rateLimitSecret: "secret", username: "admin" } as const;
+
+function request(headers: Record<string, string> = { referer: "https://moderato-art.example/admin/sms" }) {
+  return new Request("https://moderato-art.example/api/admin/sms/history", { headers, method: "GET" });
+}
+
+describe("GET /api/admin/sms/history", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.getAdminAuthConfig.mockReturnValue(authConfig);
+    mocks.getAdminSession.mockResolvedValue({ id: "session" });
+    mocks.isSameAdminOrigin.mockReturnValue(true);
+    mocks.getSmsHistory.mockResolvedValue([]);
+  });
+
+  it("returns the message history without caching", async () => {
+    const entry = { createdAt: "2026-09-30T10:00:00.000Z", messagePreview: "Cześć", recipientCount: 4, truncated: false };
+    mocks.getSmsHistory.mockResolvedValue([entry]);
+
+    const response = await GET(request());
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get("Cache-Control")).toBe("private, no-store, max-age=0");
+    await expect(response.json()).resolves.toEqual({ messages: [entry] });
+  });
+
+  it.each([
+    ["disabled CMS", () => mocks.getAdminAuthConfig.mockReturnValue(undefined)],
+    ["anonymous session", () => mocks.getAdminSession.mockResolvedValue(undefined)],
+    ["untrusted origin", () => mocks.isSameAdminOrigin.mockReturnValue(false)],
+  ])("rejects %s", async (_case, setup) => {
+    setup();
+
+    const response = await GET(request());
+
+    expect(response.status).toBe(403);
+    expect(mocks.getSmsHistory).not.toHaveBeenCalled();
+  });
+
+  it("returns a generic error when the history cannot be read", async () => {
+    const consoleError = vi.spyOn(console, "error").mockImplementation(() => undefined);
+    mocks.getSmsHistory.mockRejectedValue(new Error("connection string with secret"));
+
+    const response = await GET(request());
+
+    expect(response.status).toBe(503);
+    await expect(response.json()).resolves.toEqual({ message: "Nie udało się wczytać historii wiadomości." });
+    consoleError.mockRestore();
+  });
+});

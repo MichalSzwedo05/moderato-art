@@ -9,6 +9,7 @@ import {
   contactSubmissionSmsMaxRecipients,
 } from "@/lib/contact-submissions";
 import { isSmsMessageWithinLimit, normalizeSmsApiPhone, sendMmsMessage, sendSmsMessage } from "@/lib/smsapi";
+import { recordSmsMessage } from "@/lib/sms-history";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -72,12 +73,20 @@ export async function POST(request: Request) {
 
   try {
     const message = parsedRequest.data.message;
-    if (isSmsMessageWithinLimit(message)) {
+    const isSms = isSmsMessageWithinLimit(message);
+    if (isSms) {
       await sendSmsMessage(contactConfig.sms, recipients as string[], message, { throwOnError: true });
     } else {
       await sendMmsMessage(contactConfig.sms, recipients as string[], message, new URL(request.url).origin, { throwOnError: true });
     }
-    return NextResponse.json({ message: `${isSmsMessageWithinLimit(message) ? "SMS" : "MMS"} wysłano do ${recipients.length} odbiorców.` }, {
+
+    try {
+      await recordSmsMessage(isSms ? "SMS" : "MMS", message, recipients.length);
+    } catch {
+      console.error("Admin SMS history record failed");
+    }
+
+    return NextResponse.json({ message: `${isSms ? "SMS" : "MMS"} wysłano do ${recipients.length} odbiorców.` }, {
       headers: { "Cache-Control": "private, no-store, max-age=0" },
       status: 200,
     });

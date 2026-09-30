@@ -6,6 +6,7 @@ const mocks = vi.hoisted(() => ({
   getAdminSession: vi.fn(),
   getContactFormConfig: vi.fn(),
   isSameAdminOrigin: vi.fn(),
+  recordSmsMessage: vi.fn(),
   sendMmsMessage: vi.fn(),
   sendSmsMessage: vi.fn(),
 }));
@@ -14,6 +15,7 @@ vi.mock("@/lib/admin-auth", () => ({ getAdminAuthConfig: mocks.getAdminAuthConfi
 vi.mock("@/lib/admin-security", () => ({ isSameAdminOrigin: mocks.isSameAdminOrigin }));
 vi.mock("@/lib/contact-config", () => ({ getContactFormConfig: mocks.getContactFormConfig }));
 vi.mock("@/lib/prisma", () => ({ getPrisma: () => ({ contactSubmission: { findMany: mocks.findMany } }) }));
+vi.mock("@/lib/sms-history", () => ({ recordSmsMessage: mocks.recordSmsMessage }));
 vi.mock("@/lib/smsapi", () => ({ isSmsMessageWithinLimit: (value: string) => [...value].length <= 670, normalizeSmsApiPhone: (value: string) => value === "bad" ? undefined : `48${value.replace(/\D/g, "")}`, sendMmsMessage: mocks.sendMmsMessage, sendSmsMessage: mocks.sendSmsMessage }));
 
 import { POST } from "./route";
@@ -42,6 +44,7 @@ describe("POST /api/admin/sms", () => {
     ]);
     mocks.sendSmsMessage.mockResolvedValue(true);
     mocks.sendMmsMessage.mockResolvedValue(true);
+    mocks.recordSmsMessage.mockResolvedValue(undefined);
   });
 
   it("sends only to phones resolved from selected database records", async () => {
@@ -54,6 +57,43 @@ describe("POST /api/admin/sms", () => {
       "Przypomnienie",
       { throwOnError: true },
     );
+  });
+
+  it("records SMS sends in the history", async () => {
+    const response = await POST(request({ message: "Przypomnienie", submissionIds: ["one", "two"] }));
+
+    expect(response.status).toBe(200);
+    expect(mocks.recordSmsMessage).toHaveBeenCalledWith("SMS", "Przypomnienie", 2);
+  });
+
+  it("records MMS sends in the history", async () => {
+    const response = await POST(request({ message: "x".repeat(700), submissionIds: ["one", "two"] }));
+
+    expect(response.status).toBe(200);
+    expect(mocks.sendMmsMessage).toHaveBeenCalled();
+    expect(mocks.recordSmsMessage).toHaveBeenCalledWith("MMS", "x".repeat(700), 2);
+  });
+
+  it("does not record failed sends", async () => {
+    const consoleError = vi.spyOn(console, "error").mockImplementation(() => undefined);
+    mocks.sendSmsMessage.mockRejectedValue(new Error("SMSAPI down"));
+
+    const response = await POST(request({ message: "Przypomnienie", submissionIds: ["one", "two"] }));
+
+    expect(response.status).toBe(502);
+    expect(mocks.recordSmsMessage).not.toHaveBeenCalled();
+    consoleError.mockRestore();
+  });
+
+  it("keeps the send successful when the history write fails", async () => {
+    const consoleError = vi.spyOn(console, "error").mockImplementation(() => undefined);
+    mocks.recordSmsMessage.mockRejectedValue(new Error("database unavailable"));
+
+    const response = await POST(request({ message: "Przypomnienie", submissionIds: ["one", "two"] }));
+
+    expect(response.status).toBe(200);
+    expect(consoleError).toHaveBeenCalledWith("Admin SMS history record failed");
+    consoleError.mockRestore();
   });
 
   it("rejects unauthenticated requests before reading recipients", async () => {

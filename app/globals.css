@@ -2247,11 +2247,98 @@ h2 {
 }
 
 .admin-sms-intro {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: space-between;
   margin-top: 1.5rem;
 }
 
 .admin-sms-intro p {
   margin: .5rem 0;
+}
+
+.admin-modal {
+  background: var(--surface);
+  border: 0;
+  border-radius: 1.25rem;
+  box-shadow: 0 2rem 5rem rgb(16 15 62 / 30%);
+  color: var(--gray-text);
+  max-height: calc(100dvh - 2rem);
+  overflow-y: auto;
+  padding: clamp(1.5rem, 4vw, 2.5rem);
+  width: min(52rem, calc(100% - 2rem));
+}
+
+.admin-modal::backdrop {
+  backdrop-filter: blur(4px);
+  background: rgb(16 15 62 / 66%);
+}
+
+.admin-modal h2 {
+  color: var(--dark-blue);
+  font-size: 1.4rem;
+  margin: 0 0 1rem;
+  padding-right: 2.5rem;
+}
+
+.admin-modal-close {
+  background: var(--cream);
+  border: 0;
+  border-radius: 50%;
+  color: var(--dark-blue);
+  cursor: pointer;
+  font-size: 1.5rem;
+  height: 2.4rem;
+  position: absolute;
+  right: 1rem;
+  top: 1rem;
+  width: 2.4rem;
+}
+
+.admin-history-table-wrapper {
+  overflow-x: auto;
+}
+
+.admin-history-table {
+  border-collapse: collapse;
+  font-size: .9rem;
+  width: 100%;
+}
+
+.admin-history-table caption {
+  caption-side: bottom;
+  color: var(--gray-light);
+  font-size: .78rem;
+  padding-top: .6rem;
+  text-align: left;
+}
+
+.admin-history-table th,
+.admin-history-table td {
+  border-bottom: 1px solid var(--border-color);
+  padding: .6rem .5rem;
+  text-align: left;
+  vertical-align: top;
+}
+
+.admin-history-table th {
+  color: var(--dark-blue);
+  font-size: .78rem;
+  letter-spacing: .02em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.admin-history-table td:nth-child(1),
+.admin-history-table td:nth-child(3) {
+  white-space: nowrap;
+}
+
+.admin-history-table td:nth-child(2) {
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
 }
 
 .admin-sms-form {
