@@ -1,9 +1,69 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
-import { normalizeSmsApiPhone, sendSmsMessage, sendSmsNotification } from "./smsapi";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+
+const mocks = vi.hoisted(() => ({
+  mmsContentCreate: vi.fn(),
+}));
+
+vi.mock("./prisma", () => ({
+  getPrisma: () => ({
+    mmsContent: { create: mocks.mmsContentCreate },
+  }),
+}));
+
+import { isSmsMessageWithinLimit, normalizeSmsApiPhone, sendMmsMessage, sendSmsMessage, sendSmsNotification } from "./smsapi";
 
 describe("SMSAPI notifications", () => {
+  beforeEach(() => {
+    mocks.mmsContentCreate.mockResolvedValue({ id: "mms-content-id" });
+  });
+
   afterEach(() => {
     vi.unstubAllGlobals();
+  });
+
+  it("switches to MMS above the multipart SMS limit", () => {
+    expect(isSmsMessageWithinLimit("a".repeat(306))).toBe(true);
+    expect(isSmsMessageWithinLimit("a".repeat(307))).toBe(false);
+    expect(isSmsMessageWithinLimit("ą".repeat(137))).toBe(true);
+    expect(isSmsMessageWithinLimit("ą".repeat(138))).toBe(false);
+  });
+
+  it("sends MMS with the public logo and short stored text content", async () => {
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true, json: vi.fn().mockResolvedValue({ count: 1, list: [{ status: "QUEUE" }] }) });
+    vi.stubGlobal("fetch", fetchMock);
+
+    await sendMmsMessage({ recipient: "605946678", sender: "Moderato", token: "smsapi-token" }, ["48792888578"], "message", "https://moderato-art.example", { throwOnError: true });
+
+    expect(mocks.mmsContentCreate).toHaveBeenCalledWith(expect.objectContaining({ data: expect.objectContaining({ message: "message" }) }));
+
+    const [, request] = fetchMock.mock.calls[0] as [string, { body: URLSearchParams }];
+    const smil = request.body.get("smil") || "";
+    expect(smil).toContain("region=\"Image\"");
+    expect(smil).toContain("https://www.moderato-art.pl/moderato-logo.jpg");
+    expect(smil).toContain("https://moderato-art.example/api/mms-content/mms-content-id");
+    expect(smil).toContain("region=\"Text\"");
+  });
+
+  it("keeps the MMS text resource URL short for long messages", async () => {
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true, json: vi.fn().mockResolvedValue({ count: 1, list: [{ status: "QUEUE" }] }) });
+    vi.stubGlobal("fetch", fetchMock);
+
+    const message = "Szanowni Państwo, ".repeat(300);
+    await sendMmsMessage({ recipient: "605946678", sender: "Moderato", token: "smsapi-token" }, ["48792888578"], message, "https://moderato-art.example", { throwOnError: true });
+
+    const [, request] = fetchMock.mock.calls[0] as [string, { body: URLSearchParams }];
+    const smil = request.body.get("smil") || "";
+    const textUrl = smil.match(/<text src="([^"]+)"/)?.[1] || "";
+
+    expect(message.length).toBeGreaterThan(1000);
+    expect(textUrl.length).toBeLessThan(120);
+  });
+
+  it("surfaces the SMSAPI MMS rejection", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true, json: vi.fn().mockResolvedValue({ error: 999, message: "System error" }) }));
+
+    await expect(sendMmsMessage({ recipient: "605946678", sender: "Moderato", token: "smsapi-token" }, ["48792888578"], "message", "https://moderato-art.example", { throwOnError: true }))
+      .rejects.toThrow("SMSAPI MMS rejected the message: System error");
   });
 
   it("sends one notification to the configured recipient list", async () => {
@@ -26,6 +86,7 @@ describe("SMSAPI notifications", () => {
     expect(request.body.get("from")).toBe("Moderato");
     expect(request.body.get("to")).toBe("605946678");
     expect(request.body.get("format")).toBe("json");
+    expect(request.body.get("max_parts")).toBe("2");
     expect(request.body.get("message")).toBe("Nowe zgloszenie: Anna Kowalska (Junior Voice)");
   });
 

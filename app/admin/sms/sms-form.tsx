@@ -116,9 +116,9 @@ export function SmsForm({ groups = [], recipients }: { groups?: RecipientGroup[]
       </section>
     </div>
     <label htmlFor="admin-sms-message">Wiadomość
-      <textarea id="admin-sms-message" maxLength={1530} onChange={(event) => setMessage(event.target.value)} required rows={5} value={message} />
+      <textarea id="admin-sms-message" maxLength={10000} onChange={(event) => setMessage(event.target.value)} required rows={7} value={message} />
     </label>
-    <p className="admin-sms-counter">{message.length}/1530 znaków · wybrano {selectedIds.length}</p>
+    <p className="admin-sms-counter">{message.length}/10000 znaków · do 2 części SMS, dłuższe wiadomości MMS · wybrano {selectedIds.length}</p>
     <button disabled={pending || selectedIds.length === 0 || !message.trim()} type="submit">{pending ? "Wysyłanie…" : "Wyślij SMS"}</button>
     {feedback ? <p className={feedback.error ? "admin-notice" : "admin-success"} role={feedback.error ? "alert" : "status"}>{feedback.message}</p> : null}
   </form>;

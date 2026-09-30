@@ -98,6 +98,15 @@ model ContactGroup {
   memberships ContactGroupMembership[]
 }
 
+model MmsContent {
+  id        String   @id @default(cuid())
+  message   String   @db.Text
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([expiresAt])
+}
+
 model ContactGroupMembership {
   groupId      String
   submissionId String

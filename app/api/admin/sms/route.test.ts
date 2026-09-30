@@ -6,6 +6,7 @@ const mocks = vi.hoisted(() => ({
   getAdminSession: vi.fn(),
   getContactFormConfig: vi.fn(),
   isSameAdminOrigin: vi.fn(),
+  sendMmsMessage: vi.fn(),
   sendSmsMessage: vi.fn(),
 }));
 
@@ -13,7 +14,7 @@ vi.mock("@/lib/admin-auth", () => ({ getAdminAuthConfig: mocks.getAdminAuthConfi
 vi.mock("@/lib/admin-security", () => ({ isSameAdminOrigin: mocks.isSameAdminOrigin }));
 vi.mock("@/lib/contact-config", () => ({ getContactFormConfig: mocks.getContactFormConfig }));
 vi.mock("@/lib/prisma", () => ({ getPrisma: () => ({ contactSubmission: { findMany: mocks.findMany } }) }));
-vi.mock("@/lib/smsapi", () => ({ normalizeSmsApiPhone: (value: string) => value === "bad" ? undefined : `48${value.replace(/\D/g, "")}`, sendSmsMessage: mocks.sendSmsMessage }));
+vi.mock("@/lib/smsapi", () => ({ isSmsMessageWithinLimit: (value: string) => [...value].length <= 670, normalizeSmsApiPhone: (value: string) => value === "bad" ? undefined : `48${value.replace(/\D/g, "")}`, sendMmsMessage: mocks.sendMmsMessage, sendSmsMessage: mocks.sendSmsMessage }));
 
 import { POST } from "./route";
 
@@ -40,6 +41,7 @@ describe("POST /api/admin/sms", () => {
       { id: "two", phone: "+48 600 123 456" },
     ]);
     mocks.sendSmsMessage.mockResolvedValue(true);
+    mocks.sendMmsMessage.mockResolvedValue(true);
   });
 
   it("sends only to phones resolved from selected database records", async () => {
@@ -62,6 +64,20 @@ describe("POST /api/admin/sms", () => {
     expect(response.status).toBe(403);
     expect(mocks.findMany).not.toHaveBeenCalled();
     expect(mocks.sendSmsMessage).not.toHaveBeenCalled();
+  });
+
+  it("uses MMS for messages longer than the SMS multipart limit", async () => {
+    const response = await POST(request({ message: "a".repeat(671), submissionIds: ["one", "two"] }));
+
+    expect(response.status).toBe(200);
+    expect(mocks.sendSmsMessage).not.toHaveBeenCalled();
+    expect(mocks.sendMmsMessage).toHaveBeenCalledWith(
+      contactConfig.sms,
+      ["48792888578", "4848600123456"],
+      "a".repeat(671),
+      "https://moderato-art.example",
+      { throwOnError: true },
+    );
   });
 
   it("rejects records with invalid phone numbers", async () => {
