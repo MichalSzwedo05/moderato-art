@@ -111,6 +111,35 @@ export async function sendSmsMessage(
   }
 }
 
+async function sendMmsToRecipient(config: SmsApiConfig, smil: string, recipient: string) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), smsApiTimeoutMs);
+  try {
+    const response = await fetch(mmsApiEndpoint, {
+      body: new URLSearchParams({ format: "json", smil, subject: config.sender, to: recipient }),
+      headers: {
+        Authorization: `Bearer ${config.token}`,
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      method: "POST",
+      signal: controller.signal,
+    });
+    if (!response.ok) {
+      const responseText = await response.text();
+      throw new Error(`SMSAPI MMS request failed with status ${response.status}: ${responseText.slice(0, 500)}`);
+    }
+    const result = await response.json() as { error?: number; message?: string };
+    if (result.error) throw new Error(`SMSAPI MMS rejected the message: ${result.message ?? result.error}`);
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+function buildMmsSmil(contentUrl: string) {
+  const imageUrl = "https://www.moderato-art.pl/moderato-logo.jpg";
+  return `<smil><head><layout><root-layout backgroundColor="#FFFFFF" height="100%" width="100%"/><region id="Image" top="0" left="0" height="50%" width="100%" fit="meet"/><region id="Text" top="50%" left="0" height="50%" width="100%" fit="scroll"/></layout></head><body><par dur="5000ms"><img src="${escapeXml(imageUrl)}" region="Image"/></par><par dur="5000ms"><text src="${escapeXml(contentUrl)}" region="Text"/></par></body></smil>`;
+}
+
 export async function sendMmsMessage(
   config: SmsApiConfig | undefined,
   recipients: string[],
@@ -121,33 +150,11 @@ export async function sendMmsMessage(
   if (!config) return false;
 
   const contentId = await createMmsContent(message);
-  const contentUrl = `${contentOrigin}/api/mms-content/${contentId}`;
-  const imageUrl = "https://www.moderato-art.pl/moderato-logo.jpg";
-  const smil = `<smil><head><layout><root-layout backgroundColor="#FFFFFF" height="100%" width="100%"/><region id="Image" top="0" left="0" height="50%" width="100%" fit="meet"/><region id="Text" top="50%" left="0" height="50%" width="100%" fit="scroll"/></layout></head><body><par dur="5000ms"><img src="${escapeXml(imageUrl)}" region="Image"/></par><par dur="5000ms"><text src="${escapeXml(contentUrl)}" region="Text"/></par></body></smil>`;
+  const smil = buildMmsSmil(`${contentOrigin}/api/mms-content/${contentId}`);
 
   try {
     for (const recipient of recipients) {
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), smsApiTimeoutMs);
-      try {
-        const response = await fetch(mmsApiEndpoint, {
-          body: new URLSearchParams({ format: "json", smil, subject: config.sender, to: recipient }),
-          headers: {
-            Authorization: `Bearer ${config.token}`,
-            "Content-Type": "application/x-www-form-urlencoded",
-          },
-          method: "POST",
-          signal: controller.signal,
-        });
-        if (!response.ok) {
-          const responseText = await response.text();
-          throw new Error(`SMSAPI MMS request failed with status ${response.status}: ${responseText.slice(0, 500)}`);
-        }
-        const result = await response.json() as { error?: number; message?: string };
-        if (result.error) throw new Error(`SMSAPI MMS rejected the message: ${result.message ?? result.error}`);
-      } finally {
-        clearTimeout(timeout);
-      }
+      await sendMmsToRecipient(config, smil, recipient);
     }
     return true;
   } catch (error) {
@@ -155,6 +162,53 @@ export async function sendMmsMessage(
     if (options.throwOnError) throw error instanceof Error ? error : new Error("SMSAPI MMS request failed");
     return false;
   }
+}
+
+export type MmsRecipientOutcome = {
+  phone: string;
+  error?: string;
+  sent: boolean;
+};
+
+/**
+ * Sends one MMS per recipient and reports the outcome for each of them, so a
+ * failure halfway through a large send is visible instead of collapsing into a
+ * single error. `onRecipientStart` runs before the provider call and
+ * `onRecipient` after it, which lets the caller mark a recipient as in flight
+ * and persist progress, making the whole send resumable.
+ */
+export async function sendMmsMessageToRecipients(
+  config: SmsApiConfig | undefined,
+  recipients: string[],
+  message: string,
+  contentOrigin: string,
+  hooks: {
+    onRecipientStart?: (phone: string) => Promise<void> | void;
+    onRecipient?: (outcome: MmsRecipientOutcome) => Promise<void> | void;
+  } = {},
+): Promise<MmsRecipientOutcome[]> {
+  if (!config) throw new Error("SMSAPI configuration is missing");
+
+  const contentId = await createMmsContent(message);
+  const smil = buildMmsSmil(`${contentOrigin}/api/mms-content/${contentId}`);
+  const outcomes: MmsRecipientOutcome[] = [];
+
+  for (const recipient of recipients) {
+    let outcome: MmsRecipientOutcome;
+    try {
+      await hooks.onRecipientStart?.(recipient);
+      await sendMmsToRecipient(config, smil, recipient);
+      outcome = { phone: recipient, sent: true };
+    } catch (error) {
+      const reason = error instanceof Error ? error.message : String(error);
+      console.error("SMSAPI MMS recipient failed", reason);
+      outcome = { error: reason.slice(0, 200), phone: recipient, sent: false };
+    }
+    outcomes.push(outcome);
+    await hooks.onRecipient?.(outcome);
+  }
+
+  return outcomes;
 }
 
 export async function sendSmsNotification(

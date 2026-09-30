@@ -6,6 +6,7 @@ const mocks = vi.hoisted(() => ({
   adminSessionDeleteMany: vi.fn(),
   contactSubmissionDeleteMany: vi.fn(),
   contactSubmissionFindMany: vi.fn(),
+  messageDispatchDeleteMany: vi.fn(),
   mmsContentDeleteMany: vi.fn(),
 }));
 
@@ -18,6 +19,7 @@ vi.mock("./prisma", () => ({
       deleteMany: mocks.contactSubmissionDeleteMany,
       findMany: mocks.contactSubmissionFindMany,
     },
+    messageDispatch: { deleteMany: mocks.messageDispatchDeleteMany },
     mmsContent: { deleteMany: mocks.mmsContentDeleteMany },
   }),
 }));
@@ -32,6 +34,7 @@ describe("cleanupExpiredContactData", () => {
     mocks.adminMagicLinkDeleteMany.mockResolvedValue({ count: 2 });
     mocks.adminSessionDeleteMany.mockResolvedValue({ count: 3 });
     mocks.adminLoginRateLimitDeleteMany.mockResolvedValue({ count: 4 });
+    mocks.messageDispatchDeleteMany.mockResolvedValue({ count: 6 });
     mocks.mmsContentDeleteMany.mockResolvedValue({ count: 5 });
   });
 
@@ -42,6 +45,7 @@ describe("cleanupExpiredContactData", () => {
       contactSubmissions: 1,
       loginRateLimits: 4,
       magicLinks: 2,
+      messageDispatches: 6,
       mmsContent: 5,
       sessions: 3,
     });
