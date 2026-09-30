@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useId, useRef, useState, type PointerEvent as ReactPointerEvent, type SyntheticEvent } from "react";
-import { messageHistoryPreviewLength, type MessageHistoryChannel, type MessageHistoryEntry } from "@/lib/message-history";
+import { messageHistoryPreviewLength, type MessageHistoryChannel, type MessageHistoryEntry } from "@/lib/message-history-channels";
 
 const dateFormatter = new Intl.DateTimeFormat("pl-PL", { dateStyle: "short", timeStyle: "short" });
 

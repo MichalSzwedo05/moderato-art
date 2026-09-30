@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { createFakeMessageHistory, isFakeMessageHistoryEnabled } from "./message-history-fake";
-import { emailHistoryChannels, messageHistoryPreviewLength, smsHistoryChannels } from "./message-history";
+import { emailHistoryChannels, messageHistoryPreviewLength, smsHistoryChannels } from "./message-history-channels";
 
 const now = new Date("2026-09-30T12:00:00.000Z");
 

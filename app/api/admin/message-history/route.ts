@@ -2,7 +2,8 @@ import { NextResponse } from "next/server";
 import { getAdminAuthConfig, getAdminSession } from "@/lib/admin-auth";
 import { isSameAdminOrigin } from "@/lib/admin-security";
 import { createFakeMessageHistory, isFakeMessageHistoryEnabled } from "@/lib/message-history-fake";
-import { getMessageHistory, parseMessageHistoryChannels } from "@/lib/message-history";
+import { parseMessageHistoryChannels } from "@/lib/message-history-channels";
+import { getMessageHistory } from "@/lib/message-history";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
