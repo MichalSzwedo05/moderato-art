@@ -1,14 +1,20 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
+  createFakeMessageHistory: vi.fn(),
   getAdminAuthConfig: vi.fn(),
   getAdminSession: vi.fn(),
   getMessageHistory: vi.fn(),
+  isFakeMessageHistoryEnabled: vi.fn(),
   isSameAdminOrigin: vi.fn(),
 }));
 
 vi.mock("@/lib/admin-auth", () => ({ getAdminAuthConfig: mocks.getAdminAuthConfig, getAdminSession: mocks.getAdminSession }));
 vi.mock("@/lib/admin-security", () => ({ isSameAdminOrigin: mocks.isSameAdminOrigin }));
+vi.mock("@/lib/message-history-fake", () => ({
+  createFakeMessageHistory: mocks.createFakeMessageHistory,
+  isFakeMessageHistoryEnabled: mocks.isFakeMessageHistoryEnabled,
+}));
 vi.mock("@/lib/message-history", async (importOriginal) => {
   const actual = await importOriginal() as { parseMessageHistoryChannels: (value: string | null) => unknown[] | undefined };
   return { getMessageHistory: mocks.getMessageHistory, parseMessageHistoryChannels: actual.parseMessageHistoryChannels };
@@ -29,6 +35,19 @@ describe("GET /api/admin/message-history", () => {
     mocks.getAdminSession.mockResolvedValue({ id: "session" });
     mocks.isSameAdminOrigin.mockReturnValue(true);
     mocks.getMessageHistory.mockResolvedValue([]);
+    mocks.isFakeMessageHistoryEnabled.mockReturnValue(false);
+    mocks.createFakeMessageHistory.mockReturnValue([]);
+  });
+
+  it("serves local fake data when the development flag is enabled", async () => {
+    mocks.isFakeMessageHistoryEnabled.mockReturnValue(true);
+    mocks.createFakeMessageHistory.mockReturnValue([{ createdAt: "2026-09-30T10:00:00.000Z", messagePreview: "Cześć", recipientCount: 1, subject: null, truncated: false }]);
+
+    const response = await GET(request(undefined, "?channels=EMAIL"));
+
+    expect(response.status).toBe(200);
+    expect(mocks.createFakeMessageHistory).toHaveBeenCalledWith(["EMAIL"]);
+    expect(mocks.getMessageHistory).not.toHaveBeenCalled();
   });
 
   it("returns the message history without caching", async () => {

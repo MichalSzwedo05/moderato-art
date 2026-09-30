@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getAdminAuthConfig, getAdminSession } from "@/lib/admin-auth";
 import { isSameAdminOrigin } from "@/lib/admin-security";
+import { createFakeMessageHistory, isFakeMessageHistoryEnabled } from "@/lib/message-history-fake";
 import { getMessageHistory, parseMessageHistoryChannels } from "@/lib/message-history";
 
 export const dynamic = "force-dynamic";
@@ -23,6 +24,13 @@ export async function GET(request: Request) {
   const channels = parseMessageHistoryChannels(new URL(request.url).searchParams.get("channels"));
   if (channels && channels.length === 0) {
     return errorResponse("Nieprawidłowy kanał wiadomości.", 400);
+  }
+
+  if (isFakeMessageHistoryEnabled()) {
+    return NextResponse.json({ messages: createFakeMessageHistory(channels) }, {
+      headers: { "Cache-Control": "private, no-store, max-age=0" },
+      status: 200,
+    });
   }
 
   try {
