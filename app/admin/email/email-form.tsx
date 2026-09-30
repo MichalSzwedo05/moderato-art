@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
+import { MessageHistoryModal } from "../message-history-modal";
+import { emailHistoryChannels } from "@/lib/message-history-channels";
 
 type EmailRecipient = {
   childName: string | null;
@@ -126,5 +128,8 @@ export function EmailForm({ groups = [], recipients }: { groups?: RecipientGroup
     <p className="admin-sms-counter">{message.length}/20000 znaków · wybrano {selectedIds.length}</p>
     <button disabled={pending || selectedIds.length === 0 || !subject.trim() || !message.trim()} type="submit">{pending ? "Wysyłanie…" : "Wyślij e-mail"}</button>
     {feedback ? <p className={feedback.error ? "admin-notice" : "admin-success"} role={feedback.error ? "alert" : "status"}>{feedback.message}</p> : null}
+    <div className="admin-sms-history">
+      <MessageHistoryModal channels={emailHistoryChannels} />
+    </div>
   </form>;
 }

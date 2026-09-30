@@ -25,7 +25,7 @@ function formatTime(value: Date) {
 function weekLabel(start: Date) {
   const end = shiftAttendanceWeek(start, 1);
   end.setUTCDate(end.getUTCDate() - 1);
-  return `${formatDay(start)}–${formatDay(end)}`;
+  return `${formatDay(start)} – ${formatDay(end)}`;
 }
 
 export default async function CalendarPage({ searchParams }: CalendarPageProps) {
@@ -43,7 +43,7 @@ export default async function CalendarPage({ searchParams }: CalendarPageProps) 
   return <AdminPanel title="Kalendarz">
     <section className="admin-calendar-toolbar">
       <Link className="admin-secondary-button" href={`/admin/calendar?week=${previousWeek}`}>← Poprzedni tydzień</Link>
-      <div><h2>{weekLabel(weekStart)}</h2><Link href={`/admin/calendar?week=${currentWeek}`}>Bieżący tydzień</Link></div>
+      <div className="admin-calendar-toolbar-week"><h2>{weekLabel(weekStart)}</h2><Link href={`/admin/calendar?week=${currentWeek}`}>Bieżący tydzień</Link></div>
       <Link className="admin-secondary-button" href={`/admin/calendar?week=${nextWeek}`}>Następny tydzień →</Link>
     </section>
     <CalendarScroller currentDate={currentDate}>

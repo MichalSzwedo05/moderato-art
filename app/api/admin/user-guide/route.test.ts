@@ -14,7 +14,7 @@ vi.mock("node:fs/promises", async (importOriginal) => {
 vi.mock("@/lib/admin-auth", () => ({ getAdminAuthConfig: mocks.getAdminAuthConfig, getAdminSession: mocks.getAdminSession }));
 vi.mock("@/lib/admin-security", () => ({ isSameAdminOrigin: mocks.isSameAdminOrigin }));
 
-import { POST } from "./route";
+import { GET, POST } from "./route";
 
 const authConfig = { authOrigin: "https://moderato-art.example", authUrl: "https://moderato-art.example", mode: "password", passwordHash: "hash", rateLimitSecret: "secret", username: "admin" } as const;
 const guide = "# Instrukcja CMS\n\nZażółć gęślą jaźń.\n";
@@ -24,6 +24,10 @@ function request(origin = "https://moderato-art.example") {
     headers: { origin },
     method: "POST",
   });
+}
+
+function navigationRequest() {
+  return new Request("https://moderato-art.example/api/admin/user-guide", { method: "GET" });
 }
 
 describe("POST /api/admin/user-guide", () => {
@@ -72,6 +76,47 @@ describe("POST /api/admin/user-guide", () => {
     expect(response.status).toBe(503);
     await expect(response.json()).resolves.toEqual({ message: "Nie udało się przygotować instrukcji." });
     expect(consoleError).toHaveBeenCalledWith("CMS user guide download failed");
+    consoleError.mockRestore();
+  });
+});
+
+describe("GET /api/admin/user-guide", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.getAdminAuthConfig.mockReturnValue(authConfig);
+    mocks.getAdminSession.mockResolvedValue({ id: "session" });
+    mocks.isSameAdminOrigin.mockReturnValue(true);
+    readFile.mockResolvedValue(guide);
+  });
+
+  it("serves the guide as an attachment for a plain link", async () => {
+    const response = await GET(navigationRequest());
+
+    expect(response.status).toBe(200);
+    await expect(response.text()).resolves.toBe(guide);
+    expect(response.headers.get("Content-Disposition")).toBe("attachment; filename=\"instrukcja-cms-moderato-art.md\"");
+  });
+
+  it.each([
+    ["disabled CMS", () => mocks.getAdminAuthConfig.mockReturnValue(undefined)],
+    ["anonymous session", () => mocks.getAdminSession.mockResolvedValue(undefined)],
+  ])("rejects %s before reading the guide", async (_case, setup) => {
+    setup();
+
+    const response = await GET(navigationRequest());
+
+    expect(response.status).toBe(403);
+    expect(readFile).not.toHaveBeenCalled();
+  });
+
+  it("returns a generic error when the guide cannot be read", async () => {
+    const consoleError = vi.spyOn(console, "error").mockImplementation(() => undefined);
+    readFile.mockRejectedValue(new Error("/private/path/should-not-be-exposed"));
+
+    const response = await GET(navigationRequest());
+
+    expect(response.status).toBe(503);
+    await expect(response.json()).resolves.toEqual({ message: "Nie udało się przygotować instrukcji." });
     consoleError.mockRestore();
   });
 });

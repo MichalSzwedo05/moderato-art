@@ -2130,6 +2130,36 @@ h2 {
   color: #c0392b;
 }
 
+.admin-panel-footer {
+  border-top: 1px solid rgb(0 0 0 / 8%);
+  margin-top: 2rem;
+  padding-top: 1rem;
+}
+
+.admin-guide-link {
+  align-items: baseline;
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+}
+
+.admin-text-link {
+  background: none;
+  border: 0;
+  color: var(--dark-blue);
+  cursor: pointer;
+  font: inherit;
+  font-size: .9rem;
+  padding: 0;
+  text-decoration: underline;
+  width: auto;
+}
+
+.admin-text-link:hover,
+.admin-text-link:focus-visible {
+  color: var(--blue);
+}
+
 .admin-header h1 {
   margin-bottom: 0;
 }
@@ -2222,6 +2252,98 @@ h2 {
 
 .admin-sms-intro p {
   margin: .5rem 0;
+}
+
+.admin-sms-history {
+  border-top: 1px solid var(--border-color);
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+}
+
+.admin-modal {
+  background: var(--surface);
+  border: 0;
+  border-radius: 1.25rem;
+  box-shadow: 0 2rem 5rem rgb(16 15 62 / 30%);
+  color: var(--gray-text);
+  max-height: calc(100dvh - 2rem);
+  overflow-y: auto;
+  padding: clamp(1.5rem, 4vw, 2.5rem);
+  width: min(52rem, calc(100% - 2rem));
+}
+
+.admin-modal::backdrop {
+  backdrop-filter: blur(4px);
+  background: rgb(16 15 62 / 66%);
+}
+
+.admin-modal h2 {
+  color: var(--dark-blue);
+  font-size: 1.4rem;
+  margin: 0 0 1rem;
+  padding-right: 2.5rem;
+}
+
+.admin-modal-close {
+  background: var(--cream);
+  border: 0;
+  border-radius: 50%;
+  color: var(--dark-blue);
+  cursor: pointer;
+  font-size: 1.5rem;
+  height: 2.4rem;
+  position: absolute;
+  right: 1rem;
+  top: 1rem;
+  width: 2.4rem;
+}
+
+.admin-history-table-wrapper {
+  overflow-x: auto;
+}
+
+.admin-history-table {
+  border-collapse: collapse;
+  font-size: .9rem;
+  width: 100%;
+}
+
+.admin-history-caption {
+  color: var(--gray-light);
+  font-size: .78rem;
+  margin: .6rem 0 0;
+}
+
+.admin-history-subject {
+  color: var(--dark-blue);
+  display: block;
+  font-weight: 800;
+}
+
+.admin-history-table th,
+.admin-history-table td {
+  border-bottom: 1px solid var(--border-color);
+  padding: .6rem .5rem;
+  text-align: left;
+  vertical-align: top;
+}
+
+.admin-history-table th {
+  color: var(--dark-blue);
+  font-size: .78rem;
+  letter-spacing: .02em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.admin-history-table td:nth-child(1),
+.admin-history-table td:nth-child(3) {
+  white-space: nowrap;
+}
+
+.admin-history-table td:nth-child(2) {
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
 }
 
 .admin-sms-form {
@@ -2622,6 +2744,19 @@ h2 {
   text-align: center;
 }
 
+.admin-calendar-toolbar-week {
+  display: flex;
+  flex-direction: column;
+  gap: .6rem;
+  margin-inline: auto;
+  max-width: 22rem;
+}
+
+.admin-calendar-toolbar-week h2 {
+  letter-spacing: .01em;
+  white-space: nowrap;
+}
+
 .admin-calendar-toolbar h2 {
   color: var(--dark-blue);
   font-size: 1.2rem;
@@ -2630,11 +2765,12 @@ h2 {
 }
 
 .admin-calendar-toolbar a:not(.admin-secondary-button) {
+  align-self: center;
   color: var(--dark-blue);
   display: inline-block;
   font-size: .82rem;
   font-weight: 800;
-  margin-top: .25rem;
+  margin-top: 0;
   text-decoration: underline;
   text-decoration-color: var(--green);
   text-decoration-thickness: 2px;
@@ -3723,6 +3859,7 @@ h2 {
 @media (max-width: 700px) {
   .admin-calendar-toolbar { align-items: stretch; flex-direction: column; }
   .admin-calendar-toolbar .admin-secondary-button { justify-content: center; width: 100%; }
+  .admin-calendar-toolbar-week { margin-inline: auto; max-width: none; width: 100%; }
   .admin-calendar-grid { grid-template-columns: repeat(7, minmax(12rem, 1fr)); }
   .admin-header { flex-direction: column; }
   .admin-editor-grid { grid-template-columns: 1fr; }

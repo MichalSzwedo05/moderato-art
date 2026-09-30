@@ -13,12 +13,7 @@ function errorResponse(message: string, status: number) {
   });
 }
 
-export async function POST(request: Request) {
-  const config = getAdminAuthConfig();
-  if (!config || !isSameAdminOrigin(request.headers.get("origin"), config) || !(await getAdminSession())) {
-    return errorResponse("Brak dostępu.", 403);
-  }
-
+async function buildGuideResponse() {
   let guide: string;
   try {
     guide = await readFile(join(process.cwd(), "USER_GUIDE.md"), "utf8");
@@ -40,4 +35,22 @@ export async function POST(request: Request) {
     },
     status: 200,
   });
+}
+
+export async function GET(_request: Request) {
+  const config = getAdminAuthConfig();
+  if (!config || !(await getAdminSession())) {
+    return errorResponse("Brak dostępu.", 403);
+  }
+
+  return buildGuideResponse();
+}
+
+export async function POST(request: Request) {
+  const config = getAdminAuthConfig();
+  if (!config || !isSameAdminOrigin(request.headers.get("origin"), config) || !(await getAdminSession())) {
+    return errorResponse("Brak dostępu.", 403);
+  }
+
+  return buildGuideResponse();
 }

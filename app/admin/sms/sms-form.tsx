@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
+import { MessageHistoryModal } from "../message-history-modal";
+import { smsHistoryChannels } from "@/lib/message-history-channels";
 
 type SmsRecipient = {
   childName: string | null;
@@ -121,5 +123,8 @@ export function SmsForm({ groups = [], recipients }: { groups?: RecipientGroup[]
     <p className="admin-sms-counter">{message.length}/10000 znaków · do 2 części SMS, dłuższe wiadomości MMS · wybrano {selectedIds.length}</p>
     <button disabled={pending || selectedIds.length === 0 || !message.trim()} type="submit">{pending ? "Wysyłanie…" : "Wyślij SMS"}</button>
     {feedback ? <p className={feedback.error ? "admin-notice" : "admin-success"} role={feedback.error ? "alert" : "status"}>{feedback.message}</p> : null}
+    <div className="admin-sms-history">
+      <MessageHistoryModal channels={smsHistoryChannels} />
+    </div>
   </form>;
 }

@@ -6,6 +6,7 @@ const mocks = vi.hoisted(() => ({
   getAdminSession: vi.fn(),
   getContactFormConfig: vi.fn(),
   isSameAdminOrigin: vi.fn(),
+  recordMessage: vi.fn(),
   sendEmailMessage: vi.fn(),
 }));
 
@@ -14,6 +15,7 @@ vi.mock("@/lib/admin-security", () => ({ isSameAdminOrigin: mocks.isSameAdminOri
 vi.mock("@/lib/contact-config", () => ({ getContactFormConfig: mocks.getContactFormConfig }));
 vi.mock("@/lib/prisma", () => ({ getPrisma: () => ({ contactSubmission: { findMany: mocks.findMany } }) }));
 vi.mock("@/lib/email", () => ({ sendEmailMessage: mocks.sendEmailMessage }));
+vi.mock("@/lib/message-history", () => ({ recordMessage: mocks.recordMessage }));
 
 import { POST } from "./route";
 
@@ -40,6 +42,34 @@ describe("POST /api/admin/email", () => {
       { email: "ola@example.com", id: "two" },
     ]);
     mocks.sendEmailMessage.mockResolvedValue(true);
+    mocks.recordMessage.mockResolvedValue(undefined);
+  });
+
+  it("records email sends in the history", async () => {
+    const response = await POST(request({ message: "Treść", subject: "Temat", submissionIds: ["one", "two"] }));
+
+    expect(response.status).toBe(200);
+    expect(mocks.recordMessage).toHaveBeenCalledWith("EMAIL", "Treść", 2, "Temat");
+  });
+
+  it("does not record failed sends", async () => {
+    mocks.sendEmailMessage.mockRejectedValue(new Error("Resend down"));
+
+    const response = await POST(request({ message: "Treść", subject: "Temat", submissionIds: ["one", "two"] }));
+
+    expect(response.status).toBe(502);
+    expect(mocks.recordMessage).not.toHaveBeenCalled();
+  });
+
+  it("keeps the send successful when the history write fails", async () => {
+    const consoleError = vi.spyOn(console, "error").mockImplementation(() => undefined);
+    mocks.recordMessage.mockRejectedValue(new Error("database unavailable"));
+
+    const response = await POST(request({ message: "Treść", subject: "Temat", submissionIds: ["one", "two"] }));
+
+    expect(response.status).toBe(200);
+    expect(consoleError).toHaveBeenCalledWith("Admin email history record failed");
+    consoleError.mockRestore();
   });
 
   it("sends only to emails resolved from selected database records", async () => {

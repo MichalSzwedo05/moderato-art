@@ -64,7 +64,7 @@ describe("GroupsManager", () => {
       recipients={[{ childName: "Anna", email: "anna@example.com", id: "person", parentName: null, phone: null }]}
     />);
 
-    await user.type(screen.getByLabelText("Nowa grupa"), "Nowa grupa");
+    await user.type(screen.getByLabelText("Nazwa nowej grupy"), "Nowa grupa");
     await user.click(screen.getByRole("button", { name: "Utwórz grupę" }));
 
     expect(screen.getByLabelText("Dodaj użytkownika")).toBeInTheDocument();

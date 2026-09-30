@@ -98,6 +98,17 @@ model ContactGroup {
   memberships ContactGroupMembership[]
 }
 
+model MessageLog {
+  id             String   @id @default(cuid())
+  channel        String   @db.VarChar(5)
+  message        String   @db.Text
+  recipientCount Int
+  subject        String?  @db.VarChar(200)
+  createdAt      DateTime @default(now())
+
+  @@index([createdAt])
+}
+
 model MmsContent {
   id        String   @id @default(cuid())
   message   String   @db.Text
