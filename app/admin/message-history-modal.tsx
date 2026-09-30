@@ -29,7 +29,7 @@ export function MessageHistoryModal({ channels }: { channels: MessageHistoryChan
   }, [isOpen, messages]);
 
   useEffect(() => {
-    if (!isOpen || messages) return;
+    if (!isOpen) return;
     let active = true;
 
     fetch(`/api/admin/message-history?channels=${encodeURIComponent(channelsKey)}`)
@@ -46,11 +46,12 @@ export function MessageHistoryModal({ channels }: { channels: MessageHistoryChan
       });
 
     return () => { active = false; };
-  }, [isOpen, messages, channelsKey]);
+  }, [isOpen, channelsKey]);
 
   function open() {
+    setIsLoading(true);
     setError("");
-    if (!messages) setIsLoading(true);
+    setMessages(undefined);
     setIsOpen(true);
   }
 
