@@ -22,12 +22,12 @@ function formValues(formData: FormData) {
 
 export async function createArticle(formData: FormData) {
   const result = await saveArticle(formData);
-  redirect(result ? "/admin?article=created" : "/admin?article=invalid");
+  redirect(result ? "/admin/articles?article=created" : "/admin/articles?article=invalid");
 }
 
 export async function updateArticle(articleId: string, formData: FormData) {
   const result = await saveArticle(formData, articleId);
-  redirect(result ? "/admin?article=updated" : "/admin?article=invalid");
+  redirect(result ? "/admin/articles?article=updated" : "/admin/articles?article=invalid");
 }
 
 async function saveArticle(formData: FormData, articleId?: string) {
@@ -52,7 +52,7 @@ async function saveArticle(formData: FormData, articleId?: string) {
     return false;
   }
 
-  revalidatePath("/admin");
+  revalidatePath("/admin/articles");
   revalidatePath("/");
   return true;
 }

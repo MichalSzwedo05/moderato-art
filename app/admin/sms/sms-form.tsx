@@ -17,11 +17,17 @@ type RecipientGroup = {
   submissionIds: string[];
 };
 
+function createDispatchKey() {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") return crypto.randomUUID();
+  return `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 10)}`;
+}
+
 export function SmsForm({ groups = [], recipients }: { groups?: RecipientGroup[]; recipients: SmsRecipient[] }) {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [message, setMessage] = useState("");
   const [feedback, setFeedback] = useState<{ message: string; error: boolean }>();
   const [pending, setPending] = useState(false);
+  const [dispatch, setDispatch] = useState<{ fingerprint: string; key: string }>();
   const selectedRecipients = recipients.filter((recipient) => selectedIds.includes(recipient.id));
   const allSelected = recipients.length > 0 && selectedIds.length === recipients.length;
 
@@ -49,16 +55,29 @@ export function SmsForm({ groups = [], recipients }: { groups?: RecipientGroup[]
     setFeedback(undefined);
     setPending(true);
 
+    const fingerprint = JSON.stringify({ message, submissionIds: selectedIds });
+    const isResume = dispatch?.fingerprint === fingerprint;
+    const dispatchKey = isResume ? dispatch.key : createDispatchKey();
+
     try {
       const response = await fetch("/api/admin/sms", {
-        body: JSON.stringify({ message, submissionIds: selectedIds }),
+        body: JSON.stringify({ dispatchKey, message, submissionIds: selectedIds }),
         headers: { "Content-Type": "application/json" },
         method: "POST",
       });
-      const result = await response.json() as { message?: string };
-      if (!response.ok) throw new Error(result.message || "Nie udało się wysłać wiadomości SMS.");
+      const result = await response.json() as { message?: string; partial?: boolean };
+      if (!response.ok) {
+        setDispatch(undefined);
+        throw new Error(result.message || "Nie udało się wysłać wiadomości SMS.");
+      }
       setFeedback({ error: false, message: result.message || "Wiadomość SMS została wysłana." });
-      setMessage("");
+      // A partial send keeps the same key and the selection, so pressing send
+      // again resumes instead of delivering a second copy.
+      setDispatch(result.partial ? { fingerprint, key: dispatchKey } : undefined);
+      if (!result.partial) {
+        setMessage("");
+        setSelectedIds([]);
+      }
     } catch (error) {
       setFeedback({
         error: true,

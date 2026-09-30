@@ -109,6 +109,24 @@ model MessageLog {
   @@index([createdAt])
 }
 
+model MessageDispatch {
+  id          String   @id @default(cuid())
+  key         String   @unique @db.VarChar(64)
+  channel     String   @db.VarChar(5)
+  message     String   @db.Text
+  status      String   @db.VarChar(16)
+  totalCount  Int
+  sentCount   Int      @default(0)
+  failedCount Int      @default(0)
+  recipients  Json
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  expiresAt   DateTime
+
+  @@index([expiresAt])
+  @@index([status])
+}
+
 model MmsContent {
   id        String   @id @default(cuid())
   message   String   @db.Text

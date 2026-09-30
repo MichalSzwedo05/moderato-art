@@ -100,6 +100,50 @@ describe("MessageHistoryModal", () => {
     expect(trigger).toHaveFocus();
   });
 
+  it("refetches on every open so the list never shows a stale send", async () => {
+    const user = userEvent.setup();
+    fetchMock.mockResolvedValueOnce(historyResponse([
+      { createdAt: "2026-09-30T10:15:00.000Z", messagePreview: "Stara wiadomość", recipientCount: 2, subject: null, truncated: false },
+    ]));
+    fetchMock.mockResolvedValueOnce(historyResponse([
+      { createdAt: "2026-09-30T12:00:00.000Z", messagePreview: "Nowa wiadomość", recipientCount: 5, subject: null, truncated: false },
+    ]));
+
+    render(<MessageHistoryModal channels={smsHistoryChannels} />);
+    const trigger = screen.getByRole("button", { name: "Historia wiadomości" });
+    await user.click(trigger);
+    expect(await screen.findByText("Stara wiadomość")).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Zamknij okno" }));
+    await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
+
+    await user.click(trigger);
+    expect(await screen.findByText("Nowa wiadomość")).toBeInTheDocument();
+    expect(screen.queryByText("Stara wiadomość")).not.toBeInTheDocument();
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
+  it("shows the loading state again while reopening", async () => {
+    const user = userEvent.setup();
+    let resolveSecond: ((value: Response) => void) | undefined;
+    fetchMock.mockResolvedValueOnce(historyResponse([]));
+    fetchMock.mockImplementationOnce(() => new Promise<Response>((resolve) => { resolveSecond = resolve; }));
+
+    render(<MessageHistoryModal channels={smsHistoryChannels} />);
+    const trigger = screen.getByRole("button", { name: "Historia wiadomości" });
+    await user.click(trigger);
+    await screen.findByText("Nie ma jeszcze żadnych wysłanych wiadomości.");
+
+    await user.click(screen.getByRole("button", { name: "Zamknij okno" }));
+    await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
+
+    await user.click(trigger);
+    expect(await screen.findByText("Wczytywanie historii…")).toBeInTheDocument();
+
+    resolveSecond?.(historyResponse([]));
+    expect(await screen.findByText("Nie ma jeszcze żadnych wysłanych wiadomości.")).toBeInTheDocument();
+  });
+
   it("requests only the channels of its own instance", async () => {
     const user = userEvent.setup();
     fetchMock.mockResolvedValue(historyResponse([]));

@@ -6,6 +6,7 @@ export type ContactCleanupResult = {
   contactSubmissions: number;
   loginRateLimits: number;
   magicLinks: number;
+  messageDispatches: number;
   mmsContent: number;
   sessions: number;
 };
@@ -29,10 +30,11 @@ export async function cleanupExpiredContactData(now = new Date()): Promise<Conta
     if (deleted.count === 0) break;
   }
 
-  const [magicLinks, sessions, loginRateLimits, mmsContent] = await Promise.all([
+  const [magicLinks, sessions, loginRateLimits, messageDispatches, mmsContent] = await Promise.all([
     prisma.adminMagicLink.deleteMany({ where: { expiresAt: { lte: now } } }),
     prisma.adminSession.deleteMany({ where: { OR: [{ expiresAt: { lte: now } }, { revokedAt: { not: null } }] } }),
     prisma.adminLoginRateLimit.deleteMany({ where: { resetAt: { lte: now } } }),
+    prisma.messageDispatch.deleteMany({ where: { expiresAt: { lte: now } } }),
     prisma.mmsContent.deleteMany({ where: { expiresAt: { lte: now } } }),
   ]);
 
@@ -40,6 +42,7 @@ export async function cleanupExpiredContactData(now = new Date()): Promise<Conta
     contactSubmissions,
     loginRateLimits: loginRateLimits.count,
     magicLinks: magicLinks.count,
+    messageDispatches: messageDispatches.count,
     mmsContent: mmsContent.count,
     sessions: sessions.count,
   };
