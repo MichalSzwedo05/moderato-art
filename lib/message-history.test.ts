@@ -14,7 +14,15 @@ vi.mock("./prisma", () => ({
   }),
 }));
 
-import { getMessageHistory, messageHistoryMaxRecords, messageHistoryPreviewLength, recordMessage } from "./message-history";
+import {
+  emailHistoryChannels,
+  getMessageHistory,
+  messageHistoryMaxRecords,
+  messageHistoryPreviewLength,
+  parseMessageHistoryChannels,
+  recordMessage,
+  smsHistoryChannels,
+} from "./message-history";
 
 describe("message history", () => {
   beforeEach(() => {
@@ -41,25 +49,41 @@ describe("message history", () => {
     });
   });
 
-  it("returns newest entries first within the record limit", async () => {
-    await getMessageHistory();
+  it("keeps SMS and MMS history in its own channel group", async () => {
+    await getMessageHistory(smsHistoryChannels);
 
-    expect(mocks.messageLogFindMany).toHaveBeenCalledWith({
+    expect(smsHistoryChannels).toEqual(["SMS", "MMS"]);
+    expect(mocks.messageLogFindMany).toHaveBeenCalledWith(expect.objectContaining({
       orderBy: [{ createdAt: "desc" }, { id: "desc" }],
-      select: { channel: true, createdAt: true, message: true, recipientCount: true, subject: true },
       take: messageHistoryMaxRecords,
-    });
+      where: { channel: { in: ["SMS", "MMS"] } },
+    }));
+  });
+
+  it("keeps email history in its own channel group", async () => {
+    await getMessageHistory(emailHistoryChannels);
+
+    expect(mocks.messageLogFindMany).toHaveBeenCalledWith(expect.objectContaining({
+      where: { channel: { in: ["EMAIL"] } },
+    }));
+  });
+
+  it("never exposes the stored channel to the admin", async () => {
+    mocks.messageLogFindMany.mockResolvedValue([{ createdAt: new Date("2026-09-30T10:00:00.000Z"), message: "Treść", recipientCount: 2, subject: null }]);
+
+    const entries = await getMessageHistory(emailHistoryChannels);
+
+    expect(Object.keys(entries[0]).sort()).toEqual(["createdAt", "messagePreview", "recipientCount", "subject", "truncated"]);
   });
 
   it("trims the message preview to the first 100 characters", async () => {
     const message = "a".repeat(250);
-    mocks.messageLogFindMany.mockResolvedValue([{ channel: "MMS", createdAt: new Date("2026-09-30T10:00:00.000Z"), message, recipientCount: 12, subject: null }]);
+    mocks.messageLogFindMany.mockResolvedValue([{ createdAt: new Date("2026-09-30T10:00:00.000Z"), message, recipientCount: 12, subject: null }]);
 
-    const entries = await getMessageHistory();
+    const entries = await getMessageHistory(smsHistoryChannels);
 
     expect(messageHistoryPreviewLength).toBe(100);
     expect(entries[0]).toEqual({
-      channel: "MMS",
       createdAt: "2026-09-30T10:00:00.000Z",
       messagePreview: "a".repeat(100),
       recipientCount: 12,
@@ -69,20 +93,20 @@ describe("message history", () => {
   });
 
   it("keeps short messages intact and marks them as not truncated", async () => {
-    mocks.messageLogFindMany.mockResolvedValue([{ channel: "EMAIL", createdAt: new Date("2026-09-30T10:00:00.000Z"), message: "Krótka wiadomość", recipientCount: 1, subject: "Temat" }]);
+    mocks.messageLogFindMany.mockResolvedValue([{ createdAt: new Date("2026-09-30T10:00:00.000Z"), message: "Krótka wiadomość", recipientCount: 1, subject: "Temat" }]);
 
-    const entries = await getMessageHistory();
+    const entries = await getMessageHistory(emailHistoryChannels);
 
     expect(entries[0].messagePreview).toBe("Krótka wiadomość");
     expect(entries[0].subject).toBe("Temat");
     expect(entries[0].truncated).toBe(false);
   });
 
-  it("falls back to a known channel for unexpected values", async () => {
-    mocks.messageLogFindMany.mockResolvedValue([{ channel: "PUSH", createdAt: new Date("2026-09-30T10:00:00.000Z"), message: "Treść", recipientCount: 1, subject: null }]);
-
-    const entries = await getMessageHistory();
-
-    expect(entries[0].channel).toBe("SMS");
+  it("parses requested channels and rejects unknown ones", () => {
+    expect(parseMessageHistoryChannels(null)).toBeUndefined();
+    expect(parseMessageHistoryChannels("SMS,MMS")).toEqual(["SMS", "MMS"]);
+    expect(parseMessageHistoryChannels("EMAIL")).toEqual(["EMAIL"]);
+    expect(parseMessageHistoryChannels("PUSH,SMS")).toEqual(["SMS"]);
+    expect(parseMessageHistoryChannels("PUSH")).toEqual([]);
   });
 });

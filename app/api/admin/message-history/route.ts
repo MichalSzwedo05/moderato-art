@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getAdminAuthConfig, getAdminSession } from "@/lib/admin-auth";
 import { isSameAdminOrigin } from "@/lib/admin-security";
-import { getMessageHistory } from "@/lib/message-history";
+import { getMessageHistory, parseMessageHistoryChannels } from "@/lib/message-history";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -20,8 +20,13 @@ export async function GET(request: Request) {
     return errorResponse("Brak dostępu.", 403);
   }
 
+  const channels = parseMessageHistoryChannels(new URL(request.url).searchParams.get("channels"));
+  if (channels && channels.length === 0) {
+    return errorResponse("Nieprawidłowy kanał wiadomości.", 400);
+  }
+
   try {
-    return NextResponse.json({ messages: await getMessageHistory() }, {
+    return NextResponse.json({ messages: await getMessageHistory(channels) }, {
       headers: { "Cache-Control": "private, no-store, max-age=0" },
       status: 200,
     });

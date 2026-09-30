@@ -2337,12 +2337,11 @@ h2 {
 }
 
 .admin-history-table td:nth-child(1),
-.admin-history-table td:nth-child(2),
-.admin-history-table td:nth-child(4) {
+.admin-history-table td:nth-child(3) {
   white-space: nowrap;
 }
 
-.admin-history-table td:nth-child(3) {
+.admin-history-table td:nth-child(2) {
   overflow-wrap: anywhere;
   white-space: pre-wrap;
 }

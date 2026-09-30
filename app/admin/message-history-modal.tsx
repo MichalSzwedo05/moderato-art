@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useId, useRef, useState, type PointerEvent as ReactPointerEvent, type SyntheticEvent } from "react";
-import { messageHistoryPreviewLength, type MessageHistoryEntry } from "@/lib/message-history";
+import { messageHistoryPreviewLength, type MessageHistoryChannel, type MessageHistoryEntry } from "@/lib/message-history";
 
 const dateFormatter = new Intl.DateTimeFormat("pl-PL", { dateStyle: "short", timeStyle: "short" });
 
@@ -10,7 +10,7 @@ function formatDate(value: string) {
   return Number.isNaN(date.getTime()) ? value : dateFormatter.format(date);
 }
 
-export function MessageHistoryModal() {
+export function MessageHistoryModal({ channels }: { channels: MessageHistoryChannel[] }) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
@@ -19,6 +19,7 @@ export function MessageHistoryModal() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [messages, setMessages] = useState<MessageHistoryEntry[]>();
+  const channelsKey = channels.join(",");
 
   useEffect(() => {
     const dialog = dialogRef.current;
@@ -31,7 +32,7 @@ export function MessageHistoryModal() {
     if (!isOpen || messages) return;
     let active = true;
 
-    fetch("/api/admin/message-history")
+    fetch(`/api/admin/message-history?channels=${encodeURIComponent(channelsKey)}`)
       .then(async (response) => {
         const body = await response.json() as { message?: string; messages?: MessageHistoryEntry[] };
         if (!response.ok) throw new Error(body.message || "Nie udało się wczytać historii wiadomości.");
@@ -45,7 +46,7 @@ export function MessageHistoryModal() {
       });
 
     return () => { active = false; };
-  }, [isOpen, messages]);
+  }, [isOpen, messages, channelsKey]);
 
   function open() {
     setError("");
@@ -82,15 +83,13 @@ export function MessageHistoryModal() {
           <thead>
             <tr>
               <th scope="col">Data</th>
-              <th scope="col">Kanał</th>
               <th scope="col">Początek wiadomości</th>
               <th scope="col">Liczba odbiorców</th>
             </tr>
           </thead>
           <tbody>
-            {messages.map((entry) => <tr key={`${entry.createdAt}-${entry.channel}-${entry.messagePreview}`}>
+            {messages.map((entry) => <tr key={`${entry.createdAt}-${entry.subject ?? ""}-${entry.messagePreview}`}>
               <td>{formatDate(entry.createdAt)}</td>
-              <td>{entry.channel}</td>
               <td>
                 {entry.subject ? <span className="admin-history-subject">{entry.subject}</span> : null}
                 {entry.messagePreview}{entry.truncated ? "…" : ""}

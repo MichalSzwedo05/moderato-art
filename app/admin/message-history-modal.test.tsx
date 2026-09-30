@@ -2,6 +2,7 @@ import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { MessageHistoryModal } from "./message-history-modal";
+import { emailHistoryChannels, smsHistoryChannels } from "@/lib/message-history";
 
 const fetchMock = vi.fn();
 
@@ -35,36 +36,37 @@ describe("MessageHistoryModal", () => {
     const user = userEvent.setup();
     const longMessage = "a".repeat(180);
     fetchMock.mockResolvedValue(historyResponse([
-      { channel: "MMS", createdAt: "2026-09-30T10:15:00.000Z", messagePreview: longMessage.slice(0, 100), recipientCount: 7, subject: null, truncated: true },
-      { channel: "EMAIL", createdAt: "2026-09-29T08:00:00.000Z", messagePreview: "Przypomnienie o próbie", recipientCount: 2, subject: "Temat próby", truncated: false },
+      { createdAt: "2026-09-30T10:15:00.000Z", messagePreview: longMessage.slice(0, 100), recipientCount: 7, subject: null, truncated: true },
+      { createdAt: "2026-09-29T08:00:00.000Z", messagePreview: "Przypomnienie o próbie", recipientCount: 2, subject: "Temat próby", truncated: false },
     ]));
 
-    render(<MessageHistoryModal />);
+    render(<MessageHistoryModal channels={smsHistoryChannels} />);
     await user.click(screen.getByRole("button", { name: "Historia wiadomości" }));
 
     const dialog = await screen.findByRole("dialog", { name: "Historia wiadomości" });
     const table = within(dialog).getByRole("table");
     const headers = within(table).getAllByRole("columnheader").map((header) => header.textContent);
-    expect(headers).toEqual(["Data", "Kanał", "Początek wiadomości", "Liczba odbiorców"]);
+    expect(headers).toEqual(["Data", "Początek wiadomości", "Liczba odbiorców"]);
 
     const rows = within(table).getAllByRole("row").slice(1);
     expect(rows).toHaveLength(2);
-    expect(within(rows[0]).getAllByRole("cell")[1]).toHaveTextContent("MMS");
-    expect(within(rows[0]).getAllByRole("cell")[2]).toHaveTextContent(`${"a".repeat(100)}…`);
-    expect(within(rows[0]).getAllByRole("cell")[2]).not.toHaveTextContent("a".repeat(101));
-    expect(within(rows[0]).getAllByRole("cell")[3]).toHaveTextContent("7");
-    expect(within(rows[1]).getAllByRole("cell")[1]).toHaveTextContent("EMAIL");
-    expect(within(rows[1]).getAllByRole("cell")[2]).toHaveTextContent("Temat próby");
-    expect(within(rows[1]).getAllByRole("cell")[2].textContent).toContain("Przypomnienie o próbie");
-    expect(within(rows[1]).getAllByRole("cell")[2].textContent).not.toContain("…");
-    expect(fetchMock).toHaveBeenCalledWith("/api/admin/message-history");
+    expect(within(rows[0]).getAllByRole("cell")[1]).toHaveTextContent(`${"a".repeat(100)}…`);
+    expect(within(rows[0]).getAllByRole("cell")[1]).not.toHaveTextContent("a".repeat(101));
+    expect(within(rows[0]).getAllByRole("cell")[2]).toHaveTextContent("7");
+    expect(within(rows[1]).getAllByRole("cell")[1]).toHaveTextContent("Temat próby");
+    expect(within(rows[1]).getAllByRole("cell")[1].textContent).toContain("Przypomnienie o próbie");
+    expect(within(rows[1]).getAllByRole("cell")[1].textContent).not.toContain("…");
+    expect(within(table).queryByText("Kanał")).not.toBeInTheDocument();
+    expect(within(table).queryByText("MMS")).not.toBeInTheDocument();
+    expect(within(table).queryByText("EMAIL")).not.toBeInTheDocument();
+    expect(fetchMock).toHaveBeenCalledWith("/api/admin/message-history?channels=SMS%2CMMS");
   });
 
   it("shows an empty state when nothing was sent yet", async () => {
     const user = userEvent.setup();
     fetchMock.mockResolvedValue(historyResponse([]));
 
-    render(<MessageHistoryModal />);
+    render(<MessageHistoryModal channels={smsHistoryChannels} />);
     await user.click(screen.getByRole("button", { name: "Historia wiadomości" }));
 
     expect(await screen.findByText("Nie ma jeszcze żadnych wysłanych wiadomości.")).toBeInTheDocument();
@@ -77,7 +79,7 @@ describe("MessageHistoryModal", () => {
       status: 403,
     }));
 
-    render(<MessageHistoryModal />);
+    render(<MessageHistoryModal channels={smsHistoryChannels} />);
     await user.click(screen.getByRole("button", { name: "Historia wiadomości" }));
 
     expect(await screen.findByRole("alert")).toHaveTextContent("Brak dostępu.");
@@ -87,7 +89,7 @@ describe("MessageHistoryModal", () => {
     const user = userEvent.setup();
     fetchMock.mockResolvedValue(historyResponse([]));
 
-    render(<MessageHistoryModal />);
+    render(<MessageHistoryModal channels={smsHistoryChannels} />);
     const trigger = screen.getByRole("button", { name: "Historia wiadomości" });
     await user.click(trigger);
     await screen.findByRole("dialog");
@@ -96,5 +98,22 @@ describe("MessageHistoryModal", () => {
 
     await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
     expect(trigger).toHaveFocus();
+  });
+
+  it("requests only the channels of its own instance", async () => {
+    const user = userEvent.setup();
+    fetchMock.mockResolvedValue(historyResponse([]));
+
+    const { unmount } = render(<MessageHistoryModal channels={emailHistoryChannels} />);
+    await user.click(screen.getByRole("button", { name: "Historia wiadomości" }));
+    await screen.findByText("Nie ma jeszcze żadnych wysłanych wiadomości.");
+
+    expect(fetchMock).toHaveBeenCalledWith("/api/admin/message-history?channels=EMAIL");
+    unmount();
+
+    render(<MessageHistoryModal channels={smsHistoryChannels} />);
+    await user.click(screen.getAllByRole("button", { name: "Historia wiadomości" })[0]);
+
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledWith("/api/admin/message-history?channels=SMS%2CMMS"));
   });
 });
