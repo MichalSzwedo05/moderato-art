@@ -3131,6 +3131,17 @@ h2 {
   margin-left: auto;
 }
 
+.attendance-report-section {
+  display: grid;
+  gap: .45rem;
+}
+
+.attendance-report-section h2 {
+  color: var(--dark-blue);
+  font-size: .95rem;
+  margin: 0;
+}
+
 .attendance-report-fields {
   align-items: flex-end;
   display: flex;

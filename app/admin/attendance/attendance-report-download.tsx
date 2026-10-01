@@ -55,13 +55,16 @@ export function AttendanceReportDownload({ recipients }: { recipients: Recipient
     }
   }
 
-  return <form className="attendance-report-download" onSubmit={downloadReport}>
-    <div className="attendance-report-fields">
+  return <section className="attendance-report-section">
+    <h2>Sprawdź obecność</h2>
+    <form className="attendance-report-download" onSubmit={downloadReport}>
+      <div className="attendance-report-fields">
       <label>Dla kogo<select onChange={(event) => setSubmissionId(event.target.value)} value={submissionId}><option value="">Wszyscy uczestnicy</option>{sortedRecipients.map((recipient) => <option key={recipient.id} value={recipient.id}>{displayName(recipient)}</option>)}</select></label>
       <label>Data od<input onChange={(event) => setDateFrom(event.target.value)} required type="date" value={dateFrom} /></label>
       <label>Data do<input onChange={(event) => setDateTo(event.target.value)} required type="date" value={dateTo} /></label>
-    </div>
-    <button disabled={pending} type="submit">{pending ? "Pobieranie…" : "Pobierz raport"}</button>
-    {feedback ? <span className={feedback.error ? "admin-download-feedback admin-download-feedback-error" : "admin-download-feedback"} role={feedback.error ? "alert" : "status"}>{feedback.message}</span> : null}
-  </form>;
+      </div>
+      <button disabled={pending} type="submit">{pending ? "Pobieranie…" : "Pobierz raport"}</button>
+      {feedback ? <span className={feedback.error ? "admin-download-feedback admin-download-feedback-error" : "admin-download-feedback"} role={feedback.error ? "alert" : "status"}>{feedback.message}</span> : null}
+    </form>
+  </section>;
 }

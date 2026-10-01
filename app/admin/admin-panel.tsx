@@ -20,8 +20,8 @@ export function AdminPanel({ children, footerActions, title }: { children: React
         <AdminNav />
         {children}
         <footer className="admin-panel-footer">
-          <DownloadUserGuideLink />
           {footerActions}
+          <DownloadUserGuideLink />
         </footer>
       </section>
     </main>
