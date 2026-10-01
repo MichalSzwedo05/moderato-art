@@ -3115,6 +3115,67 @@ h2 {
   margin: 0;
 }
 
+.admin-panel-footer {
+  align-items: flex-start;
+  display: flex;
+  gap: 1.5rem;
+  justify-content: space-between;
+}
+
+.attendance-report-download {
+  align-items: flex-end;
+  display: flex;
+  flex-wrap: wrap;
+  gap: .65rem;
+  justify-content: flex-end;
+  margin-left: auto;
+}
+
+.attendance-report-fields {
+  align-items: flex-end;
+  display: flex;
+  flex-wrap: wrap;
+  gap: .65rem;
+}
+
+.attendance-report-fields label {
+  display: grid;
+  gap: .25rem;
+  color: var(--gray-light);
+  font-size: .72rem;
+  font-weight: 800;
+}
+
+.attendance-report-fields input,
+.attendance-report-fields select {
+  background: color-mix(in srgb, var(--cream) 88%, var(--surface));
+  border: 1px solid var(--border-color);
+  border-radius: .6rem;
+  color: var(--gray-text);
+  font: inherit;
+  min-height: 2.4rem;
+  padding: .45rem .6rem;
+}
+
+.attendance-report-download > button {
+  background: var(--dark-blue);
+  border: 0;
+  border-radius: .7rem;
+  color: #fff;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 800;
+  margin: 0;
+  min-height: 2.4rem;
+  padding: .55rem .8rem;
+  white-space: nowrap;
+}
+
+.attendance-report-download > button:hover,
+.attendance-report-download > button:focus-visible { background: #4b2d75; }
+
+.attendance-report-download .admin-download-feedback { flex-basis: 100%; text-align: right; }
+
 .attendance-create-heading {
   align-items: center;
   display: flex;

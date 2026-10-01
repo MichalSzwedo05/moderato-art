@@ -6,6 +6,7 @@ import { getAttendanceData } from "@/lib/attendance";
 import { getContactGroups } from "@/lib/contact-groups";
 import { AdminPanel } from "../admin-panel";
 import { AttendanceManager } from "./attendance-manager";
+import { AttendanceReportDownload } from "./attendance-report-download";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -33,7 +34,7 @@ export default async function AttendancePage({ searchParams }: AttendancePagePro
   if (attendanceResult.status !== "fulfilled" || groupsResult.status !== "fulfilled") return <AdminPanel title="Obecność"><p className="admin-notice" role="alert">Nie udało się wczytać obecności.</p></AdminPanel>;
   const { activities, recipients } = attendanceResult.value;
   const groups = groupsResult.value;
-  return <AdminPanel title="Obecność">
+  return <AdminPanel footerActions={<AttendanceReportDownload recipients={recipients} />} title="Obecność">
     <section className="admin-submissions-intro"><p>Wybierz czas zajęć i zaznacz osoby obecne, aby zapisać obecność.</p></section>
     <AttendanceManager
       activities={activities.map((activity) => ({

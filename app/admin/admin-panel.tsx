@@ -3,7 +3,7 @@ import Link from "next/link";
 import { DownloadUserGuideLink } from "./download-user-guide-link";
 import { AdminNav } from "./admin-nav";
 
-export function AdminPanel({ children, title }: { children: ReactNode; title: string }) {
+export function AdminPanel({ children, footerActions, title }: { children: ReactNode; footerActions?: ReactNode; title: string }) {
   return (
     <main className="admin-shell">
       <section className="admin-card admin-content-card">
@@ -21,6 +21,7 @@ export function AdminPanel({ children, title }: { children: ReactNode; title: st
         {children}
         <footer className="admin-panel-footer">
           <DownloadUserGuideLink />
+          {footerActions}
         </footer>
       </section>
     </main>
