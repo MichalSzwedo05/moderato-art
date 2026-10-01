@@ -128,7 +128,7 @@ export function AttendanceManager({ activities: initialActivities, groups, recip
     .map((id) => recipient(id))
     .filter((item): item is Recipient => Boolean(item))
     .sort((left, right) => displayName(left).localeCompare(displayName(right), "pl"));
-  const visibleActivities = activities.filter((activity) => dateValue(activity.activityDate) === activityDate);
+  const visibleActivities = activities.filter((activity) => dateValue(activity.activityDate) === activityDate && !(formMode === "select" && formActivityId === activity.id && editingSelectedActivity));
   const selectedFormActivity = activities.find((activity) => activity.id === formActivityId);
 
   async function createActivity(event: React.FormEvent<HTMLFormElement>) {

@@ -46,6 +46,7 @@ describe("AttendanceManager activity form", () => {
     expect(screen.getByLabelText("Od")).toHaveValue("16:00");
     expect(screen.getByLabelText("Do")).toHaveValue("17:00");
     expect(screen.getByLabelText("Wybierz grupę")).toHaveValue("group-1");
+    expect(screen.queryByRole("heading", { name: "Lekcja 1" })).not.toBeInTheDocument();
   });
 
   it("updates the selected activity after editing populated fields", async () => {
@@ -58,12 +59,14 @@ describe("AttendanceManager activity form", () => {
     fireEvent.change(screen.getByLabelText("Od"), { target: { value: "17:00" } });
     fireEvent.change(screen.getByLabelText("Do"), { target: { value: "18:00" } });
     fireEvent.click(screen.getByRole("button", { name: "Oznacz Jan jako obecnego" }));
+    expect(screen.queryByRole("heading", { name: "Lekcja 1" })).not.toBeInTheDocument();
     fireEvent.submit(screen.getByRole("heading", { name: "Wybierz zajęcia" }).closest("form")!);
 
     await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
     expect(screen.getByText("Uczestnicy")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Oznacz Jan jako nieobecnego" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Edytuj" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Lekcja zmieniona" })).toBeInTheDocument();
     const [url, options] = fetchMock.mock.calls[0] as [string, RequestInit];
     expect(url).toBe("/api/admin/attendance/activity-1");
     expect(options.method).toBe("PATCH");
