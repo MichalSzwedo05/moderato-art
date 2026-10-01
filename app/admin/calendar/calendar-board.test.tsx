@@ -153,6 +153,7 @@ describe("CalendarBoard", () => {
     expect(screen.getByLabelText("Od")).toHaveValue("16:00");
     expect(screen.getByLabelText("Do")).toHaveValue("17:00");
     expect(screen.getByRole("button", { name: "Zatwierdź" })).toBeInTheDocument();
+    expect(document.querySelectorAll(".admin-modal-actions-group")).toHaveLength(2);
   });
 
   it("deletes a whole repeat series on request", async () => {

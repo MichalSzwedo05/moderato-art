@@ -4111,6 +4111,9 @@ h2 {
   .admin-calendar-board { grid-template-columns: 3.5rem repeat(7, minmax(9rem, 1fr)); min-width: 68rem; }
   .admin-calendar-board-corner { min-width: 3.5rem; }
   .admin-calendar-board-column { min-height: 34rem; }
+  .admin-modal-actions { align-items: stretch; flex-direction: column; gap: .65rem; }
+  .admin-modal-actions-group { gap: .65rem; justify-content: stretch; margin-left: 0; width: 100%; }
+  .admin-modal-actions-group > * { flex: 1 1 0; justify-content: center; text-align: center; }
   .admin-header { flex-direction: column; }
   .admin-editor-grid { grid-template-columns: 1fr; }
   .admin-editor-heading { align-items: flex-start; flex-direction: column; }
