@@ -2949,6 +2949,7 @@ h2 {
 .admin-calendar-board-corner { min-width: 4.5rem; }
 
 .admin-calendar-board-day {
+  align-content: center;
   background: color-mix(in srgb, var(--cream) 48%, var(--surface));
   border: 1px solid var(--border-color);
   border-radius: .75rem;
@@ -2956,6 +2957,7 @@ h2 {
   gap: .15rem;
   padding: .65rem .75rem;
   scroll-snap-align: center;
+  text-align: center;
 }
 
 .admin-calendar-board-day-today {
