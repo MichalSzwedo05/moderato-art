@@ -3180,6 +3180,8 @@ h2 {
 
 .attendance-selected-section .attendance-create-people {
   background: color-mix(in srgb, var(--cream) 42%, var(--surface));
+  max-height: none;
+  overflow: visible;
 }
 
 .attendance-selected-section .attendance-selected-actions {
