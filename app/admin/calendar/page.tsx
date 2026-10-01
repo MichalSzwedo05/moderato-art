@@ -54,6 +54,7 @@ export default async function CalendarPage({ searchParams }: CalendarPageProps) 
           endsAt: activity.endsAt?.toISOString() || null,
           id: activity.id,
           name: activity.name,
+          participants: activity.participants,
           presentCount: activity.presentCount,
           seriesId: activity.seriesId,
           startsAt: activity.startsAt.toISOString(),

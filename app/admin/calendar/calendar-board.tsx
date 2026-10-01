@@ -8,6 +8,7 @@ export type CalendarBoardActivity = {
   endsAt: string | null;
   id: string;
   name: string;
+  participants: Array<{ childName: string | null; id: string; parentName: string | null; present: boolean }>;
   presentCount: number;
   seriesId: string | null;
   startsAt: string;
@@ -87,6 +88,10 @@ function nextLessonName(activities: CalendarBoardActivity[]) {
     .map(Number)
     .filter(Number.isSafeInteger);
   return `Lekcja ${(numbers.length ? Math.max(...numbers) : 0) + 1}`;
+}
+
+function participantName(participant: CalendarBoardActivity["participants"][number]) {
+  return participant.childName || participant.parentName || "Bez podanego imienia";
 }
 
 function getCalendarHours(activities: CalendarBoardActivity[]) {
@@ -388,6 +393,7 @@ export function CalendarBoard({ activities, currentDate, groups, weekStart }: Ca
         <h2 id={detailTitleId}>{selectedActivity.name}</h2>
         <p className="admin-submissions-intro">{longDayFormatter.format(utcDate(selectedActivity.activityDate))} · {selectedActivity.totalParticipants} osób</p>
         <label>Nazwa zajęć<input maxLength={160} onChange={(event) => setDetail({ ...detail, name: event.target.value })} value={detail.name} /></label>
+        <div aria-label="Lista obecności" className="attendance-selected-status" role="region"><div className="attendance-selected-status-heading"><strong>Lista obecności</strong><span>{selectedActivity.presentCount}/{selectedActivity.totalParticipants} obecnych</span></div>{selectedActivity.participants.length === 0 ? <p className="admin-submissions-empty">Brak uczestników.</p> : <div className="attendance-selected-status-list">{selectedActivity.participants.map((participant) => <div className={participant.present ? "attendance-selected-status-present" : "attendance-selected-status-absent"} key={participant.id}><span>{participantName(participant)}</span><strong>{participant.present ? "Obecny" : "Nieobecny"}</strong></div>)}</div>}</div>
         <div className="attendance-time-grid">
           <label>Od<input onChange={(event) => setDetail({ ...detail, startsAt: event.target.value })} type="time" value={detail.startsAt} /></label>
           <label>Do<input onChange={(event) => setDetail({ ...detail, endsAt: event.target.value })} type="time" value={detail.endsAt} /></label>

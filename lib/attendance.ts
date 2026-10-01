@@ -76,6 +76,7 @@ export type AttendanceCalendarActivity = {
   endsAt: Date | null;
   id: string;
   name: string;
+  participants: Array<{ childName: string | null; id: string; parentName: string | null; present: boolean }>;
   presentCount: number;
   seriesId: string | null;
   startsAt: Date;
@@ -86,7 +87,7 @@ export async function getAttendanceBoardData(weekStart: Date) {
   const weekEnd = new Date(weekStart);
   weekEnd.setUTCDate(weekEnd.getUTCDate() + 7);
   const activities = await getPrisma().attendanceActivity.findMany({
-    include: { participants: { select: { present: true } } },
+    include: { participants: { select: { present: true, submission: { select: { childName: true, id: true, parentName: true } } } } },
     orderBy: [{ activityDate: "asc" }, { startsAt: "asc" }, { id: "asc" }],
     where: { activityDate: { gte: weekStart, lt: weekEnd }, invalid: false },
   });
@@ -96,6 +97,7 @@ export async function getAttendanceBoardData(weekStart: Date) {
     endsAt: activity.endsAt,
     id: activity.id,
     name: activity.name,
+    participants: activity.participants.map((participant) => ({ childName: participant.submission.childName, id: participant.submission.id, parentName: participant.submission.parentName, present: participant.present })),
     presentCount: activity.participants.filter((participant) => participant.present).length,
     seriesId: activity.seriesId,
     startsAt: activity.startsAt,

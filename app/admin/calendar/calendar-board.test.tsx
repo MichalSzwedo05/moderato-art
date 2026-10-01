@@ -17,6 +17,7 @@ function activity(overrides: Partial<CalendarBoardActivity> = {}): CalendarBoard
     endsAt: "2026-09-23T17:00:00.000Z",
     id: "activity-1",
     name: "Lekcja 1",
+    participants: [{ childName: "Anna", id: "submission-1", parentName: "Rodzic A", present: true }, { childName: "Jan", id: "submission-2", parentName: "Rodzic B", present: false }],
     presentCount: 0,
     seriesId: null,
     startsAt: "2026-09-23T16:00:00.000Z",
@@ -187,6 +188,10 @@ describe("CalendarBoard", () => {
     expect(screen.queryByRole("combobox", { name: "Usuń" })).not.toBeInTheDocument();
     expect(screen.getByLabelText("Od")).toHaveValue("16:00");
     expect(screen.getByLabelText("Do")).toHaveValue("17:00");
+    expect(screen.getByRole("region", { name: "Lista obecności" })).toHaveTextContent("Anna");
+    expect(screen.getByRole("region", { name: "Lista obecności" })).toHaveTextContent("Obecny");
+    expect(screen.getByRole("region", { name: "Lista obecności" })).toHaveTextContent("Jan");
+    expect(screen.getByRole("region", { name: "Lista obecności" })).toHaveTextContent("Nieobecny");
     expect(screen.getByRole("button", { name: "Zatwierdź" })).toBeInTheDocument();
     expect(document.querySelectorAll(".admin-modal-actions-group")).toHaveLength(2);
   });
