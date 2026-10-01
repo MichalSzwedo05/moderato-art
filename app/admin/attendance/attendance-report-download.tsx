@@ -30,6 +30,11 @@ export function AttendanceReportDownload({ recipients }: { recipients: Recipient
   const [previewPending, setPreviewPending] = useState(false);
   const sortedRecipients = useMemo(() => [...recipients].sort((left, right) => displayName(left).localeCompare(displayName(right), "pl")), [recipients]);
 
+  function closeFromBackdrop(event: React.PointerEvent<HTMLDialogElement>) {
+    const { bottom, left, right, top } = event.currentTarget.getBoundingClientRect();
+    if (event.clientX < left || event.clientX > right || event.clientY < top || event.clientY > bottom) setPreview(undefined);
+  }
+
   async function downloadReport(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setPending(true);
@@ -85,6 +90,6 @@ export function AttendanceReportDownload({ recipients }: { recipients: Recipient
       <div className="attendance-report-actions"><button disabled={previewPending || pending} onClick={() => void previewReport()} type="button">{previewPending ? "Wczytywanie…" : "Podgląd raportu"}</button><button disabled={pending || previewPending} type="submit">{pending ? "Pobieranie…" : "Pobierz raport"}</button></div>
       {feedback ? <span className={feedback.error ? "admin-download-feedback admin-download-feedback-error" : "admin-download-feedback"} role={feedback.error ? "alert" : "status"}>{feedback.message}</span> : null}
     </form>
-    {preview ? <dialog aria-labelledby="attendance-report-preview-title" className="admin-modal attendance-report-preview" open><div className="attendance-report-preview-header"><div><h2 id="attendance-report-preview-title">Podgląd raportu</h2><p>{dateFrom} – {dateTo}</p></div><button onClick={() => setPreview(undefined)} type="button">Zamknij</button></div><div className="attendance-report-table-wrap"><table className="attendance-report-matrix"><thead><tr><th>Osoba</th>{preview.dates.map((date) => <th key={date}>{date}</th>)}</tr></thead><tbody>{preview.people.length === 0 ? <tr><td colSpan={Math.max(1, preview.dates.length + 1)}>Brak danych dla wybranych filtrów.</td></tr> : preview.people.map((person) => <tr key={person.email}><th scope="row"><strong>{person.name}</strong><small>{person.email}</small></th>{preview.dates.map((date) => <td className={person.statuses[date] ? "attendance-matrix-present" : "attendance-matrix-absent"} key={date}><span aria-label={person.statuses[date] ? "Obecny" : "Nieobecny"} role="img">{person.statuses[date] ? "✓" : "×"}</span></td>)}</tr>)}</tbody></table></div></dialog> : null}
+    {preview ? <dialog aria-labelledby="attendance-report-preview-title" className="admin-modal attendance-report-preview" onPointerDown={closeFromBackdrop} open><div className="attendance-report-preview-header"><div><h2 id="attendance-report-preview-title">Podgląd raportu</h2><p>{dateFrom} – {dateTo}</p></div><button onClick={() => setPreview(undefined)} type="button">Zamknij</button></div><div className="attendance-report-table-wrap"><table className="attendance-report-matrix"><thead><tr><th>Osoba</th>{preview.dates.map((date) => <th key={date}>{date}</th>)}</tr></thead><tbody>{preview.people.length === 0 ? <tr><td colSpan={Math.max(1, preview.dates.length + 1)}>Brak danych dla wybranych filtrów.</td></tr> : preview.people.map((person) => <tr key={person.email}><th scope="row"><strong>{person.name}</strong><small>{person.email}</small></th>{preview.dates.map((date) => <td className={person.statuses[date] ? "attendance-matrix-present" : "attendance-matrix-absent"} key={date}><span aria-label={person.statuses[date] ? "Obecny" : "Nieobecny"} role="img">{person.statuses[date] ? "✓" : "×"}</span></td>)}</tr>)}</tbody></table></div></dialog> : null}
   </section>;
 }

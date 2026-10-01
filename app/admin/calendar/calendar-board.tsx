@@ -187,6 +187,11 @@ export function CalendarBoard({ activities, currentDate, groups, weekStart }: Ca
     });
   }
 
+  function closeFromBackdrop(event: React.PointerEvent<HTMLDialogElement>, close: () => void) {
+    const { bottom, left, right, top } = event.currentTarget.getBoundingClientRect();
+    if (event.clientX < left || event.clientX > right || event.clientY < top || event.clientY > bottom) close();
+  }
+
   function updateDraft(patch: Partial<DraftActivity>, field?: CreateField) {
     setDraft((current) => current ? { ...current, ...patch } : current);
     if (field) {
@@ -369,7 +374,7 @@ export function CalendarBoard({ activities, currentDate, groups, weekStart }: Ca
     </div>
     {feedback ? <p className={feedback.error ? "admin-notice" : "admin-success"} role={feedback.error ? "alert" : "status"}>{feedback.message}</p> : null}
 
-    <dialog aria-labelledby={createTitleId} className="admin-modal" ref={createDialogRef}>
+    <dialog aria-labelledby={createTitleId} className="admin-modal" onPointerDown={(event) => closeFromBackdrop(event, () => setDraft(undefined))} ref={createDialogRef}>
       {draft ? <form className="admin-form" noValidate onSubmit={createActivity}>
         <h2 id={createTitleId}>Nowe zajęcia</h2>
         <p className="admin-submissions-intro">{longDayFormatter.format(utcDate(draft.activityDate))}</p>
@@ -396,7 +401,7 @@ export function CalendarBoard({ activities, currentDate, groups, weekStart }: Ca
       </form> : null}
     </dialog>
 
-    <dialog aria-labelledby={detailTitleId} className="admin-modal" ref={detailDialogRef}>
+    <dialog aria-labelledby={detailTitleId} className="admin-modal" onPointerDown={(event) => closeFromBackdrop(event, () => setDetail(undefined))} ref={detailDialogRef}>
       {detail && selectedActivity ? <div className="admin-form">
         <h2 id={detailTitleId}>{selectedActivity.name}</h2>
         <p className="admin-submissions-intro">{longDayFormatter.format(utcDate(selectedActivity.activityDate))} · {selectedActivity.totalParticipants} osób</p>
