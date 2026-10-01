@@ -56,10 +56,12 @@ export async function POST(request: Request) {
       ])),
     ];
     if (parsed.data.preview) {
-      const dates: string[] = [];
-      for (const date = new Date(from); date <= to; date.setUTCDate(date.getUTCDate() + 1)) dates.push(date.toISOString().slice(0, 10));
+      const relevantActivities = parsed.data.submissionId
+        ? activities.filter((activity) => activity.participants.some((participant) => participant.submissionId === parsed.data.submissionId))
+        : activities;
+      const dates = [...new Set(relevantActivities.map((activity) => activity.activityDate.toISOString().slice(0, 10)))];
       const people = new Map<string, { email: string; name: string; statuses: Record<string, boolean> }>();
-      for (const activity of activities) {
+      for (const activity of relevantActivities) {
         const date = activity.activityDate.toISOString().slice(0, 10);
         for (const participant of activity.participants) {
           if (parsed.data.submissionId && participant.submissionId !== parsed.data.submissionId) continue;
