@@ -32,21 +32,30 @@ function activityLabel(activity: Activity) {
   return `${dateValue(activity.activityDate)} · ${timeValue(activity.startsAt)}${activity.endsAt ? `–${timeValue(activity.endsAt)}` : ""} · ${activity.name}`;
 }
 
+function nearestActivity(activities: Activity[], targetDate: string) {
+  return [...activities].sort((left, right) => {
+    const dateDistance = Math.abs(new Date(`${dateValue(left.activityDate)}T00:00:00Z`).getTime() - new Date(`${targetDate}T00:00:00Z`).getTime())
+      - Math.abs(new Date(`${dateValue(right.activityDate)}T00:00:00Z`).getTime() - new Date(`${targetDate}T00:00:00Z`).getTime());
+    return dateDistance || left.startsAt.localeCompare(right.startsAt) || left.id.localeCompare(right.id);
+  })[0];
+}
+
 export function AttendanceManager({ activities: initialActivities, groups, recipients, selectedActivityId, selectedDate }: { activities: Activity[]; groups: Group[]; recipients: Recipient[]; selectedActivityId?: string; selectedDate?: string }) {
   const [activities, setActivities] = useState(initialActivities);
   const initialActivity = initialActivities.find((activity) => activity.id === selectedActivityId);
+  const defaultActivity = initialActivity || nearestActivity(initialActivities, selectedDate || localDateValue());
   const initialGroup = matchingGroup(initialActivity, groups);
   const [formMode, setFormMode] = useState<FormMode>("select");
-  const [formActivityId, setFormActivityId] = useState(selectedActivityId || "");
+  const [formActivityId, setFormActivityId] = useState(defaultActivity?.id || "");
   const [editingSelectedActivity, setEditingSelectedActivity] = useState(false);
   const [showParticipants, setShowParticipants] = useState(true);
-  const [activityDate, setActivityDate] = useState(initialActivity ? dateValue(initialActivity.activityDate) : selectedDate || localDateValue);
-  const [startsAt, setStartsAt] = useState(initialActivity ? timeValue(initialActivity.startsAt) : "16:00");
-  const [endsAt, setEndsAt] = useState(initialActivity?.endsAt ? timeValue(initialActivity.endsAt) : addHour("16:00"));
-  const [name, setName] = useState(initialActivity?.name || "");
-  const [groupId, setGroupId] = useState(initialGroup?.id || "");
-  const [submissionIds, setSubmissionIds] = useState<string[]>(initialActivity?.participants.map((participant) => participant.submissionId) || []);
-  const [presentSubmissionIds, setPresentSubmissionIds] = useState<string[]>(initialActivity?.participants.filter((participant) => participant.present).map((participant) => participant.submissionId) || []);
+  const [activityDate, setActivityDate] = useState(defaultActivity ? dateValue(defaultActivity.activityDate) : selectedDate || localDateValue());
+  const [startsAt, setStartsAt] = useState(defaultActivity ? timeValue(defaultActivity.startsAt) : "16:00");
+  const [endsAt, setEndsAt] = useState(defaultActivity?.endsAt ? timeValue(defaultActivity.endsAt) : addHour("16:00"));
+  const [name, setName] = useState(defaultActivity?.name || "");
+  const [groupId, setGroupId] = useState(matchingGroup(defaultActivity, groups)?.id || initialGroup?.id || "");
+  const [submissionIds, setSubmissionIds] = useState<string[]>(defaultActivity?.participants.map((participant) => participant.submissionId) || []);
+  const [presentSubmissionIds, setPresentSubmissionIds] = useState<string[]>(defaultActivity?.participants.filter((participant) => participant.present).map((participant) => participant.submissionId) || []);
   const [pendingId, setPendingId] = useState<string>();
   const [feedback, setFeedback] = useState<{ error: boolean; message: string }>();
 

@@ -49,6 +49,14 @@ describe("AttendanceManager activity form", () => {
     expect(screen.queryByRole("heading", { name: "Lekcja 1" })).not.toBeInTheDocument();
   });
 
+  it("defaults to the activity closest to the requested date", () => {
+    const laterActivity = { ...activities[0], activityDate: "2026-10-10T00:00:00.000Z", id: "activity-2", name: "Lekcja 2" };
+    render(<AttendanceManager activities={[activities[0], laterActivity]} groups={groups} recipients={recipients} selectedDate="2026-10-09" />);
+
+    expect(screen.getByLabelText("Wybierz zajęcia")).toHaveValue("activity-2");
+    expect(screen.getByText("Lekcja 2")).toBeInTheDocument();
+  });
+
   it("updates the selected activity after editing populated fields", async () => {
     fetchMock.mockResolvedValueOnce({ json: async () => ({ id: "activity-1" }), ok: true });
     render(<AttendanceManager activities={activities} groups={groups} recipients={recipients} />);
