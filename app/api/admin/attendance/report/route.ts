@@ -10,6 +10,7 @@ export const runtime = "nodejs";
 const reportSchema = z.object({
   dateFrom: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
   dateTo: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  groupId: z.string().trim().max(64).optional(),
   preview: z.boolean().optional(),
   submissionId: z.string().trim().min(1).max(100).optional(),
 }).strict();
@@ -41,7 +42,7 @@ export async function POST(request: Request) {
     const activities = await getPrisma().attendanceActivity.findMany({
       include: { participants: { include: { submission: { select: { childName: true, email: true, parentName: true } } }, orderBy: { submission: { childName: "asc" } }, where: parsed.data.submissionId ? { submissionId: parsed.data.submissionId } : undefined } },
       orderBy: [{ activityDate: "asc" }, { startsAt: "asc" }, { id: "asc" }],
-      where: { activityDate: { gte: from, lte: to }, invalid: false, ...(!parsed.data.preview && parsed.data.submissionId ? { participants: { some: { submissionId: parsed.data.submissionId } } } : {}) },
+      where: { activityDate: { gte: from, lte: to }, groupId: parsed.data.groupId, invalid: false, ...(!parsed.data.preview && parsed.data.submissionId ? { participants: { some: { submissionId: parsed.data.submissionId } } } : {}) },
     });
     const rows = [
       ["Osoba", "E-mail", "Zajęcia", "Data", "Od", "Do", "Status"],
@@ -59,10 +60,10 @@ export async function POST(request: Request) {
       const relevantActivities = parsed.data.submissionId
         ? activities.filter((activity) => activity.participants.some((participant) => participant.submissionId === parsed.data.submissionId))
         : activities;
-      const dates = [...new Set(relevantActivities.map((activity) => activity.activityDate.toISOString().slice(0, 10)))];
+      const dates = relevantActivities.map((activity) => ({ date: activity.activityDate.toISOString().slice(0, 10), id: activity.id, label: `${activity.activityDate.toISOString().slice(0, 10)} · ${activity.name} · ${activity.startsAt.toISOString().slice(11, 16)}` }));
       const people = new Map<string, { email: string; name: string; statuses: Record<string, boolean> }>();
       for (const activity of relevantActivities) {
-        const date = activity.activityDate.toISOString().slice(0, 10);
+        const date = activity.id;
         for (const participant of activity.participants) {
           if (parsed.data.submissionId && participant.submissionId !== parsed.data.submissionId) continue;
           const id = participant.submission.email;
