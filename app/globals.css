@@ -3176,6 +3176,14 @@ h2 {
   padding: .45rem .6rem;
 }
 
+.attendance-report-person-groups {
+  color: var(--gray-light);
+  font-size: .76rem;
+  margin: -.15rem 0 0;
+}
+
+.attendance-report-person-groups strong { color: var(--dark-blue); }
+
 .attendance-report-download > button {
   background: var(--dark-blue);
   border: 0;

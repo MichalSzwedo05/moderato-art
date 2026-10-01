@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 
 type Recipient = { childName: string | null; email: string; id: string; parentName: string | null };
-type ReportGroup = { id: string; name: string };
+type ReportGroup = { id: string; name: string; submissionIds: string[] };
 type ReportPerson = { email: string; name: string; statuses: Record<string, boolean | undefined> };
 type ReportPreview = { dates: string[]; people: ReportPerson[]; selectedPerson: string | null };
 
@@ -32,6 +32,9 @@ export function AttendanceReportDownload({ groups, recipients }: { groups: Repor
   const [previewPending, setPreviewPending] = useState(false);
   const previewDialogRef = useRef<HTMLDialogElement>(null);
   const sortedRecipients = useMemo(() => [...recipients].sort((left, right) => displayName(left).localeCompare(displayName(right), "pl")), [recipients]);
+  const selectedRecipientGroups = submissionId
+    ? groups.filter((group) => group.submissionIds.includes(submissionId))
+    : [];
 
   function selectReportTarget(value: string) {
     if (value.startsWith("group:")) {
@@ -122,6 +125,7 @@ export function AttendanceReportDownload({ groups, recipients }: { groups: Repor
       <label>Data od<input onChange={(event) => setDateFrom(event.target.value)} required type="date" value={dateFrom} /></label>
       <label>Data do<input onChange={(event) => setDateTo(event.target.value)} required type="date" value={dateTo} /></label>
       </div>
+      {submissionId ? <p className="attendance-report-person-groups"><strong>Grupy osoby:</strong> {selectedRecipientGroups.length > 0 ? selectedRecipientGroups.map((group) => group.name).join(", ") : "Brak przypisanych grup"}</p> : null}
       <div className="attendance-report-actions"><button disabled={previewPending || pending} onClick={() => void previewReport()} type="button">{previewPending ? "Wczytywanie…" : "Podgląd raportu"}</button><button disabled={pending || previewPending} type="submit">{pending ? "Pobieranie…" : "Pobierz raport"}</button></div>
       {feedback ? <span className={feedback.error ? "admin-download-feedback admin-download-feedback-error" : "admin-download-feedback"} role={feedback.error ? "alert" : "status"}>{feedback.message}</span> : null}
     </form>
