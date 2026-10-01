@@ -56,7 +56,18 @@ export async function POST(request: Request) {
       ])),
     ];
     if (parsed.data.preview) {
-      return NextResponse.json({ rows: rows.slice(1) });
+      const dates = [...new Set(activities.map((activity) => activity.activityDate.toISOString().slice(0, 10)))];
+      const people = new Map<string, { email: string; name: string; statuses: Record<string, boolean> }>();
+      for (const activity of activities) {
+        const date = activity.activityDate.toISOString().slice(0, 10);
+        for (const participant of activity.participants) {
+          const id = participant.submission.email;
+          const existing = people.get(id) || { email: participant.submission.email, name: participant.submission.childName || participant.submission.parentName || "Bez podanego imienia", statuses: {} };
+          existing.statuses[date] = (existing.statuses[date] ?? true) && participant.present;
+          people.set(id, existing);
+        }
+      }
+      return NextResponse.json({ dates, people: [...people.values()].sort((left, right) => left.name.localeCompare(right.name, "pl")) });
     }
     const csv = `\uFEFF${rows.map((row) => row.map(csvCell).join(",")).join("\r\n")}\r\n`;
     return new Response(csv, { headers: { "Cache-Control": "private, no-store, max-age=0", "Content-Disposition": `attachment; filename="${reportFilename(new Date())}"`, "Content-Type": "text/csv; charset=utf-8", "X-Content-Type-Options": "nosniff" } });

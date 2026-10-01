@@ -60,7 +60,7 @@ describe("POST /api/admin/attendance/report", () => {
     }]);
     const response = await POST(request({ dateFrom: "2026-10-01", dateTo: "2026-10-07", preview: true }));
     expect(response.status).toBe(200);
-    expect(await response.json()).toEqual({ rows: [["Jan", "jan@example.com", "Lekcja 5", "2026-10-01", "18:00", "", "Nieobecny"]] });
+    expect(await response.json()).toEqual({ dates: ["2026-10-01"], people: [{ email: "jan@example.com", name: "Jan", statuses: { "2026-10-01": false } }] });
   });
 
   it("requires the admin origin and session", async () => {

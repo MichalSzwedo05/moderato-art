@@ -3,7 +3,8 @@
 import { useMemo, useState } from "react";
 
 type Recipient = { childName: string | null; email: string; id: string; parentName: string | null };
-type ReportRow = [string, string, string, string, string, string, string];
+type ReportPerson = { email: string; name: string; statuses: Record<string, boolean> };
+type ReportPreview = { dates: string[]; people: ReportPerson[] };
 
 function localDateValue() {
   const now = new Date();
@@ -25,7 +26,7 @@ export function AttendanceReportDownload({ recipients }: { recipients: Recipient
   const [dateTo, setDateTo] = useState(today);
   const [pending, setPending] = useState(false);
   const [feedback, setFeedback] = useState<{ error: boolean; message: string }>();
-  const [preview, setPreview] = useState<ReportRow[]>();
+  const [preview, setPreview] = useState<ReportPreview>();
   const [previewPending, setPreviewPending] = useState(false);
   const sortedRecipients = useMemo(() => [...recipients].sort((left, right) => displayName(left).localeCompare(displayName(right), "pl")), [recipients]);
 
@@ -63,9 +64,9 @@ export function AttendanceReportDownload({ recipients }: { recipients: Recipient
     setFeedback(undefined);
     try {
       const response = await fetch("/api/admin/attendance/report", { body: JSON.stringify({ dateFrom, dateTo, preview: true, submissionId: submissionId || undefined }), headers: { "Content-Type": "application/json" }, method: "POST" });
-      const body = await response.json() as { message?: string; rows?: ReportRow[] };
+      const body = await response.json() as { dates?: string[]; message?: string; people?: ReportPerson[] };
       if (!response.ok) throw new Error(body.message || "Nie udało się przygotować podglądu raportu.");
-      setPreview(body.rows || []);
+      setPreview({ dates: body.dates || [], people: body.people || [] });
     } catch (error) {
       setFeedback({ error: true, message: error instanceof Error ? error.message : "Nie udało się przygotować podglądu raportu." });
     } finally {
@@ -84,6 +85,6 @@ export function AttendanceReportDownload({ recipients }: { recipients: Recipient
       <div className="attendance-report-actions"><button disabled={previewPending || pending} onClick={() => void previewReport()} type="button">{previewPending ? "Wczytywanie…" : "Podgląd raportu"}</button><button disabled={pending || previewPending} type="submit">{pending ? "Pobieranie…" : "Pobierz raport"}</button></div>
       {feedback ? <span className={feedback.error ? "admin-download-feedback admin-download-feedback-error" : "admin-download-feedback"} role={feedback.error ? "alert" : "status"}>{feedback.message}</span> : null}
     </form>
-    {preview ? <dialog aria-labelledby="attendance-report-preview-title" className="admin-modal attendance-report-preview" open><div className="attendance-report-preview-header"><div><h2 id="attendance-report-preview-title">Podgląd raportu</h2><p>{dateFrom} – {dateTo}</p></div><button onClick={() => setPreview(undefined)} type="button">Zamknij</button></div><div className="attendance-report-table-wrap"><table><thead><tr><th>Osoba</th><th>E-mail</th><th>Zajęcia</th><th>Data</th><th>Od</th><th>Do</th><th>Status</th></tr></thead><tbody>{preview.length === 0 ? <tr><td colSpan={7}>Brak danych dla wybranych filtrów.</td></tr> : preview.map((row, index) => <tr key={`${row[0]}-${row[2]}-${row[3]}-${index}`}>{row.map((cell, cellIndex) => <td key={`${index}-${cellIndex}`}>{cell}</td>)}</tr>)}</tbody></table></div></dialog> : null}
+    {preview ? <dialog aria-labelledby="attendance-report-preview-title" className="admin-modal attendance-report-preview" open><div className="attendance-report-preview-header"><div><h2 id="attendance-report-preview-title">Podgląd raportu</h2><p>{dateFrom} – {dateTo}</p></div><button onClick={() => setPreview(undefined)} type="button">Zamknij</button></div><div className="attendance-report-table-wrap"><table className="attendance-report-matrix"><thead><tr><th>Osoba</th>{preview.dates.map((date) => <th key={date}>{date}</th>)}</tr></thead><tbody>{preview.people.length === 0 ? <tr><td colSpan={Math.max(1, preview.dates.length + 1)}>Brak danych dla wybranych filtrów.</td></tr> : preview.people.map((person) => <tr key={person.email}><th scope="row"><strong>{person.name}</strong><small>{person.email}</small></th>{preview.dates.map((date) => <td className={person.statuses[date] ? "attendance-matrix-present" : "attendance-matrix-absent"} key={date}><span aria-label={person.statuses[date] ? "Obecny" : "Nieobecny"} role="img">{person.statuses[date] ? "✓" : "×"}</span></td>)}</tr>)}</tbody></table></div></dialog> : null}
   </section>;
 }

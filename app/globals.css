@@ -3238,6 +3238,8 @@ h2 {
 }
 
 .attendance-report-preview {
+  align-self: center;
+  margin: auto;
   width: min(72rem, calc(100% - 2rem));
 }
 
@@ -3283,6 +3285,68 @@ h2 {
   color: var(--dark-blue);
   font-size: .76rem;
   text-transform: uppercase;
+}
+
+.attendance-report-matrix {
+  min-width: 34rem !important;
+}
+
+.attendance-report-matrix th:first-child {
+  left: 0;
+  min-width: 12rem;
+  position: sticky;
+  z-index: 1;
+}
+
+.attendance-report-matrix thead th:first-child {
+  background: var(--surface);
+  z-index: 2;
+}
+
+.attendance-report-matrix tbody th {
+  background: var(--surface);
+  font-size: .82rem;
+  text-transform: none;
+}
+
+.attendance-report-matrix tbody th strong,
+.attendance-report-matrix tbody th small {
+  display: block;
+}
+
+.attendance-report-matrix tbody th small {
+  color: var(--gray-light);
+  font-size: .7rem;
+  font-weight: 500;
+  margin-top: .15rem;
+  overflow-wrap: anywhere;
+}
+
+.attendance-report-matrix thead th:not(:first-child),
+.attendance-report-matrix td {
+  min-width: 5.4rem;
+  text-align: center;
+}
+
+.attendance-report-matrix td span {
+  align-items: center;
+  border-radius: 50%;
+  display: inline-flex;
+  font-size: 1rem;
+  font-weight: 900;
+  height: 1.8rem;
+  justify-content: center;
+  width: 1.8rem;
+}
+
+.attendance-matrix-present span {
+  background: color-mix(in srgb, #237a4b 15%, var(--surface));
+  color: #237a4b;
+}
+
+.attendance-matrix-absent span {
+  background: color-mix(in srgb, #c0392b 13%, var(--surface));
+  color: #c0392b;
 }
 
 .attendance-create-heading {
