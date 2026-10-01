@@ -55,6 +55,17 @@ describe("POST /api/admin/attendance/report", () => {
     expect(mocks.findMany).not.toHaveBeenCalled();
   });
 
+  it("does not include future attendance when dateTo is in the future", async () => {
+    mocks.findMany.mockResolvedValue([]);
+    const response = await POST(request({ dateFrom: "2026-01-01", dateTo: "2999-12-31" }));
+
+    expect(response.status).toBe(200);
+    expect(mocks.findMany).toHaveBeenCalledWith(expect.objectContaining({ where: expect.objectContaining({ activityDate: expect.objectContaining({ lte: expect.any(Date) }) }) }));
+    const todayEnd = new Date();
+    todayEnd.setUTCHours(23, 59, 59, 999);
+    expect((mocks.findMany.mock.calls[0][0] as { where: { activityDate: { lte: Date } } }).where.activityDate.lte.getTime()).toBeLessThanOrEqual(todayEnd.getTime());
+  });
+
   it("returns rows for preview mode", async () => {
     mocks.findMany.mockResolvedValue([{
       activityDate: new Date("2026-10-01T00:00:00.000Z"), endsAt: null, group: { name: "Grupa A" }, id: "activity-1", name: "Lekcja 5",

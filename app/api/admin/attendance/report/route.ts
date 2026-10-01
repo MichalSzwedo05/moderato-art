@@ -37,7 +37,10 @@ export async function POST(request: Request) {
   if (!parsed.success || parsed.data.dateFrom > parsed.data.dateTo) return errorResponse("Podaj prawidłowy zakres dat.", 400);
 
   const from = new Date(`${parsed.data.dateFrom}T00:00:00.000Z`);
-  const to = new Date(`${parsed.data.dateTo}T23:59:59.999Z`);
+  const today = new Date();
+  const todayValue = today.toISOString().slice(0, 10);
+  const effectiveDateTo = parsed.data.dateTo > todayValue ? todayValue : parsed.data.dateTo;
+  const to = new Date(`${effectiveDateTo}T23:59:59.999Z`);
   try {
     const activities = await getPrisma().attendanceActivity.findMany({
       include: { group: { select: { name: true } }, participants: { include: { submission: { select: { childName: true, email: true, parentName: true } } }, orderBy: { submission: { childName: "asc" } }, where: parsed.data.submissionId ? { submissionId: parsed.data.submissionId } : undefined } },

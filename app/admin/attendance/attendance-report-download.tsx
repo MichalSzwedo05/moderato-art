@@ -123,8 +123,8 @@ export function AttendanceReportDownload({ groups, recipients }: { groups: Repor
     <form className="attendance-report-download" onSubmit={downloadReport}>
       <div className="attendance-report-fields">
       <label>Dla kogo<select onChange={(event) => selectReportTarget(event.target.value)} value={groupId ? `group:${groupId}` : submissionId ? `person:${submissionId}` : ""}><option value="">Wszyscy uczestnicy</option>{groups.map((group) => <option key={`group-${group.id}`} value={`group:${group.id}`}>Grupa: {group.name}</option>)}{sortedRecipients.map((recipient) => <option key={`person-${recipient.id}`} value={`person:${recipient.id}`}>Osoba: {displayName(recipient)}</option>)}</select></label>
-      <label>Data od<input onChange={(event) => setDateFrom(event.target.value)} required type="date" value={dateFrom} /></label>
-      <label>Data do<input onChange={(event) => setDateTo(event.target.value)} required type="date" value={dateTo} /></label>
+      <label>Data od<input max={today} onChange={(event) => setDateFrom(event.target.value)} required type="date" value={dateFrom} /></label>
+      <label>Data do<input max={today} onChange={(event) => setDateTo(event.target.value)} required type="date" value={dateTo} /></label>
       </div>
       <div className="attendance-report-actions"><button disabled={previewPending || pending} onClick={() => void previewReport()} type="button">{previewPending ? "Wczytywanie…" : "Podgląd raportu"}</button><button disabled={pending || previewPending} type="submit">{pending ? "Pobieranie…" : "Pobierz raport"}</button></div>
       {feedback ? <span className={feedback.error ? "admin-download-feedback admin-download-feedback-error" : "admin-download-feedback"} role={feedback.error ? "alert" : "status"}>{feedback.message}</span> : null}
