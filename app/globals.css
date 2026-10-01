@@ -3433,6 +3433,44 @@ h2 {
   margin-left: auto;
 }
 
+.attendance-add-participant-row {
+  align-items: center;
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  justify-content: center;
+  margin-top: .35rem;
+  padding-top: .65rem;
+}
+
+.attendance-add-participant-button {
+  align-items: center;
+  background: var(--blue);
+  border: 0;
+  border-radius: 50%;
+  color: #fff;
+  cursor: pointer;
+  display: inline-flex;
+  font: inherit;
+  font-size: 1.25rem;
+  font-weight: 800;
+  height: 2rem;
+  justify-content: center;
+  line-height: 1;
+  margin: 0;
+  padding: 0;
+  width: 2rem;
+}
+
+.attendance-add-participant-button:hover,
+.attendance-add-participant-button:focus-visible {
+  background: var(--dark-blue);
+}
+
+.attendance-add-participant-row .attendance-add-person-select {
+  max-width: 18rem;
+  width: 100% !important;
+}
+
 .attendance-add-person-select {
   background: var(--blue) !important;
   border: 0 !important;
@@ -4415,6 +4453,7 @@ h2 {
   .attendance-create-people-actions { align-items: stretch; margin-left: 0; width: 100%; }
   .attendance-add-person-select,
   .attendance-create-people-actions .attendance-bulk-button { flex: 1 1 0; width: 100% !important; }
+  .attendance-add-participant-row .attendance-add-person-select { max-width: none; }
   .attendance-selected-details { align-items: stretch; flex-direction: column; }
   .attendance-edit-button { width: 100%; }
   .attendance-selected-actions { align-items: stretch; flex-direction: column; }

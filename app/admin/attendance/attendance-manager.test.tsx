@@ -103,6 +103,7 @@ describe("AttendanceManager activity form", () => {
     fetchMock.mockResolvedValueOnce({ json: async () => ({ id: "activity-1" }), ok: true });
     render(<AttendanceManager activities={activities} groups={groups} recipients={recipients} />);
 
+    fireEvent.click(screen.getByRole("button", { name: "Dodaj uczestnika" }));
     const addPerson = screen.getByRole("combobox", { name: "Dodaj uczestnika do obecności" });
     expect(addPerson).toBeInTheDocument();
     fireEvent.change(addPerson, { target: { value: "submission-3" } });
