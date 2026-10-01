@@ -3279,6 +3279,41 @@ h2 {
 
 .attendance-report-table-wrap { overflow-x: auto; margin-top: 1.25rem; }
 
+.attendance-report-legend {
+  align-items: center;
+  border-bottom: 1px solid var(--border-color);
+  color: var(--gray-light);
+  display: flex;
+  flex-wrap: wrap;
+  gap: .7rem 1rem;
+  margin-top: 1rem;
+  padding-bottom: .8rem;
+}
+
+.attendance-report-legend span {
+  align-items: center;
+  display: inline-flex;
+  font-size: .78rem;
+  font-weight: 700;
+  gap: .35rem;
+}
+
+.attendance-legend-symbol {
+  align-items: center;
+  border-radius: 50%;
+  display: inline-flex;
+  font-size: .85rem;
+  font-style: normal;
+  font-weight: 900;
+  height: 1.35rem;
+  justify-content: center;
+  width: 1.35rem;
+}
+
+.attendance-legend-present { background: color-mix(in srgb, #237a4b 15%, var(--surface)); color: #237a4b; }
+.attendance-legend-absent { background: color-mix(in srgb, #c0392b 13%, var(--surface)); color: #c0392b; }
+.attendance-legend-unassigned { background: color-mix(in srgb, var(--gray-light) 13%, var(--surface)); color: var(--gray-light); }
+
 .attendance-report-table-wrap table {
   border-collapse: collapse;
   min-width: 58rem;
