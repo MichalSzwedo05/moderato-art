@@ -3260,6 +3260,90 @@ h2 {
 .attendance-selected-status-absent { background: color-mix(in srgb, var(--cream-deep) 55%, var(--surface)); color: var(--gray-text); }
 .attendance-selected-status-list strong { font-size: .78rem; white-space: nowrap; }
 
+.calendar-attendance-status {
+  background: color-mix(in srgb, var(--surface) 86%, var(--cream));
+  border-color: color-mix(in srgb, var(--dark-blue) 16%, var(--border-color));
+  gap: .75rem;
+  padding: 1rem;
+}
+
+.calendar-attendance-status-title {
+  display: grid;
+  gap: .15rem;
+}
+
+.calendar-attendance-status-title span {
+  color: var(--gray-light);
+  font-size: .72rem;
+  font-weight: 600;
+}
+
+.calendar-attendance-status-count {
+  background: color-mix(in srgb, var(--dark-blue) 9%, var(--surface));
+  border-radius: 999px;
+  color: var(--dark-blue);
+  font-size: .76rem;
+  font-weight: 800;
+  padding: .35rem .6rem;
+  white-space: nowrap;
+}
+
+.calendar-attendance-status-list {
+  border-top: 1px solid var(--border-color);
+  gap: .4rem;
+  padding-top: .65rem;
+}
+
+.calendar-attendance-status-row {
+  background: var(--surface);
+  border: 1px solid var(--border-color);
+  border-left: .25rem solid var(--border-color);
+  border-radius: .5rem;
+  min-height: 2.4rem;
+  padding: .45rem .6rem;
+}
+
+.calendar-attendance-status-row-present {
+  border-left-color: var(--blue);
+}
+
+.calendar-attendance-status-row-absent {
+  border-left-color: var(--gray-light);
+}
+
+.calendar-attendance-status-person {
+  align-items: center;
+  display: inline-flex;
+  gap: .55rem;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.calendar-attendance-status-person i {
+  background: var(--gray-light);
+  border-radius: 50%;
+  display: inline-block;
+  flex: 0 0 auto;
+  height: .45rem;
+  width: .45rem;
+}
+
+.calendar-attendance-status-row-present .calendar-attendance-status-person i { background: var(--blue); }
+
+.calendar-attendance-status-badge {
+  background: color-mix(in srgb, var(--cream-deep) 62%, var(--surface));
+  border-radius: 999px;
+  color: var(--gray-text);
+  font-size: .7rem;
+  letter-spacing: .02em;
+  padding: .25rem .45rem;
+}
+
+.calendar-attendance-status-row-present .calendar-attendance-status-badge {
+  background: color-mix(in srgb, var(--blue) 14%, var(--surface));
+  color: var(--dark-blue);
+}
+
 .attendance-selected-actions {
   align-items: center;
   display: flex;

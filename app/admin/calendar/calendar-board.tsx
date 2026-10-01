@@ -94,6 +94,13 @@ function participantName(participant: CalendarBoardActivity["participants"][numb
   return participant.childName || participant.parentName || "Bez podanego imienia";
 }
 
+function sortParticipants(participants: CalendarBoardActivity["participants"]) {
+  return [...participants].sort((left, right) => {
+    if (left.present !== right.present) return left.present ? -1 : 1;
+    return participantName(left).localeCompare(participantName(right), "pl");
+  });
+}
+
 function getCalendarHours(activities: CalendarBoardActivity[]) {
   const starts = activities.map((activity) => minutesOfDay(activity.startsAt));
   const ends = activities.map((activity) => minutesOfDay(activity.endsAt ?? activity.startsAt) + 30);
@@ -393,7 +400,7 @@ export function CalendarBoard({ activities, currentDate, groups, weekStart }: Ca
         <h2 id={detailTitleId}>{selectedActivity.name}</h2>
         <p className="admin-submissions-intro">{longDayFormatter.format(utcDate(selectedActivity.activityDate))} · {selectedActivity.totalParticipants} osób</p>
         <label>Nazwa zajęć<input maxLength={160} onChange={(event) => setDetail({ ...detail, name: event.target.value })} value={detail.name} /></label>
-        <div aria-label="Lista obecności" className="attendance-selected-status" role="region"><div className="attendance-selected-status-heading"><strong>Lista obecności</strong><span>{selectedActivity.presentCount}/{selectedActivity.totalParticipants} obecnych</span></div>{selectedActivity.participants.length === 0 ? <p className="admin-submissions-empty">Brak uczestników.</p> : <div className="attendance-selected-status-list">{selectedActivity.participants.map((participant) => <div className={participant.present ? "attendance-selected-status-present" : "attendance-selected-status-absent"} key={participant.id}><span>{participantName(participant)}</span><strong>{participant.present ? "Obecny" : "Nieobecny"}</strong></div>)}</div>}</div>
+        <div aria-label="Lista obecności" className="attendance-selected-status calendar-attendance-status" role="region"><div className="attendance-selected-status-heading"><div className="calendar-attendance-status-title"><strong>Lista obecności</strong><span>Uczestnicy zajęć</span></div><span className="calendar-attendance-status-count">{selectedActivity.presentCount}/{selectedActivity.totalParticipants} obecnych</span></div>{selectedActivity.participants.length === 0 ? <p className="admin-submissions-empty">Brak uczestników.</p> : <div className="attendance-selected-status-list calendar-attendance-status-list">{sortParticipants(selectedActivity.participants).map((participant) => <div className={`calendar-attendance-status-row ${participant.present ? "calendar-attendance-status-row-present" : "calendar-attendance-status-row-absent"}`} key={participant.id}><span className="calendar-attendance-status-person"><i aria-hidden="true" />{participantName(participant)}</span><strong className="calendar-attendance-status-badge">{participant.present ? "Obecny" : "Nieobecny"}</strong></div>)}</div>}</div>
         <div className="attendance-time-grid">
           <label>Od<input onChange={(event) => setDetail({ ...detail, startsAt: event.target.value })} type="time" value={detail.startsAt} /></label>
           <label>Do<input onChange={(event) => setDetail({ ...detail, endsAt: event.target.value })} type="time" value={detail.endsAt} /></label>
