@@ -3158,6 +3158,36 @@ h2 {
   padding: .8rem 1rem;
 }
 
+.attendance-selected-section {
+  background: color-mix(in srgb, var(--cream) 32%, var(--surface));
+  border: 1px solid var(--border-color);
+  border-radius: .85rem;
+  display: grid;
+  gap: 1rem;
+  padding: 1rem;
+}
+
+.attendance-selected-section .attendance-selected-details {
+  background: transparent;
+  border: 0;
+  padding: 0;
+}
+
+.attendance-selected-edit-fields {
+  display: grid;
+  gap: .55rem;
+}
+
+.attendance-selected-section .attendance-create-people {
+  background: color-mix(in srgb, var(--cream) 42%, var(--surface));
+}
+
+.attendance-selected-section .attendance-selected-actions {
+  border-top: 1px solid var(--border-color);
+  margin-top: 0;
+  padding-top: 1rem;
+}
+
 .attendance-selected-details > div {
   display: grid;
   gap: .2rem;
