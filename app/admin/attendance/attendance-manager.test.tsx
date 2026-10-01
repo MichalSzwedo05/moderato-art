@@ -1,0 +1,74 @@
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
+const fetchMock = vi.fn();
+
+vi.stubGlobal("fetch", fetchMock);
+
+import { AttendanceManager } from "./attendance-manager";
+
+const recipients = [
+  { childName: "Anna", email: "anna@example.com", id: "submission-1", parentName: "Rodzic A", phone: null },
+  { childName: "Jan", email: "jan@example.com", id: "submission-2", parentName: "Rodzic B", phone: null },
+];
+const groups = [{ id: "group-1", name: "Grupa A", submissionIds: ["submission-1", "submission-2"] }];
+const activities = [{
+  activityDate: "2026-10-01T00:00:00.000Z",
+  endsAt: "2026-10-01T17:00:00.000Z",
+  id: "activity-1",
+  name: "Lekcja 1",
+  participants: [{ present: true, submissionId: "submission-1" }, { present: false, submissionId: "submission-2" }],
+  startsAt: "2026-10-01T16:00:00.000Z",
+}];
+
+describe("AttendanceManager activity form", () => {
+  beforeEach(() => {
+    fetchMock.mockReset();
+  });
+
+  it("defaults to selecting an activity and fills editable fields", () => {
+    render(<AttendanceManager activities={activities} groups={groups} recipients={recipients} />);
+
+    expect(screen.getByRole("heading", { name: "Wybierz zajęcia" })).toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText("Wybierz zajęcia"), { target: { value: "activity-1" } });
+
+    expect(screen.getByLabelText("Nazwa zajęć")).toHaveValue("Lekcja 1");
+    expect(screen.getByLabelText("Data")).toHaveValue("2026-10-01");
+    expect(screen.getByLabelText("Od")).toHaveValue("16:00");
+    expect(screen.getByLabelText("Do")).toHaveValue("17:00");
+    expect(screen.getByLabelText("Wybierz grupę")).toHaveValue("group-1");
+  });
+
+  it("updates the selected activity after editing populated fields", async () => {
+    fetchMock.mockResolvedValueOnce({ json: async () => ({ id: "activity-1" }), ok: true });
+    render(<AttendanceManager activities={activities} groups={groups} recipients={recipients} />);
+
+    fireEvent.change(screen.getByLabelText("Wybierz zajęcia"), { target: { value: "activity-1" } });
+    fireEvent.change(screen.getByLabelText("Nazwa zajęć"), { target: { value: "Lekcja zmieniona" } });
+    fireEvent.change(screen.getByLabelText("Od"), { target: { value: "17:00" } });
+    fireEvent.change(screen.getByLabelText("Do"), { target: { value: "18:00" } });
+    fireEvent.submit(screen.getByRole("heading", { name: "Wybierz zajęcia" }).closest("form")!);
+
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+    const [url, options] = fetchMock.mock.calls[0] as [string, RequestInit];
+    expect(url).toBe("/api/admin/attendance/activity-1");
+    expect(options.method).toBe("PATCH");
+    expect(JSON.parse(String(options.body))).toEqual({
+      activityDate: "2026-10-01",
+      endsAt: "18:00",
+      name: "Lekcja zmieniona",
+      participants: [{ present: true, submissionId: "submission-1" }, { present: false, submissionId: "submission-2" }],
+      startsAt: "17:00",
+    });
+  });
+
+  it("offers a new activity mode beside the selector", () => {
+    render(<AttendanceManager activities={activities} groups={groups} recipients={recipients} />);
+
+    fireEvent.click(screen.getByRole("button", { name: "+ Nowe zajęcia" }));
+
+    expect(screen.getByRole("heading", { name: "Nowe zajęcia" })).toBeInTheDocument();
+    expect(screen.queryByLabelText("Wybierz zajęcia")).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Wybierz zajęcia" })).toBeInTheDocument();
+  });
+});

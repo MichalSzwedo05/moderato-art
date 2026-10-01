@@ -3115,6 +3115,38 @@ h2 {
   margin: 0;
 }
 
+.attendance-create-heading {
+  align-items: center;
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+}
+
+.attendance-create-heading p {
+  color: var(--gray-light);
+  margin: .25rem 0 0;
+}
+
+.attendance-create-mode-button {
+  background: var(--blue);
+  border: 0;
+  border-radius: .6rem;
+  color: #fff;
+  cursor: pointer;
+  flex: 0 0 auto;
+  font: inherit;
+  font-size: .8rem;
+  font-weight: 800;
+  margin: 0;
+  padding: .55rem .75rem;
+  width: auto;
+}
+
+.attendance-create-mode-button:hover,
+.attendance-create-mode-button:focus-visible {
+  background: var(--dark-blue);
+}
+
 .attendance-time-grid {
   display: grid;
   gap: 1rem;
@@ -4119,6 +4151,8 @@ h2 {
   .admin-calendar-board { grid-template-columns: 3.5rem repeat(7, minmax(9rem, 1fr)); min-width: 68rem; }
   .admin-calendar-board-corner { min-width: 3.5rem; }
   .admin-calendar-board-column { min-height: 34rem; }
+  .attendance-create-heading { align-items: flex-start; flex-direction: column; }
+  .attendance-create-mode-button { width: 100%; }
   .admin-modal-actions { align-items: stretch; flex-direction: column; gap: .65rem; }
   .admin-modal-actions-group { gap: .65rem; justify-content: stretch; margin-left: 0; width: 100%; }
   .admin-modal-actions-group > * { flex: 1 1 0; justify-content: center; text-align: center; }
