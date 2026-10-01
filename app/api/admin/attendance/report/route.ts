@@ -10,6 +10,7 @@ export const runtime = "nodejs";
 const reportSchema = z.object({
   dateFrom: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
   dateTo: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  preview: z.boolean().optional(),
   submissionId: z.string().trim().min(1).max(100).optional(),
 }).strict();
 
@@ -54,6 +55,9 @@ export async function POST(request: Request) {
         participant.present ? "Obecny" : "Nieobecny",
       ])),
     ];
+    if (parsed.data.preview) {
+      return NextResponse.json({ rows: rows.slice(1) });
+    }
     const csv = `\uFEFF${rows.map((row) => row.map(csvCell).join(",")).join("\r\n")}\r\n`;
     return new Response(csv, { headers: { "Cache-Control": "private, no-store, max-age=0", "Content-Disposition": `attachment; filename="${reportFilename(new Date())}"`, "Content-Type": "text/csv; charset=utf-8", "X-Content-Type-Options": "nosniff" } });
   } catch {

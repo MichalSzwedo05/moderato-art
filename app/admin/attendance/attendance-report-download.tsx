@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 
 type Recipient = { childName: string | null; email: string; id: string; parentName: string | null };
+type ReportRow = [string, string, string, string, string, string, string];
 
 function localDateValue() {
   const now = new Date();
@@ -24,6 +25,8 @@ export function AttendanceReportDownload({ recipients }: { recipients: Recipient
   const [dateTo, setDateTo] = useState(today);
   const [pending, setPending] = useState(false);
   const [feedback, setFeedback] = useState<{ error: boolean; message: string }>();
+  const [preview, setPreview] = useState<ReportRow[]>();
+  const [previewPending, setPreviewPending] = useState(false);
   const sortedRecipients = useMemo(() => [...recipients].sort((left, right) => displayName(left).localeCompare(displayName(right), "pl")), [recipients]);
 
   async function downloadReport(event: React.FormEvent<HTMLFormElement>) {
@@ -55,6 +58,21 @@ export function AttendanceReportDownload({ recipients }: { recipients: Recipient
     }
   }
 
+  async function previewReport() {
+    setPreviewPending(true);
+    setFeedback(undefined);
+    try {
+      const response = await fetch("/api/admin/attendance/report", { body: JSON.stringify({ dateFrom, dateTo, preview: true, submissionId: submissionId || undefined }), headers: { "Content-Type": "application/json" }, method: "POST" });
+      const body = await response.json() as { message?: string; rows?: ReportRow[] };
+      if (!response.ok) throw new Error(body.message || "Nie udało się przygotować podglądu raportu.");
+      setPreview(body.rows || []);
+    } catch (error) {
+      setFeedback({ error: true, message: error instanceof Error ? error.message : "Nie udało się przygotować podglądu raportu." });
+    } finally {
+      setPreviewPending(false);
+    }
+  }
+
   return <section className="attendance-report-section">
     <h2>Sprawdź obecność</h2>
     <form className="attendance-report-download" onSubmit={downloadReport}>
@@ -63,8 +81,9 @@ export function AttendanceReportDownload({ recipients }: { recipients: Recipient
       <label>Data od<input onChange={(event) => setDateFrom(event.target.value)} required type="date" value={dateFrom} /></label>
       <label>Data do<input onChange={(event) => setDateTo(event.target.value)} required type="date" value={dateTo} /></label>
       </div>
-      <button disabled={pending} type="submit">{pending ? "Pobieranie…" : "Pobierz raport"}</button>
+      <div className="attendance-report-actions"><button disabled={previewPending || pending} onClick={() => void previewReport()} type="button">{previewPending ? "Wczytywanie…" : "Podgląd raportu"}</button><button disabled={pending || previewPending} type="submit">{pending ? "Pobieranie…" : "Pobierz raport"}</button></div>
       {feedback ? <span className={feedback.error ? "admin-download-feedback admin-download-feedback-error" : "admin-download-feedback"} role={feedback.error ? "alert" : "status"}>{feedback.message}</span> : null}
     </form>
+    {preview ? <dialog aria-labelledby="attendance-report-preview-title" className="admin-modal attendance-report-preview" open><div className="attendance-report-preview-header"><div><h2 id="attendance-report-preview-title">Podgląd raportu</h2><p>{dateFrom} – {dateTo}</p></div><button onClick={() => setPreview(undefined)} type="button">Zamknij</button></div><div className="attendance-report-table-wrap"><table><thead><tr><th>Osoba</th><th>E-mail</th><th>Zajęcia</th><th>Data</th><th>Od</th><th>Do</th><th>Status</th></tr></thead><tbody>{preview.length === 0 ? <tr><td colSpan={7}>Brak danych dla wybranych filtrów.</td></tr> : preview.map((row, index) => <tr key={`${row[0]}-${row[2]}-${row[3]}-${index}`}>{row.map((cell, cellIndex) => <td key={`${index}-${cellIndex}`}>{cell}</td>)}</tr>)}</tbody></table></div></dialog> : null}
   </section>;
 }

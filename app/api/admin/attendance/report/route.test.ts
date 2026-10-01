@@ -53,6 +53,16 @@ describe("POST /api/admin/attendance/report", () => {
     expect(mocks.findMany).not.toHaveBeenCalled();
   });
 
+  it("returns rows for preview mode", async () => {
+    mocks.findMany.mockResolvedValue([{
+      activityDate: new Date("2026-10-01T00:00:00.000Z"), endsAt: null, name: "Lekcja 5",
+      participants: [{ present: false, submission: { childName: "Jan", email: "jan@example.com", parentName: "Rodzic B" } }], startsAt: new Date("2026-10-01T18:00:00.000Z"),
+    }]);
+    const response = await POST(request({ dateFrom: "2026-10-01", dateTo: "2026-10-07", preview: true }));
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({ rows: [["Jan", "jan@example.com", "Lekcja 5", "2026-10-01", "18:00", "", "Nieobecny"]] });
+  });
+
   it("requires the admin origin and session", async () => {
     mocks.getAdminSession.mockResolvedValue(undefined);
 
