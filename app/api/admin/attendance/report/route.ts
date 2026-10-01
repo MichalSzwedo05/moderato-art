@@ -41,7 +41,7 @@ export async function POST(request: Request) {
     const activities = await getPrisma().attendanceActivity.findMany({
       include: { participants: { include: { submission: { select: { childName: true, email: true, parentName: true } } }, orderBy: { submission: { childName: "asc" } }, where: parsed.data.submissionId ? { submissionId: parsed.data.submissionId } : undefined } },
       orderBy: [{ activityDate: "asc" }, { startsAt: "asc" }, { id: "asc" }],
-      where: { activityDate: { gte: from, lte: to }, invalid: false, ...(parsed.data.submissionId ? { participants: { some: { submissionId: parsed.data.submissionId } } } : {}) },
+      where: { activityDate: { gte: from, lte: to }, invalid: false, ...(!parsed.data.preview && parsed.data.submissionId ? { participants: { some: { submissionId: parsed.data.submissionId } } } : {}) },
     });
     const rows = [
       ["Osoba", "E-mail", "Zajęcia", "Data", "Od", "Do", "Status"],
@@ -56,11 +56,13 @@ export async function POST(request: Request) {
       ])),
     ];
     if (parsed.data.preview) {
-      const dates = [...new Set(activities.map((activity) => activity.activityDate.toISOString().slice(0, 10)))];
+      const dates: string[] = [];
+      for (const date = new Date(from); date <= to; date.setUTCDate(date.getUTCDate() + 1)) dates.push(date.toISOString().slice(0, 10));
       const people = new Map<string, { email: string; name: string; statuses: Record<string, boolean> }>();
       for (const activity of activities) {
         const date = activity.activityDate.toISOString().slice(0, 10);
         for (const participant of activity.participants) {
+          if (parsed.data.submissionId && participant.submissionId !== parsed.data.submissionId) continue;
           const id = participant.submission.email;
           const existing = people.get(id) || { email: participant.submission.email, name: participant.submission.childName || participant.submission.parentName || "Bez podanego imienia", statuses: {} };
           existing.statuses[date] = (existing.statuses[date] ?? true) && participant.present;
