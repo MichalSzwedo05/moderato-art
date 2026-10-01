@@ -2896,6 +2896,7 @@ h2 {
   margin-top: 1.5rem;
   overflow-x: auto;
   overscroll-behavior-inline: contain;
+  padding: .15rem;
   scroll-behavior: smooth;
   scroll-snap-type: inline mandatory;
 }
@@ -2920,8 +2921,8 @@ h2 {
 }
 
 .admin-calendar-board-day-today {
-  border-color: var(--green);
-  box-shadow: 0 0 0 1px var(--green);
+  background: color-mix(in srgb, var(--dark-blue) 8%, var(--surface));
+  border-color: var(--dark-blue);
 }
 
 .admin-calendar-board-day strong { color: var(--dark-blue); font-size: .85rem; }
@@ -2947,22 +2948,27 @@ h2 {
   border-radius: .75rem;
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  min-height: 34rem;
-  padding: 2px;
+  gap: .3rem;
+  min-height: 40rem;
+  padding: .3rem;
   position: relative;
   scroll-snap-align: center;
 }
 
+.admin-calendar-board-column-today {
+  background: color-mix(in srgb, var(--dark-blue) 3%, var(--surface));
+  border-color: color-mix(in srgb, var(--dark-blue) 55%, var(--border-color));
+}
+
 .admin-calendar-slot {
   background: color-mix(in srgb, var(--cream) 22%, var(--surface));
-  border: 1px dashed transparent;
+  border: 1px solid transparent;
   border-radius: .4rem;
   cursor: pointer;
   flex: 1;
-  min-height: 2.4rem;
+  min-height: 2.65rem;
   padding: 0;
-  transition: background .15s ease, border-color .15s ease;
+  transition: background .15s ease, border-color .15s ease, transform .15s ease;
 }
 
 .admin-calendar-slot:hover,
@@ -2970,6 +2976,7 @@ h2 {
   background: color-mix(in srgb, var(--green) 14%, var(--surface));
   border-color: var(--green);
   outline: none;
+  transform: translateX(.1rem);
 }
 
 .admin-calendar-block {
@@ -2982,10 +2989,10 @@ h2 {
   cursor: pointer;
   display: flex;
   flex-direction: column;
-  gap: .1rem;
+  gap: .2rem;
   left: 2px;
   overflow: hidden;
-  padding: .4rem .5rem;
+  padding: .55rem .65rem;
   position: absolute;
   right: 2px;
   text-align: left;
@@ -4048,7 +4055,7 @@ h2 {
   .admin-calendar-grid { grid-template-columns: repeat(7, minmax(12rem, 1fr)); }
   .admin-calendar-board { grid-template-columns: 3.5rem repeat(7, minmax(9rem, 1fr)); min-width: 68rem; }
   .admin-calendar-board-corner { min-width: 3.5rem; }
-  .admin-calendar-board-column { min-height: 28rem; }
+  .admin-calendar-board-column { min-height: 34rem; }
   .admin-header { flex-direction: column; }
   .admin-editor-grid { grid-template-columns: 1fr; }
   .admin-editor-heading { align-items: flex-start; flex-direction: column; }

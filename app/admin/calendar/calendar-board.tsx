@@ -324,7 +324,7 @@ export function CalendarBoard({ activities, currentDate, groups, weekStart }: Ca
       <div className="admin-calendar-board-gutter" aria-hidden="true">
         {hours.map((hour) => <span key={hour}>{hourLabel(hour)}</span>)}
       </div>
-      {days.map((day) => <div className="admin-calendar-board-column" data-calendar-date={day} key={day}>
+      {days.map((day) => <div className={`admin-calendar-board-column ${day === currentDate ? "admin-calendar-board-column-today" : ""}`} data-calendar-date={day} key={day}>
         {hours.map((hour) => <button
           aria-label={`Dodaj zajęcia ${longDayFormatter.format(utcDate(day))} o ${hourLabel(hour)}`}
           className="admin-calendar-slot"
