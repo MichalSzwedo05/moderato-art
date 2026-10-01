@@ -40,6 +40,7 @@ export function AttendanceManager({ activities: initialActivities, groups, recip
   const [formMode, setFormMode] = useState<FormMode>("select");
   const [formActivityId, setFormActivityId] = useState(selectedActivityId || "");
   const [editingSelectedActivity, setEditingSelectedActivity] = useState(false);
+  const [showParticipants, setShowParticipants] = useState(!selectedActivityId);
   const [activityDate, setActivityDate] = useState(initialActivity ? dateValue(initialActivity.activityDate) : selectedDate || localDateValue);
   const [startsAt, setStartsAt] = useState(initialActivity ? timeValue(initialActivity.startsAt) : "16:00");
   const [endsAt, setEndsAt] = useState(initialActivity?.endsAt ? timeValue(initialActivity.endsAt) : addHour("16:00"));
@@ -79,6 +80,7 @@ export function AttendanceManager({ activities: initialActivities, groups, recip
     setSubmissionIds(activity.participants.map((participant) => participant.submissionId));
     setPresentSubmissionIds(activity.participants.filter((participant) => participant.present).map((participant) => participant.submissionId));
     setEditingSelectedActivity(false);
+    setShowParticipants(false);
     setFeedback(undefined);
   }
 
@@ -86,6 +88,7 @@ export function AttendanceManager({ activities: initialActivities, groups, recip
     setFormMode("new");
     setFormActivityId("");
     setEditingSelectedActivity(false);
+    setShowParticipants(true);
     setStartsAt("16:00");
     setEndsAt(addHour("16:00"));
     setName(nextLessonName(activities));
@@ -99,6 +102,7 @@ export function AttendanceManager({ activities: initialActivities, groups, recip
     setFormMode("select");
     setFormActivityId("");
     setEditingSelectedActivity(false);
+    setShowParticipants(true);
     setName("");
     setGroupId("");
     setSubmissionIds([]);
@@ -142,6 +146,8 @@ export function AttendanceManager({ activities: initialActivities, groups, recip
         setActivities((current) => current.map((activity) => activity.id === updatedActivity.id ? updatedActivity : activity));
         setSavedParticipants((current) => ({ ...current, [updatedActivity.id]: updatedActivity.participants }));
         setExpandedActivityId(updatedActivity.id);
+        setEditingSelectedActivity(false);
+        setShowParticipants(false);
         setFeedback({ error: false, message: `Zapisano zajęcia: ${updatedActivity.name}.` });
       } catch (error) { setFeedback({ error: true, message: error instanceof Error ? error.message : "Nie udało się zapisać zajęć." }); }
       finally { setPendingId(undefined); }
@@ -197,10 +203,10 @@ export function AttendanceManager({ activities: initialActivities, groups, recip
     <form className="admin-form attendance-create-form" onSubmit={createActivity}>
        <div className="attendance-create-heading"><div><h2>{formMode === "new" ? "Nowe zajęcia" : "Wybierz zajęcia"}</h2><p>{formMode === "select" ? "Wybierz istniejące zajęcia, aby uzupełnić formularz i je zmodyfikować." : "Utwórz nowe zajęcia i przypisz do nich grupę."}</p></div>{formMode === "select" ? <button className="attendance-create-mode-button" onClick={startNewActivity} type="button">+ Nowe zajęcia</button> : <button className="attendance-create-mode-button" onClick={startSelectingActivity} type="button">Wybierz zajęcia</button>}</div>
        {formMode === "select" ? <label>Wybierz zajęcia<select onChange={(event) => { const selectedActivity = activities.find((activity) => activity.id === event.target.value); if (selectedActivity) applyActivity(selectedActivity); else setFormActivityId(""); }} required value={formActivityId}><option value="">Wybierz zajęcia</option>{activities.map((activity) => <option key={activity.id} value={activity.id}>{activityLabel(activity)}</option>)}</select></label> : null}
-       {formMode === "select" && formActivityId && !editingSelectedActivity ? <div className="attendance-selected-details"><div><strong>{name}</strong><span>{activityDate} · {startsAt}–{endsAt || "bez godziny końcowej"}</span><span>{groups.find((group) => group.id === groupId)?.name || "Grupa uczestników niedostępna"}</span></div><button className="attendance-edit-button" onClick={() => setEditingSelectedActivity(true)} type="button">Edytuj</button></div> : <><label>Nazwa zajęć<input maxLength={160} onChange={(event) => setName(event.target.value)} required value={name} /></label>
+       {formMode === "select" && formActivityId && !editingSelectedActivity ? <div className="attendance-selected-details"><div><strong>{name}</strong><span>{activityDate} · {startsAt}–{endsAt || "bez godziny końcowej"}</span><span>{groups.find((group) => group.id === groupId)?.name || "Grupa uczestników niedostępna"}</span></div><button className="attendance-edit-button" onClick={() => { setEditingSelectedActivity(true); setShowParticipants(true); }} type="button">Edytuj</button></div> : <><label>Nazwa zajęć<input maxLength={160} onChange={(event) => setName(event.target.value)} required value={name} /></label>
        <div className="attendance-time-grid"><label>Data<input onChange={(event) => setActivityDate(event.target.value)} required type="date" value={activityDate} /></label><label>Od<input onChange={(event) => { const value = event.target.value; setStartsAt(value); setEndsAt(addHour(value)); }} required type="time" value={startsAt} /></label><label>Do<input onChange={(event) => setEndsAt(event.target.value)} type="time" value={endsAt} /></label></div>
-       <label>Wybierz grupę<select onChange={(event) => { const value = event.target.value; const ids = groups.find((group) => group.id === value)?.submissionIds || []; setGroupId(value); setSubmissionIds(ids); setPresentSubmissionIds([]); }} required value={groupId}><option value="">Wybierz grupę</option>{groups.map((group) => <option key={group.id} value={group.id}>{group.name}</option>)}</select></label></>}
-      {groupId ? <div className="attendance-create-people"><div className="attendance-create-people-heading"><strong>Uczestnicy</strong><span>{selectedParticipants.length}</span><button className="attendance-bulk-button" onClick={toggleAllDraftAttendance} type="button">{presentSubmissionIds.length === selectedParticipants.length ? "Odznacz wszystkich" : "Zaznacz wszystkich obecnych"}</button></div>{selectedParticipants.length === 0 ? <p className="admin-submissions-empty">Wybrana grupa nie ma uczestników.</p> : selectedParticipants.map((item) => { const present = presentSubmissionIds.includes(item.id); return <div className={`attendance-create-person attendance-participant ${present ? "attendance-participant-present" : "attendance-participant-absent"}`} key={item.id}><span>{displayName(item)}<small>{item.email}</small></span><button aria-label={`Oznacz ${displayName(item)} jako ${present ? "nieobecnego" : "obecnego"}`} className={present ? "attendance-create-status attendance-create-status-present" : "attendance-create-status attendance-create-status-absent"} onClick={() => toggleDraftAttendance(item.id)} type="button">{present ? "Obecny" : "Nieobecny"}</button></div>; })}</div> : null}
+       <label>Wybierz grupę<select onChange={(event) => { const value = event.target.value; const ids = groups.find((group) => group.id === value)?.submissionIds || []; setGroupId(value); setSubmissionIds(ids); setPresentSubmissionIds([]); setShowParticipants(true); }} required value={groupId}><option value="">Wybierz grupę</option>{groups.map((group) => <option key={group.id} value={group.id}>{group.name}</option>)}</select></label></>}
+       {groupId && showParticipants ? <div className="attendance-create-people"><div className="attendance-create-people-heading"><strong>Uczestnicy</strong><span>{selectedParticipants.length}</span><button className="attendance-bulk-button" onClick={toggleAllDraftAttendance} type="button">{presentSubmissionIds.length === selectedParticipants.length ? "Odznacz wszystkich" : "Zaznacz wszystkich obecnych"}</button></div>{selectedParticipants.length === 0 ? <p className="admin-submissions-empty">Wybrana grupa nie ma uczestników.</p> : selectedParticipants.map((item) => { const present = presentSubmissionIds.includes(item.id); return <div className={`attendance-create-person attendance-participant ${present ? "attendance-participant-present" : "attendance-participant-absent"}`} key={item.id}><span>{displayName(item)}<small>{item.email}</small></span><button aria-label={`Oznacz ${displayName(item)} jako ${present ? "nieobecnego" : "obecnego"}`} className={present ? "attendance-create-status attendance-create-status-present" : "attendance-create-status attendance-create-status-absent"} onClick={() => toggleDraftAttendance(item.id)} type="button">{present ? "Obecny" : "Nieobecny"}</button></div>; })}</div> : null}
        {formMode === "select" ? <div className="attendance-selected-actions"><div className="attendance-selected-actions-left"><button disabled={pendingId !== undefined || !name.trim() || !groupId || submissionIds.length === 0 || !formActivityId} type="submit">{pendingId === formActivityId ? "Zapisywanie…" : "Zatwierdź zajęcia"}</button></div><div className="attendance-selected-actions-right"><button className="admin-destructive-button" disabled={pendingId !== undefined || !selectedFormActivity} onClick={() => void deleteSelectedActivity()} type="button">Usuń zajęcia</button></div></div> : <button disabled={pendingId !== undefined || !name.trim() || !groupId || submissionIds.length === 0} type="submit">{pendingId === "new" ? "Zapisywanie…" : "Utwórz zajęcia"}</button>}
     </form>
     {feedback ? <p className={feedback.error ? "admin-notice" : "admin-success"} role={feedback.error ? "alert" : "status"}>{feedback.message}</p> : null}

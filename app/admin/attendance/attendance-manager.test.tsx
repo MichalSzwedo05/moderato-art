@@ -59,6 +59,8 @@ describe("AttendanceManager activity form", () => {
     fireEvent.submit(screen.getByRole("heading", { name: "Wybierz zajęcia" }).closest("form")!);
 
     await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+    expect(screen.queryByText("Uczestnicy")).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Edytuj" })).toBeInTheDocument();
     const [url, options] = fetchMock.mock.calls[0] as [string, RequestInit];
     expect(url).toBe("/api/admin/attendance/activity-1");
     expect(options.method).toBe("PATCH");
