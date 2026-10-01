@@ -397,10 +397,14 @@ export function CalendarBoard({ activities, currentDate, groups, weekStart }: Ca
         </select></label> : null}
         {feedback ? <p className={feedback.error ? "admin-notice" : "admin-success"} role={feedback.error ? "alert" : "status"}>{feedback.message}</p> : null}
         <div className="admin-modal-actions">
-          <a className="admin-secondary-button" href={`/admin/attendance?date=${dateValue(selectedActivity.activityDate)}&activity=${encodeURIComponent(selectedActivity.id)}`}>Obecność</a>
-          <button disabled={pending} onClick={() => void deleteActivity()} type="button">Usuń</button>
-          <button disabled={pending} onClick={() => setDetail(undefined)} type="button">Anuluj</button>
-          <button disabled={pending || !detail.name.trim()} onClick={() => void saveActivity()} type="button">Zapisz</button>
+          <div className="admin-modal-actions-group">
+            <a className="admin-secondary-button" href={`/admin/attendance?date=${dateValue(selectedActivity.activityDate)}&activity=${encodeURIComponent(selectedActivity.id)}`}>Obecność</a>
+            <button disabled={pending} onClick={() => setDetail(undefined)} type="button">Anuluj</button>
+          </div>
+          <div className="admin-modal-actions-group">
+            <button className="admin-destructive-button" disabled={pending} onClick={() => void deleteActivity()} type="button">Usuń</button>
+            <button disabled={pending || !detail.name.trim()} onClick={() => void saveActivity()} type="button">Zatwierdź</button>
+          </div>
         </div>
       </div> : null}
     </dialog>

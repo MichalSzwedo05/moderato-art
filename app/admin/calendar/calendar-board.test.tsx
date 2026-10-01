@@ -152,6 +152,7 @@ describe("CalendarBoard", () => {
     expect(screen.queryByRole("combobox", { name: "Usuń" })).not.toBeInTheDocument();
     expect(screen.getByLabelText("Od")).toHaveValue("16:00");
     expect(screen.getByLabelText("Do")).toHaveValue("17:00");
+    expect(screen.getByRole("button", { name: "Zatwierdź" })).toBeInTheDocument();
   });
 
   it("deletes a whole repeat series on request", async () => {
@@ -160,9 +161,11 @@ describe("CalendarBoard", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Lekcja 1, 16:00–17:00, 2 osób" }));
     fireEvent.change(screen.getByLabelText("Usuń"), { target: { value: "series" } });
-    fireEvent.click(screen.getByRole("button", { name: "Usuń" }));
+    const deleteButton = screen.getByRole("button", { name: "Usuń" });
+    fireEvent.click(deleteButton);
 
     await waitFor(() => expect(mocks.fetch).toHaveBeenCalledTimes(1));
+    expect(deleteButton).toHaveClass("admin-destructive-button");
     const [url, options] = mocks.fetch.mock.calls[0] as [string, RequestInit];
     expect(url).toBe("/api/admin/attendance/activity-1?scope=series");
     expect(options.method).toBe("DELETE");
@@ -175,7 +178,7 @@ describe("CalendarBoard", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Lekcja 1, 16:00–17:00, 2 osób" }));
     fireEvent.change(screen.getByLabelText("Nazwa zajęć"), { target: { value: "Lekcja 1 poprawiona" } });
-    fireEvent.click(screen.getByRole("button", { name: "Zapisz" }));
+    fireEvent.click(screen.getByRole("button", { name: "Zatwierdź" }));
 
     await waitFor(() => expect(mocks.fetch).toHaveBeenCalledTimes(1));
     const [url, options] = mocks.fetch.mock.calls[0] as [string, RequestInit];

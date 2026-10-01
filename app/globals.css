@@ -2111,6 +2111,17 @@ h2 {
   margin-top: .35rem;
 }
 
+.admin-modal-actions-group {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: .8rem;
+}
+
+.admin-modal-actions-group:last-child {
+  margin-left: auto;
+}
+
 .admin-modal-actions button,
 .admin-modal-actions .admin-secondary-button {
   margin-top: 0;
