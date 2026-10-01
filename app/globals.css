@@ -3820,6 +3820,7 @@ h2 {
 
 .attendance-create-status {
   align-items: center;
+  box-sizing: border-box;
   cursor: pointer;
   border-radius: .6rem;
   border: 1px solid transparent;
@@ -3830,7 +3831,8 @@ h2 {
   justify-content: center;
   padding: .55rem .8rem;
   white-space: nowrap;
-  width: auto;
+  min-width: 6.8rem;
+  width: 6.8rem;
 }
 
 .admin-form .attendance-create-status:hover,
