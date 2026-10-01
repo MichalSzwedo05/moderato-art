@@ -61,9 +61,9 @@ export async function PATCH(request: Request, context: RouteContext) {
     if (result === undefined) return errorResponse("Nie znaleziono aktywności.", 404);
     if (result === null) return errorResponse("Nie znaleziono wybranej osoby.", 404);
     return NextResponse.json(result, { status: 200 });
-  } catch {
-    console.error("Attendance activity update failed");
-    return errorResponse("Nie udało się zapisać obecności.", 503);
+  } catch (error) {
+    console.error("Attendance activity update failed", error instanceof Error ? error.message : String(error));
+    return errorResponse("Nie udało się zapisać zajęć. Sprawdź dane uczestników, grupę i godziny.", 503);
   }
 }
 
