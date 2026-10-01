@@ -3166,6 +3166,17 @@ h2 {
   margin-top: 0;
 }
 
+.attendance-selected-actions .admin-destructive-button {
+  background: #c0392b;
+  border: 1px solid #c0392b;
+}
+
+.attendance-selected-actions .admin-destructive-button:hover,
+.attendance-selected-actions .admin-destructive-button:focus-visible {
+  background: #a93226;
+  border-color: #a93226;
+}
+
 .attendance-time-grid {
   display: grid;
   gap: 1rem;
