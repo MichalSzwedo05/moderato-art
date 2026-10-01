@@ -104,9 +104,8 @@ describe("AttendanceManager activity form", () => {
     render(<AttendanceManager activities={activities} groups={groups} recipients={recipients} />);
 
     fireEvent.click(screen.getByRole("button", { name: "Wybierz uczestnika" }));
-    const addPerson = screen.getByRole("listitem", { name: "" });
-    expect(addPerson).toHaveTextContent("Ola");
-    fireEvent.click(addPerson);
+    const addPerson = screen.getByRole("option", { name: "Ola · ola@example.com" });
+    fireEvent.change(screen.getByRole("listbox", { name: "Dostępni uczestnicy spoza grupy" }), { target: { value: "submission-3" } });
     expect(screen.getByRole("button", { name: "Oznacz Ola jako obecnego" })).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "Oznacz Ola jako obecnego" }));
