@@ -142,4 +142,20 @@ describe("AttendanceManager activity form", () => {
     expect(screen.queryByLabelText("Wybierz zajęcia")).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Wybierz zajęcia" })).toBeInTheDocument();
   });
+
+  it("sends the selected weekly repeat count for new activities", async () => {
+    fetchMock.mockResolvedValueOnce({ json: async () => ({ id: "activity-2" }), ok: true });
+    render(<AttendanceManager activities={activities} groups={groups} recipients={recipients} />);
+
+    fireEvent.click(screen.getByRole("button", { name: "+ Nowe zajęcia" }));
+    fireEvent.change(screen.getByLabelText("Nazwa zajęć"), { target: { value: "Lekcja cykliczna" } });
+    fireEvent.change(screen.getByLabelText("Wybierz grupę"), { target: { value: "group-1" } });
+    fireEvent.click(screen.getByRole("radio", { name: "Co tydzień przez" }));
+    fireEvent.change(screen.getByLabelText("tygodni"), { target: { value: "3" } });
+    fireEvent.submit(screen.getByRole("heading", { name: "Nowe zajęcia" }).closest("form")!);
+
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+    const body = JSON.parse(String((fetchMock.mock.calls[0] as [string, RequestInit])[1].body));
+    expect(body.repeatWeeks).toBe(3);
+  });
 });
