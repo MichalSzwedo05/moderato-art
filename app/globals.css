@@ -3188,16 +3188,54 @@ h2 {
 .attendance-report-download .admin-download-feedback { flex-basis: 100%; text-align: right; }
 
 .attendance-report-actions {
+  align-items: stretch;
   display: flex;
   gap: .55rem;
 }
 
+.attendance-report-actions button {
+  align-items: center;
+  border: 1px solid transparent;
+  border-radius: .7rem;
+  color: #fff;
+  cursor: pointer;
+  display: inline-flex;
+  font: inherit;
+  font-size: .82rem;
+  font-weight: 800;
+  justify-content: center;
+  margin: 0;
+  min-height: 2.55rem;
+  min-width: 9.5rem;
+  padding: .6rem .9rem;
+  white-space: nowrap;
+}
+
 .attendance-report-actions button:first-child {
   background: var(--blue);
+  border-color: color-mix(in srgb, var(--blue) 70%, var(--border-color));
 }
 
 .attendance-report-actions button:first-child:hover,
 .attendance-report-actions button:first-child:focus-visible { background: var(--dark-blue); }
+
+.attendance-report-actions button:last-child {
+  background: var(--dark-blue);
+  border-color: var(--dark-blue);
+  box-shadow: 0 .25rem .7rem rgb(57 35 93 / 16%);
+}
+
+.attendance-report-actions button:last-child:hover,
+.attendance-report-actions button:last-child:focus-visible {
+  background: #4b2d75;
+  border-color: #4b2d75;
+  box-shadow: 0 .35rem .9rem rgb(57 35 93 / 22%);
+}
+
+.attendance-report-actions button:disabled {
+  cursor: wait;
+  opacity: .65;
+}
 
 .attendance-report-preview {
   width: min(72rem, calc(100% - 2rem));
@@ -4657,6 +4695,15 @@ h2 {
   .admin-group-add-member-actions button { flex: 1 1 auto; }
   .admin-group-member-actions button { flex: 1 1 auto; margin-top: 0; }
   .attendance-time-grid { grid-template-columns: 1fr; }
+  .admin-panel-footer { align-items: stretch; flex-direction: column; }
+  .attendance-report-download { align-items: stretch; flex-direction: column; margin-left: 0; }
+  .attendance-report-fields { align-items: stretch; flex-direction: column; }
+  .attendance-report-fields label,
+  .attendance-report-fields input,
+  .attendance-report-fields select { width: 100%; }
+  .attendance-report-actions { width: 100%; }
+  .attendance-report-actions button { flex: 1 1 0; min-width: 0; }
+  .attendance-report-download .admin-download-feedback { text-align: left; }
   .attendance-card > header { flex-direction: column; }
   .attendance-card > header button { margin-top: 0; }
 }
