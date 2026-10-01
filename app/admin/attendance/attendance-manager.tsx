@@ -62,6 +62,7 @@ export function AttendanceManager({ activities: initialActivities, groups, recip
   const [presentSubmissionIds, setPresentSubmissionIds] = useState<string[]>(defaultActivity?.participants.filter((participant) => participant.present).map((participant) => participant.submissionId) || []);
   const [pendingId, setPendingId] = useState<string>();
   const [feedback, setFeedback] = useState<{ error: boolean; message: string }>();
+  const [createdSuccess, setCreatedSuccess] = useState<{ id: string; name: string }>();
 
   function displayName(recipient: Recipient) { return recipient.childName || recipient.parentName || "Bez podanego imienia"; }
   function recipient(id: string) { return recipients.find((item) => item.id === id); }
@@ -96,6 +97,7 @@ export function AttendanceManager({ activities: initialActivities, groups, recip
     setShowParticipants(true);
     setShowAddParticipant(false);
     setFeedback(undefined);
+    setCreatedSuccess(undefined);
   }
 
   function startNewActivity() {
@@ -112,6 +114,7 @@ export function AttendanceManager({ activities: initialActivities, groups, recip
     setSubmissionIds([]);
     setPresentSubmissionIds([]);
     setFeedback(undefined);
+    setCreatedSuccess(undefined);
   }
 
   function startSelectingActivity() {
@@ -164,7 +167,7 @@ export function AttendanceManager({ activities: initialActivities, groups, recip
        if (!response.ok || !result.id) throw new Error(result.message || "Nie udało się utworzyć zajęć.");
        const createdActivity = { activityDate: `${activityDate}T00:00:00.000Z`, endsAt: endsAt ? `${activityDate}T${endsAt}:00.000Z` : null, groupId: groupId || null, id: result.id!, name, participants: submissionIds.map((id) => ({ present: presentSubmissionIds.includes(id), submissionId: id })), startsAt: `${activityDate}T${startsAt}:00.000Z` };
       setActivities((current) => [createdActivity, ...current]);
-       setName(nextLessonName([createdActivity, ...activities])); setSubmissionIds([]); setPresentSubmissionIds([]); setGroupId(""); setRepeatWeeks(1); setFeedback({ error: false, message: repeatWeeks > 1 ? `Utworzono serię zajęć na ${repeatWeeks} tygodni.` : "Zajęcia zostały utworzone." });
+       setName(nextLessonName([createdActivity, ...activities])); setSubmissionIds([]); setPresentSubmissionIds([]); setGroupId(""); setRepeatWeeks(1); setCreatedSuccess({ id: createdActivity.id, name: createdActivity.name }); setFeedback(undefined);
      } catch (error) { setFeedback({ error: true, message: error instanceof Error ? error.message : "Nie udało się utworzyć zajęć." }); }
     finally { setPendingId(undefined); }
   }
@@ -187,8 +190,15 @@ export function AttendanceManager({ activities: initialActivities, groups, recip
     if (await deleteActivity(selectedFormActivity)) startSelectingActivity();
   }
 
+  function selectCreatedActivity() {
+    const activity = activities.find((item) => item.id === createdSuccess?.id);
+    if (activity) applyActivity(activity);
+    setFormMode("select");
+    setCreatedSuccess(undefined);
+  }
+
   return <>
-    <form className="admin-form attendance-create-form" onSubmit={createActivity}>
+     <form className="admin-form attendance-create-form" id="attendance-create-form" onSubmit={createActivity}>
        <div className="attendance-create-heading"><div><h2>{formMode === "new" ? "Nowe zajęcia" : "Wybierz zajęcia"}</h2><p>{formMode === "select" ? "Wybierz istniejące zajęcia, aby uzupełnić formularz i je zmodyfikować." : "Utwórz nowe zajęcia i przypisz do nich grupę."}</p></div>{formMode === "select" ? <button className="attendance-create-mode-button" onClick={startNewActivity} type="button">+ Nowe zajęcia</button> : <button className="attendance-create-mode-button" onClick={startSelectingActivity} type="button">Wybierz zajęcia</button>}</div>
        {formMode === "select" ? <label>Wybierz zajęcia<select onChange={(event) => { const selectedActivity = activities.find((activity) => activity.id === event.target.value); if (selectedActivity) applyActivity(selectedActivity); else setFormActivityId(""); }} required value={formActivityId}><option value="">Wybierz zajęcia</option>{activities.map((activity) => <option key={activity.id} value={activity.id}>{activityLabel(activity)}</option>)}</select></label> : null}
        {formMode === "select" && formActivityId ? <div className="attendance-selected-section">
@@ -204,6 +214,7 @@ export function AttendanceManager({ activities: initialActivities, groups, recip
        <fieldset className="attendance-repeat-fields"><legend>Powtarzanie</legend><label><input checked={repeatWeeks === 1} name="attendance-repeat" onChange={() => setRepeatWeeks(1)} type="radio" /> Jednorazowo</label><label><input checked={repeatWeeks > 1} name="attendance-repeat" onChange={() => setRepeatWeeks(8)} type="radio" /> Co tydzień przez</label>{repeatWeeks > 1 ? <label>tygodni<input max={52} min={2} onChange={(event) => setRepeatWeeks(Math.max(2, Math.min(52, Number(event.target.value) || 2)))} type="number" value={repeatWeeks} /></label> : null}</fieldset>
         <button disabled={pendingId !== undefined || !name.trim() || !groupId || submissionIds.length === 0} type="submit">{pendingId === "new" ? "Zapisywanie…" : "Utwórz zajęcia"}</button></>}
     </form>
-    {feedback ? <p className={feedback.error ? "admin-notice" : "admin-success"} role={feedback.error ? "alert" : "status"}>{feedback.message}</p> : null}
+     {createdSuccess ? <p className="attendance-create-success" role="status"><strong>Zajęcia zostały utworzone pomyślnie</strong><a href="#attendance-create-form" onClick={(event) => { event.preventDefault(); selectCreatedActivity(); }}>Wybierz zajęcia: {createdSuccess.name}</a></p> : null}
+     {feedback ? <p className={feedback.error ? "admin-notice" : "admin-success"} role={feedback.error ? "alert" : "status"}>{feedback.message}</p> : null}
   </>;
 }

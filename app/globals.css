@@ -3159,6 +3159,31 @@ h2 {
   margin: 0;
 }
 
+.attendance-create-success {
+  background: color-mix(in srgb, #237a4b 9%, var(--surface));
+  border: 1px solid color-mix(in srgb, #237a4b 35%, var(--border-color));
+  border-left: .35rem solid #237a4b;
+  border-radius: .7rem;
+  display: grid;
+  gap: .35rem;
+  margin: 1rem 0 0;
+  padding: 1rem 1.15rem;
+}
+
+.attendance-create-success strong {
+  color: #237a4b;
+  font-size: 1.1rem;
+}
+
+.attendance-create-success a {
+  color: var(--dark-blue);
+  font-size: .9rem;
+  font-weight: 800;
+  text-decoration: underline;
+  text-decoration-color: var(--green);
+  text-underline-offset: 3px;
+}
+
 .admin-panel-footer {
   align-items: flex-start;
   display: flex;

@@ -158,4 +158,17 @@ describe("AttendanceManager activity form", () => {
     const body = JSON.parse(String((fetchMock.mock.calls[0] as [string, RequestInit])[1].body));
     expect(body.repeatWeeks).toBe(3);
   });
+
+  it("shows a prominent success message and link to the created activity", async () => {
+    fetchMock.mockResolvedValueOnce({ json: async () => ({ id: "activity-2" }), ok: true });
+    render(<AttendanceManager activities={activities} groups={groups} recipients={recipients} />);
+
+    fireEvent.click(screen.getByRole("button", { name: "+ Nowe zajęcia" }));
+    fireEvent.change(screen.getByLabelText("Nazwa zajęć"), { target: { value: "Nowe zajęcia" } });
+    fireEvent.change(screen.getByLabelText("Wybierz grupę"), { target: { value: "group-1" } });
+    fireEvent.submit(screen.getByRole("heading", { name: "Nowe zajęcia" }).closest("form")!);
+
+    expect(await screen.findByRole("status")).toHaveTextContent("Zajęcia zostały utworzone pomyślnie");
+    expect(screen.getByRole("link", { name: "Wybierz zajęcia: Nowe zajęcia" })).toHaveAttribute("href", "#attendance-create-form");
+  });
 });
