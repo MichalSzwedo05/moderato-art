@@ -3681,8 +3681,6 @@ h2 {
   border-radius: .75rem;
   display: grid;
   gap: .5rem;
-  max-height: 18rem;
-  overflow: auto;
   padding: 1.25rem;
   width: 100%;
 }
