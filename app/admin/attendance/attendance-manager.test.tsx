@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const fetchMock = vi.fn();
@@ -60,6 +60,23 @@ describe("AttendanceManager activity form", () => {
       participants: [{ present: true, submissionId: "submission-1" }, { present: false, submissionId: "submission-2" }],
       startsAt: "17:00",
     });
+  });
+
+  it("shows confirm on the left and delete on the right for selected activities", async () => {
+    fetchMock.mockResolvedValueOnce({ ok: true });
+    vi.stubGlobal("confirm", vi.fn(() => true));
+    render(<AttendanceManager activities={activities} groups={groups} recipients={recipients} />);
+
+    fireEvent.change(screen.getByLabelText("Wybierz zajęcia"), { target: { value: "activity-1" } });
+
+    const actions = screen.getByRole("heading", { name: "Wybierz zajęcia" }).closest("form")?.querySelector(".attendance-selected-actions");
+    expect(actions?.querySelector(".attendance-selected-actions-left")?.querySelector("button")).toHaveTextContent("Zatwierdź zajęcia");
+    expect(actions?.querySelector(".attendance-selected-actions-right")?.querySelector("button")).toHaveTextContent("Usuń zajęcia");
+    const deleteButton = within(actions as HTMLElement).getByRole("button", { name: "Usuń zajęcia" });
+    expect(deleteButton).toHaveClass("admin-destructive-button");
+
+    fireEvent.click(deleteButton);
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledWith("/api/admin/attendance/activity-1", { method: "DELETE" }));
   });
 
   it("offers a new activity mode beside the selector", () => {

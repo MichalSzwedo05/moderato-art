@@ -121,6 +121,7 @@ export function AttendanceManager({ activities: initialActivities, groups, recip
     .filter((item): item is Recipient => Boolean(item))
     .sort((left, right) => displayName(left).localeCompare(displayName(right), "pl"));
   const visibleActivities = activities.filter((activity) => dateValue(activity.activityDate) === activityDate);
+  const selectedFormActivity = activities.find((activity) => activity.id === formActivityId);
 
   async function createActivity(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -170,15 +171,22 @@ export function AttendanceManager({ activities: initialActivities, groups, recip
   }
 
   async function deleteActivity(activity: Activity) {
-    if (!window.confirm(`Usunąć zajęcia „${activity.name}”?`)) return;
+    if (!window.confirm(`Usunąć zajęcia „${activity.name}”?`)) return false;
     setPendingId(activity.id);
     try {
       const response = await fetch(`/api/admin/attendance/${encodeURIComponent(activity.id)}`, { method: "DELETE" });
       if (!response.ok) throw new Error("Nie udało się usunąć zajęć.");
       setActivities((current) => current.filter((item) => item.id !== activity.id));
       if (expandedActivityId === activity.id) setExpandedActivityId(undefined);
+      return true;
     } catch (error) { setFeedback({ error: true, message: error instanceof Error ? error.message : "Nie udało się usunąć zajęć." }); }
     finally { setPendingId(undefined); }
+    return false;
+  }
+
+  async function deleteSelectedActivity() {
+    if (!selectedFormActivity) return;
+    if (await deleteActivity(selectedFormActivity)) startSelectingActivity();
   }
 
   return <>
@@ -189,7 +197,7 @@ export function AttendanceManager({ activities: initialActivities, groups, recip
       <div className="attendance-time-grid"><label>Data<input onChange={(event) => setActivityDate(event.target.value)} required type="date" value={activityDate} /></label><label>Od<input onChange={(event) => { const value = event.target.value; setStartsAt(value); setEndsAt(addHour(value)); }} required type="time" value={startsAt} /></label><label>Do<input onChange={(event) => setEndsAt(event.target.value)} type="time" value={endsAt} /></label></div>
       <label>Wybierz grupę<select onChange={(event) => { const value = event.target.value; const ids = groups.find((group) => group.id === value)?.submissionIds || []; setGroupId(value); setSubmissionIds(ids); setPresentSubmissionIds([]); }} required value={groupId}><option value="">Wybierz grupę</option>{groups.map((group) => <option key={group.id} value={group.id}>{group.name}</option>)}</select></label>
       {groupId ? <div className="attendance-create-people"><div className="attendance-create-people-heading"><strong>Uczestnicy</strong><span>{selectedParticipants.length}</span><button className="attendance-bulk-button" onClick={toggleAllDraftAttendance} type="button">{presentSubmissionIds.length === selectedParticipants.length ? "Odznacz wszystkich" : "Zaznacz wszystkich obecnych"}</button></div>{selectedParticipants.length === 0 ? <p className="admin-submissions-empty">Wybrana grupa nie ma uczestników.</p> : selectedParticipants.map((item) => { const present = presentSubmissionIds.includes(item.id); return <div className={`attendance-create-person attendance-participant ${present ? "attendance-participant-present" : "attendance-participant-absent"}`} key={item.id}><span>{displayName(item)}<small>{item.email}</small></span><button aria-label={`Oznacz ${displayName(item)} jako ${present ? "nieobecnego" : "obecnego"}`} className={present ? "attendance-create-status attendance-create-status-present" : "attendance-create-status attendance-create-status-absent"} onClick={() => toggleDraftAttendance(item.id)} type="button">{present ? "Obecny" : "Nieobecny"}</button></div>; })}</div> : null}
-       <button disabled={pendingId !== undefined || !name.trim() || !groupId || submissionIds.length === 0 || (formMode === "select" && !formActivityId)} type="submit">{pendingId ? "Zapisywanie…" : formMode === "select" ? "Zatwierdź zajęcia" : "Utwórz zajęcia"}</button>
+       {formMode === "select" ? <div className="attendance-selected-actions"><div className="attendance-selected-actions-left"><button disabled={pendingId !== undefined || !name.trim() || !groupId || submissionIds.length === 0 || !formActivityId} type="submit">{pendingId === formActivityId ? "Zapisywanie…" : "Zatwierdź zajęcia"}</button></div><div className="attendance-selected-actions-right"><button className="admin-destructive-button" disabled={pendingId !== undefined || !selectedFormActivity} onClick={() => void deleteSelectedActivity()} type="button">Usuń zajęcia</button></div></div> : <button disabled={pendingId !== undefined || !name.trim() || !groupId || submissionIds.length === 0} type="submit">{pendingId === "new" ? "Zapisywanie…" : "Utwórz zajęcia"}</button>}
     </form>
     {feedback ? <p className={feedback.error ? "admin-notice" : "admin-success"} role={feedback.error ? "alert" : "status"}>{feedback.message}</p> : null}
     <div className="attendance-list">{visibleActivities.length === 0 ? <p className="admin-submissions-empty">Brak zajęć dla wybranej daty.</p> : visibleActivities.map((activity) => <details className={selectedActivityId === activity.id ? "attendance-card attendance-card-highlighted" : "attendance-card"} key={activity.id} open={expandedActivityId === activity.id} onToggle={(event) => setExpandedActivityId(event.currentTarget.open ? activity.id : undefined)}>

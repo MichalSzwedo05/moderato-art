@@ -3147,6 +3147,25 @@ h2 {
   background: var(--dark-blue);
 }
 
+.attendance-selected-actions {
+  align-items: center;
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+  margin-top: .35rem;
+}
+
+.attendance-selected-actions-left,
+.attendance-selected-actions-right {
+  align-items: center;
+  display: flex;
+  gap: .75rem;
+}
+
+.attendance-selected-actions button {
+  margin-top: 0;
+}
+
 .attendance-time-grid {
   display: grid;
   gap: 1rem;
@@ -4153,6 +4172,10 @@ h2 {
   .admin-calendar-board-column { min-height: 34rem; }
   .attendance-create-heading { align-items: flex-start; flex-direction: column; }
   .attendance-create-mode-button { width: 100%; }
+  .attendance-selected-actions { align-items: stretch; flex-direction: column; }
+  .attendance-selected-actions-left,
+  .attendance-selected-actions-right { width: 100%; }
+  .attendance-selected-actions button { flex: 1 1 0; width: 100%; }
   .admin-modal-actions { align-items: stretch; flex-direction: column; gap: .65rem; }
   .admin-modal-actions-group { gap: .65rem; justify-content: stretch; margin-left: 0; width: 100%; }
   .admin-modal-actions-group > * { flex: 1 1 0; justify-content: center; text-align: center; }
