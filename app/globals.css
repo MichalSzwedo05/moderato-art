@@ -2237,6 +2237,35 @@ h2 {
   padding: .65rem .8rem;
 }
 
+.admin-form-error {
+  border-left-color: #c0392b;
+  color: #8f261c;
+  margin-bottom: .75rem;
+}
+
+.admin-form label.calendar-field-error {
+  color: #8f261c;
+}
+
+.admin-form .calendar-field-error input,
+.admin-form .calendar-field-error select {
+  border-color: #c0392b;
+  box-shadow: 0 0 0 2px rgb(192 57 43 / 12%);
+}
+
+.admin-form .calendar-field-error input:focus,
+.admin-form .calendar-field-error select:focus {
+  border-color: #8f261c;
+  box-shadow: 0 0 0 3px rgb(192 57 43 / 18%);
+}
+
+.admin-field-error {
+  color: #8f261c;
+  font-size: .78rem;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
 .admin-success {
   border-left-color: var(--dark-blue);
 }

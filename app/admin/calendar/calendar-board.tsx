@@ -26,6 +26,8 @@ type CalendarBoardProps = {
 type DraftActivity = { activityDate: string; endsAt: string; groupId: string; name: string; repeatWeeks: number; startsAt: string };
 type DetailActivity = { endsAt: string; name: string; startsAt: string };
 type DeleteScope = "future" | "series" | "single";
+type CreateField = "endsAt" | "groupId" | "name" | "repeatWeeks" | "startsAt";
+type CreateFieldErrors = Partial<Record<CreateField, string>>;
 
 const dayNames = ["Poniedziałek", "Wtorek", "Środa", "Czwartek", "Piątek", "Sobota", "Niedziela"];
 const minimumBlockMinutes = 30;
@@ -69,6 +71,15 @@ function hourLabel(hour: number) {
   return `${String(hour).padStart(2, "0")}:00`;
 }
 
+function timeMinutes(value: string) {
+  const match = /^(\d{2}):(\d{2})$/.exec(value);
+  if (!match) return undefined;
+  const hours = Number(match[1]);
+  const minutes = Number(match[2]);
+  if (hours > 23 || minutes > 59) return undefined;
+  return hours * 60 + minutes;
+}
+
 function nextLessonName(activities: CalendarBoardActivity[]) {
   const numbers = activities
     .map((activity) => /^Lekcja\s+(\d+)$/i.exec(activity.name)?.[1])
@@ -100,6 +111,8 @@ export function CalendarBoard({ activities, currentDate, groups, weekStart }: Ca
   const [selectedId, setSelectedId] = useState<string>();
   const [deleteScope, setDeleteScope] = useState<DeleteScope>("single");
   const [feedback, setFeedback] = useState<{ error: boolean; message: string }>();
+  const [createError, setCreateError] = useState<string>();
+  const [createFieldErrors, setCreateFieldErrors] = useState<CreateFieldErrors>({});
   const [pending, setPending] = useState(false);
 
   const days = useMemo(() => dayNames.map((_, index) => addDays(weekStart, index)), [weekStart]);
@@ -136,6 +149,8 @@ export function CalendarBoard({ activities, currentDate, groups, weekStart }: Ca
 
   function openCreate(day: string, hour: number) {
     setFeedback(undefined);
+    setCreateError(undefined);
+    setCreateFieldErrors({});
     setDraft({
       activityDate: day,
       endsAt: addHour(hourLabel(hour)),
@@ -157,12 +172,66 @@ export function CalendarBoard({ activities, currentDate, groups, weekStart }: Ca
     });
   }
 
+  function updateDraft(patch: Partial<DraftActivity>, field?: CreateField) {
+    setDraft((current) => current ? { ...current, ...patch } : current);
+    if (field) {
+      setCreateFieldErrors((current) => {
+        const next = { ...current };
+        delete next[field];
+        return next;
+      });
+    }
+    setCreateError(undefined);
+  }
+
+  function focusCreateField(field: CreateField | undefined) {
+    if (!field) return;
+    document.getElementById(`calendar-create-${field}`)?.focus();
+  }
+
+  function validateCreateDraft(currentDraft: DraftActivity, group?: CalendarBoardGroup) {
+    const errors: CreateFieldErrors = {};
+    const startsAt = timeMinutes(currentDraft.startsAt);
+    const endsAt = timeMinutes(currentDraft.endsAt);
+
+    if (!currentDraft.name.trim()) errors.name = "Wpisz nazwę zajęć.";
+    if (startsAt === undefined) errors.startsAt = "Podaj prawidłową godzinę rozpoczęcia.";
+    if (endsAt === undefined) errors.endsAt = "Podaj prawidłową godzinę zakończenia.";
+    if (startsAt !== undefined && endsAt !== undefined && endsAt <= startsAt) {
+      errors.endsAt = "Godzina zakończenia musi być późniejsza niż rozpoczęcia.";
+    }
+    if (!currentDraft.groupId) errors.groupId = "Wybierz grupę uczestników.";
+    else if (!group || group.submissionIds.length === 0) errors.groupId = "Wybrana grupa nie ma zapisanych uczestników.";
+    if (!Number.isInteger(currentDraft.repeatWeeks) || currentDraft.repeatWeeks < 1 || currentDraft.repeatWeeks > 52) {
+      errors.repeatWeeks = "Podaj liczbę tygodni od 1 do 52.";
+    }
+
+    return errors;
+  }
+
+  function serverCreateError(message: string) {
+    if (message.includes("prawidłowe godziny")) return { endsAt: "Sprawdź godziny rozpoczęcia i zakończenia." } satisfies CreateFieldErrors;
+    if (message.includes("Uzupełnij dane") || message.includes("wybranej osoby")) return { groupId: "Wybierz grupę z zapisanymi uczestnikami." } satisfies CreateFieldErrors;
+    if (message.includes("już istnieje")) return { name: "Zajęcia o tej nazwie już istnieją w wybranym terminie." } satisfies CreateFieldErrors;
+    return {} satisfies CreateFieldErrors;
+  }
+
   async function createActivity(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const group = groups.find((entry) => entry.id === draft?.groupId);
-    if (!draft || !group || group.submissionIds.length === 0) return;
+    if (!draft) return;
+    const validationErrors = validateCreateDraft(draft, group);
+    if (Object.keys(validationErrors).length > 0) {
+      setCreateFieldErrors(validationErrors);
+      setCreateError("Nie można utworzyć zajęć. Uzupełnij lub popraw zaznaczone pola.");
+      focusCreateField(Object.keys(validationErrors)[0] as CreateField | undefined);
+      return;
+    }
+    if (!group) return;
     setPending(true);
     setFeedback(undefined);
+    setCreateError(undefined);
+    setCreateFieldErrors({});
     try {
       const response = await fetch("/api/admin/attendance", {
         body: JSON.stringify({
@@ -188,7 +257,11 @@ export function CalendarBoard({ activities, currentDate, groups, weekStart }: Ca
           : created > 1 ? `Utworzono ${created} zajęć, jedno po drugim w kolejnych tygodniach.` : "Zajęcia zostały utworzone.",
       });
     } catch (error) {
-      setFeedback({ error: true, message: error instanceof Error ? error.message : "Nie udało się utworzyć zajęć." });
+      const message = error instanceof Error ? error.message : "Nie udało się utworzyć zajęć.";
+      const fieldErrors = serverCreateError(message);
+      setCreateFieldErrors(fieldErrors);
+      setCreateError(message);
+      focusCreateField(Object.keys(fieldErrors)[0] as CreateField | undefined);
     } finally {
       setPending(false);
     }
@@ -281,28 +354,28 @@ export function CalendarBoard({ activities, currentDate, groups, weekStart }: Ca
     {feedback ? <p className={feedback.error ? "admin-notice" : "admin-success"} role={feedback.error ? "alert" : "status"}>{feedback.message}</p> : null}
 
     <dialog aria-labelledby={createTitleId} className="admin-modal" ref={createDialogRef}>
-      {draft ? <form className="admin-form" onSubmit={createActivity}>
+      {draft ? <form className="admin-form" noValidate onSubmit={createActivity}>
         <h2 id={createTitleId}>Nowe zajęcia</h2>
         <p className="admin-submissions-intro">{longDayFormatter.format(utcDate(draft.activityDate))}</p>
-        <label>Nazwa zajęć<input maxLength={160} onChange={(event) => setDraft({ ...draft, name: event.target.value })} required value={draft.name} /></label>
+        <label className={createFieldErrors.name ? "calendar-field-error" : undefined} htmlFor="calendar-create-name">Nazwa zajęć<input aria-describedby={createFieldErrors.name ? "calendar-create-name-error" : undefined} aria-invalid={Boolean(createFieldErrors.name)} id="calendar-create-name" maxLength={160} onChange={(event) => updateDraft({ name: event.target.value }, "name")} value={draft.name} />{createFieldErrors.name ? <span className="admin-field-error" id="calendar-create-name-error">{createFieldErrors.name}</span> : null}</label>
         <div className="attendance-time-grid">
-          <label>Od<input onChange={(event) => setDraft({ ...draft, startsAt: event.target.value })} required type="time" value={draft.startsAt} /></label>
-          <label>Do<input onChange={(event) => setDraft({ ...draft, endsAt: event.target.value })} type="time" value={draft.endsAt} /></label>
+          <label className={createFieldErrors.startsAt ? "calendar-field-error" : undefined} htmlFor="calendar-create-startsAt">Od<input aria-describedby={createFieldErrors.startsAt ? "calendar-create-startsAt-error" : undefined} aria-invalid={Boolean(createFieldErrors.startsAt)} id="calendar-create-startsAt" onChange={(event) => updateDraft({ startsAt: event.target.value }, "startsAt")} type="time" value={draft.startsAt} />{createFieldErrors.startsAt ? <span className="admin-field-error" id="calendar-create-startsAt-error">{createFieldErrors.startsAt}</span> : null}</label>
+          <label className={createFieldErrors.endsAt ? "calendar-field-error" : undefined} htmlFor="calendar-create-endsAt">Do<input aria-describedby={createFieldErrors.endsAt ? "calendar-create-endsAt-error" : undefined} aria-invalid={Boolean(createFieldErrors.endsAt)} id="calendar-create-endsAt" onChange={(event) => updateDraft({ endsAt: event.target.value }, "endsAt")} type="time" value={draft.endsAt} />{createFieldErrors.endsAt ? <span className="admin-field-error" id="calendar-create-endsAt-error">{createFieldErrors.endsAt}</span> : null}</label>
         </div>
-        <label>Grupa<select onChange={(event) => setDraft({ ...draft, groupId: event.target.value })} required value={draft.groupId}>
+        <label className={createFieldErrors.groupId ? "calendar-field-error" : undefined} htmlFor="calendar-create-group">Grupa<select aria-describedby={createFieldErrors.groupId ? "calendar-create-group-error" : undefined} aria-invalid={Boolean(createFieldErrors.groupId)} id="calendar-create-group" onChange={(event) => updateDraft({ groupId: event.target.value }, "groupId")} value={draft.groupId}>
           <option value="">Wybierz grupę</option>
           {groups.map((group) => <option key={group.id} value={group.id}>{group.name} ({group.submissionIds.length})</option>)}
-        </select></label>
+        </select>{createFieldErrors.groupId ? <span className="admin-field-error" id="calendar-create-group-error">{createFieldErrors.groupId}</span> : null}</label>
         <fieldset className="admin-calendar-repeat">
           <legend>Powtarzanie</legend>
           <label><input checked={draft.repeatWeeks === 1} name="calendar-repeat" onChange={() => setDraft({ ...draft, repeatWeeks: 1 })} type="radio" /> Jednorazowo</label>
           <label><input checked={draft.repeatWeeks > 1} name="calendar-repeat" onChange={() => setDraft({ ...draft, repeatWeeks: 8 })} type="radio" /> Co tydzień przez</label>
-          {draft.repeatWeeks > 1 ? <label>tygodni<input max={52} min={2} onChange={(event) => setDraft({ ...draft, repeatWeeks: Math.max(2, Math.min(52, Number(event.target.value) || 2)) })} type="number" value={draft.repeatWeeks} /></label> : null}
+          {draft.repeatWeeks > 1 ? <label className={createFieldErrors.repeatWeeks ? "calendar-field-error" : undefined} htmlFor="calendar-create-repeatWeeks">tygodni<input aria-describedby={createFieldErrors.repeatWeeks ? "calendar-create-repeatWeeks-error" : undefined} aria-invalid={Boolean(createFieldErrors.repeatWeeks)} id="calendar-create-repeatWeeks" max={52} min={2} onChange={(event) => updateDraft({ repeatWeeks: Number(event.target.value) }, "repeatWeeks")} type="number" value={draft.repeatWeeks} />{createFieldErrors.repeatWeeks ? <span className="admin-field-error" id="calendar-create-repeatWeeks-error">{createFieldErrors.repeatWeeks}</span> : null}</label> : null}
         </fieldset>
-        {feedback ? <p className={feedback.error ? "admin-notice" : "admin-success"} role={feedback.error ? "alert" : "status"}>{feedback.message}</p> : null}
+        {createError ? <p className="admin-notice admin-form-error" role="alert">{createError}</p> : null}
         <div className="admin-modal-actions">
           <button disabled={pending} onClick={() => setDraft(undefined)} type="button">Anuluj</button>
-          <button disabled={pending || !draft.name.trim() || !draft.groupId} type="submit">{pending ? "Zapisywanie…" : "Zapisz zajęcia"}</button>
+          <button disabled={pending} type="submit">{pending ? "Zapisywanie…" : "Zapisz zajęcia"}</button>
         </div>
       </form> : null}
     </dialog>

@@ -83,6 +83,32 @@ describe("CalendarBoard", () => {
     await waitFor(() => expect(mocks.refresh).toHaveBeenCalled());
   });
 
+  it("shows the missing group beside the save button instead of silently doing nothing", () => {
+    renderBoard();
+
+    openCreateDialog();
+    fireEvent.submit(screen.getByRole("heading", { name: "Nowe zajęcia" }).closest("form")!);
+
+    expect(mocks.fetch).not.toHaveBeenCalled();
+    expect(screen.getByRole("alert")).toHaveTextContent("Uzupełnij lub popraw zaznaczone pola");
+    expect(screen.getByRole("combobox", { name: /Grupa/ })).toHaveAttribute("aria-invalid", "true");
+    expect(screen.getByText("Wybierz grupę uczestników.")).toBeInTheDocument();
+  });
+
+  it("highlights an invalid time range", () => {
+    renderBoard();
+
+    openCreateDialog();
+    fireEvent.change(screen.getByLabelText("Od"), { target: { value: "18:00" } });
+    fireEvent.change(screen.getByLabelText("Do"), { target: { value: "17:00" } });
+    fireEvent.change(screen.getByLabelText("Grupa"), { target: { value: "group-1" } });
+    fireEvent.submit(screen.getByRole("heading", { name: "Nowe zajęcia" }).closest("form")!);
+
+    expect(mocks.fetch).not.toHaveBeenCalled();
+    expect(document.getElementById("calendar-create-endsAt")).toHaveAttribute("aria-invalid", "true");
+    expect(screen.getByText("Godzina zakończenia musi być późniejsza niż rozpoczęcia.")).toBeInTheDocument();
+  });
+
   it("creates a weekly series and reports dates skipped as duplicates", async () => {
     mocks.fetch.mockResolvedValueOnce({ json: async () => ({ id: "activity-2", skippedDates: ["2026-09-30"] }), ok: true });
     renderBoard([activity()]);
@@ -151,5 +177,6 @@ describe("CalendarBoard", () => {
 
     await waitFor(() => expect(screen.getAllByRole("alert").length).toBeGreaterThan(0));
     expect(screen.getAllByText("Aktywność o tej nazwie i dacie już istnieje.").length).toBeGreaterThan(0);
+    expect(screen.getByRole("textbox", { name: /Nazwa zajęć/ })).toHaveAttribute("aria-invalid", "true");
   });
 });
