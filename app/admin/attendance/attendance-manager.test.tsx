@@ -66,7 +66,7 @@ describe("AttendanceManager activity form", () => {
     expect(screen.getByText("Uczestnicy")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Oznacz Jan jako nieobecnego" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Edytuj" })).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "Lekcja zmieniona" })).toBeInTheDocument();
+    expect(screen.getByText("Lekcja zmieniona")).toBeInTheDocument();
     const [url, options] = fetchMock.mock.calls[0] as [string, RequestInit];
     expect(url).toBe("/api/admin/attendance/activity-1");
     expect(options.method).toBe("PATCH");

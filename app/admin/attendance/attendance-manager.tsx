@@ -34,7 +34,6 @@ function activityLabel(activity: Activity) {
 
 export function AttendanceManager({ activities: initialActivities, groups, recipients, selectedActivityId, selectedDate }: { activities: Activity[]; groups: Group[]; recipients: Recipient[]; selectedActivityId?: string; selectedDate?: string }) {
   const [activities, setActivities] = useState(initialActivities);
-  const [savedParticipants, setSavedParticipants] = useState<Record<string, Participant[]>>(() => Object.fromEntries(initialActivities.map((activity) => [activity.id, activity.participants])));
   const initialActivity = initialActivities.find((activity) => activity.id === selectedActivityId);
   const initialGroup = matchingGroup(initialActivity, groups);
   const [formMode, setFormMode] = useState<FormMode>("select");
@@ -48,17 +47,11 @@ export function AttendanceManager({ activities: initialActivities, groups, recip
   const [groupId, setGroupId] = useState(initialGroup?.id || "");
   const [submissionIds, setSubmissionIds] = useState<string[]>(initialActivity?.participants.map((participant) => participant.submissionId) || []);
   const [presentSubmissionIds, setPresentSubmissionIds] = useState<string[]>(initialActivity?.participants.filter((participant) => participant.present).map((participant) => participant.submissionId) || []);
-  const [expandedActivityId, setExpandedActivityId] = useState<string | undefined>(selectedActivityId);
   const [pendingId, setPendingId] = useState<string>();
   const [feedback, setFeedback] = useState<{ error: boolean; message: string }>();
 
   function displayName(recipient: Recipient) { return recipient.childName || recipient.parentName || "Bez podanego imienia"; }
   function recipient(id: string) { return recipients.find((item) => item.id === id); }
-  function toggleAttendance(activityId: string, submissionId: string) {
-    setActivities((current) => current.map((entry) => entry.id === activityId
-      ? { ...entry, participants: entry.participants.map((row) => row.submissionId === submissionId ? { ...row, present: !row.present } : row) }
-      : entry));
-  }
   function toggleDraftAttendance(submissionId: string) {
     setPresentSubmissionIds((current) => current.includes(submissionId)
       ? current.filter((id) => id !== submissionId)
@@ -110,25 +103,10 @@ export function AttendanceManager({ activities: initialActivities, groups, recip
     setFeedback(undefined);
   }
 
-  function hasAttendanceChanges(activity: Activity) {
-    const saved = savedParticipants[activity.id];
-    if (!saved || saved.length !== activity.participants.length) return true;
-    const savedById = new Map(saved.map((participant) => [participant.submissionId, participant.present]));
-    return activity.participants.some((participant) => savedById.get(participant.submissionId) !== participant.present);
-  }
-  function sortedParticipants(activity: Activity) {
-    return [...activity.participants].sort((left, right) => {
-      if (left.present !== right.present) return left.present ? -1 : 1;
-      return displayName(recipient(left.submissionId) || { childName: null, email: "", id: left.submissionId, parentName: null, phone: null })
-        .localeCompare(displayName(recipient(right.submissionId) || { childName: null, email: "", id: right.submissionId, parentName: null, phone: null }), "pl");
-    });
-  }
-
   const selectedParticipants = submissionIds
     .map((id) => recipient(id))
     .filter((item): item is Recipient => Boolean(item))
     .sort((left, right) => displayName(left).localeCompare(displayName(right), "pl"));
-  const visibleActivities = activities.filter((activity) => dateValue(activity.activityDate) === activityDate && !(formMode === "select" && formActivityId === activity.id && editingSelectedActivity));
   const selectedFormActivity = activities.find((activity) => activity.id === formActivityId);
 
   async function createActivity(event: React.FormEvent<HTMLFormElement>) {
@@ -144,8 +122,6 @@ export function AttendanceManager({ activities: initialActivities, groups, recip
         if (!response.ok) throw new Error(result.message || "Nie udało się zapisać zajęć.");
         const updatedActivity = { ...selectedActivity, activityDate: `${activityDate}T00:00:00.000Z`, endsAt: endsAt ? `${activityDate}T${endsAt}:00.000Z` : null, name, participants: submissionIds.map((submissionId) => ({ present: presentSubmissionIds.includes(submissionId), submissionId })), startsAt: `${activityDate}T${startsAt}:00.000Z` };
         setActivities((current) => current.map((activity) => activity.id === updatedActivity.id ? updatedActivity : activity));
-        setSavedParticipants((current) => ({ ...current, [updatedActivity.id]: updatedActivity.participants }));
-        setExpandedActivityId(updatedActivity.id);
         setEditingSelectedActivity(false);
         setShowParticipants(true);
         setFeedback({ error: false, message: `Zapisano zajęcia: ${updatedActivity.name}.` });
@@ -161,22 +137,8 @@ export function AttendanceManager({ activities: initialActivities, groups, recip
        if (!response.ok || !result.id) throw new Error(result.message || "Nie udało się utworzyć zajęć.");
       const createdActivity = { activityDate: `${activityDate}T00:00:00.000Z`, endsAt: endsAt ? `${activityDate}T${endsAt}:00.000Z` : null, id: result.id!, name, participants: submissionIds.map((id) => ({ present: presentSubmissionIds.includes(id), submissionId: id })), startsAt: `${activityDate}T${startsAt}:00.000Z` };
       setActivities((current) => [createdActivity, ...current]);
-      setExpandedActivityId(createdActivity.id);
-      setSavedParticipants((current) => ({ ...current, [createdActivity.id]: createdActivity.participants }));
        setName(nextLessonName([createdActivity, ...activities])); setSubmissionIds([]); setPresentSubmissionIds([]); setGroupId(""); setFeedback({ error: false, message: "Zajęcia zostały utworzone." });
      } catch (error) { setFeedback({ error: true, message: error instanceof Error ? error.message : "Nie udało się utworzyć zajęć." }); }
-    finally { setPendingId(undefined); }
-  }
-
-  async function saveActivity(activity: Activity) {
-    setPendingId(activity.id); setFeedback(undefined);
-    try {
-      const response = await fetch(`/api/admin/attendance/${encodeURIComponent(activity.id)}`, { body: JSON.stringify({ activityDate: dateValue(activity.activityDate), endsAt: activity.endsAt ? timeValue(activity.endsAt) : "", name: activity.name, participants: activity.participants, startsAt: timeValue(activity.startsAt) }), headers: { "Content-Type": "application/json" }, method: "PATCH" });
-      const result = await response.json() as { message?: string };
-       if (!response.ok) throw new Error(result.message || "Nie udało się zapisać zajęć.");
-      setSavedParticipants((current) => ({ ...current, [activity.id]: activity.participants }));
-      setFeedback({ error: false, message: `Zapisano obecność: ${activity.name}.` });
-      } catch (error) { setFeedback({ error: true, message: error instanceof Error ? error.message : "Nie udało się zapisać zajęć." }); }
     finally { setPendingId(undefined); }
   }
 
@@ -187,7 +149,6 @@ export function AttendanceManager({ activities: initialActivities, groups, recip
       const response = await fetch(`/api/admin/attendance/${encodeURIComponent(activity.id)}`, { method: "DELETE" });
       if (!response.ok) throw new Error("Nie udało się usunąć zajęć.");
       setActivities((current) => current.filter((item) => item.id !== activity.id));
-      if (expandedActivityId === activity.id) setExpandedActivityId(undefined);
       return true;
     } catch (error) { setFeedback({ error: true, message: error instanceof Error ? error.message : "Nie udało się usunąć zajęć." }); }
     finally { setPendingId(undefined); }
@@ -216,10 +177,5 @@ export function AttendanceManager({ activities: initialActivities, groups, recip
        <button disabled={pendingId !== undefined || !name.trim() || !groupId || submissionIds.length === 0} type="submit">{pendingId === "new" ? "Zapisywanie…" : "Utwórz zajęcia"}</button></>}
     </form>
     {feedback ? <p className={feedback.error ? "admin-notice" : "admin-success"} role={feedback.error ? "alert" : "status"}>{feedback.message}</p> : null}
-    <div className="attendance-list">{visibleActivities.length === 0 ? <p className="admin-submissions-empty">Brak zajęć dla wybranej daty.</p> : visibleActivities.map((activity) => <details className={selectedActivityId === activity.id ? "attendance-card attendance-card-highlighted" : "attendance-card"} key={activity.id} open={expandedActivityId === activity.id} onToggle={(event) => setExpandedActivityId(event.currentTarget.open ? activity.id : undefined)}>
-       <summary className="attendance-card-summary"><div className="attendance-card-summary-info"><h2>{activity.name}</h2><p>{dateValue(activity.activityDate)} · {timeValue(activity.startsAt)}{activity.endsAt ? `–${timeValue(activity.endsAt)}` : ""}</p></div><span aria-hidden="true" className="attendance-card-summary-toggle">+</span></summary>
-       <div className="attendance-participants">{sortedParticipants(activity).map((participant) => { const item = recipient(participant.submissionId); if (!item) return null; const status = participant.present ? "Obecny" : "Nieobecny"; return <button aria-label={`${displayName(item)}, ${status}`} aria-pressed={participant.present} className={participant.present ? "attendance-participant attendance-participant-present" : "attendance-participant attendance-participant-absent"} key={participant.submissionId} onClick={() => toggleAttendance(activity.id, participant.submissionId)} type="button"><span>{displayName(item)}<small>{item.email}</small></span><strong aria-hidden="true">{participant.present ? "✓ Obecny" : "✕ Nieobecny"}</strong></button>; })}</div>
-       <div className="attendance-card-footer">{hasAttendanceChanges(activity) ? <button className="admin-group-action-button attendance-update-button" disabled={pendingId === activity.id} onClick={() => saveActivity(activity)} type="button">{pendingId === activity.id ? "Zapisywanie…" : "Aktualizuj obecność"}</button> : null}<button className="admin-destructive-button attendance-delete-button" disabled={pendingId === activity.id} onClick={() => void deleteActivity(activity)} type="button">Usuń zajęcia</button><a className="admin-secondary-button attendance-calendar-link" href="/admin/calendar">Kalendarz</a></div>
-     </details>)}</div>
   </>;
 }
