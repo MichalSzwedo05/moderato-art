@@ -3085,6 +3085,14 @@ h2 {
 .admin-calendar-block span { font-size: .74rem; font-weight: 800; }
 .admin-calendar-block small { color: var(--gray-light); font-size: .7rem; }
 
+.admin-calendar-detail-group {
+  color: var(--gray-light);
+  font-size: .85rem;
+  margin: -.45rem 0 .25rem;
+}
+
+.admin-calendar-detail-group strong { color: var(--dark-blue); }
+
 .admin-calendar-repeat {
   border: 1px solid var(--border-color);
   border-radius: .6rem;
@@ -3351,6 +3359,11 @@ h2 {
 .attendance-matrix-absent span {
   background: color-mix(in srgb, #c0392b 13%, var(--surface));
   color: #c0392b;
+}
+
+.attendance-matrix-unassigned span {
+  background: color-mix(in srgb, var(--gray-light) 13%, var(--surface));
+  color: var(--gray-light);
 }
 
 .attendance-create-heading {
