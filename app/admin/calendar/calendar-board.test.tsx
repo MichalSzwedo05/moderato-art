@@ -91,6 +91,15 @@ describe("CalendarBoard", () => {
     await waitFor(() => expect(mocks.refresh).toHaveBeenCalled());
   });
 
+  it("places save before cancel in the create action row", () => {
+    renderBoard();
+
+    openCreateDialog();
+    const actions = screen.getByRole("heading", { name: "Nowe zajęcia" }).closest("form")?.querySelector(".admin-calendar-create-actions");
+    expect(actions?.querySelectorAll("button")[0]).toHaveTextContent("Zapisz zajęcia");
+    expect(actions?.querySelectorAll("button")[1]).toHaveTextContent("Anuluj");
+  });
+
   it("shows the missing group beside the save button instead of silently doing nothing", () => {
     renderBoard();
 

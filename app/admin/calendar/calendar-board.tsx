@@ -374,9 +374,9 @@ export function CalendarBoard({ activities, currentDate, groups, weekStart }: Ca
           {draft.repeatWeeks > 1 ? <label className={createFieldErrors.repeatWeeks ? "calendar-field-error" : undefined} htmlFor="calendar-create-repeatWeeks">tygodni<input aria-describedby={createFieldErrors.repeatWeeks ? "calendar-create-repeatWeeks-error" : undefined} aria-invalid={Boolean(createFieldErrors.repeatWeeks)} id="calendar-create-repeatWeeks" max={52} min={2} onChange={(event) => updateDraft({ repeatWeeks: Number(event.target.value) }, "repeatWeeks")} type="number" value={draft.repeatWeeks} />{createFieldErrors.repeatWeeks ? <span className="admin-field-error" id="calendar-create-repeatWeeks-error">{createFieldErrors.repeatWeeks}</span> : null}</label> : null}
         </fieldset>
         {createError ? <p className="admin-notice admin-form-error" role="alert">{createError}</p> : null}
-        <div className="admin-modal-actions">
-          <button disabled={pending} onClick={() => setDraft(undefined)} type="button">Anuluj</button>
+        <div className="admin-calendar-create-actions">
           <button disabled={pending} type="submit">{pending ? "Zapisywanie…" : "Zapisz zajęcia"}</button>
+          <button disabled={pending} onClick={() => setDraft(undefined)} type="button">Anuluj</button>
         </div>
       </form> : null}
     </dialog>

@@ -2089,6 +2089,19 @@ h2 {
   background: #4b2d75;
 }
 
+.admin-calendar-create-actions {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: .8rem;
+  justify-content: flex-end;
+  margin-top: .35rem;
+}
+
+.admin-calendar-create-actions button {
+  margin-top: 0;
+}
+
 .admin-secondary-button {
   align-items: center;
   background: var(--blue);
