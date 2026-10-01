@@ -59,6 +59,15 @@ describe("AttendanceManager activity form", () => {
     expect(screen.getByText("Lekcja 2")).toBeInTheDocument();
   });
 
+  it("recovers the assigned group for legacy activities with an extra participant", () => {
+    const legacyActivity = { ...activities[0], groupId: null, participants: [...activities[0].participants, { present: false, submissionId: "submission-3" }] };
+    render(<AttendanceManager activities={[legacyActivity]} groups={groups} recipients={recipients} selectedActivityId="activity-1" />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Edytuj" }));
+    expect(screen.getByLabelText("Wybierz grupę")).toHaveValue("group-1");
+    expect(screen.getByRole("button", { name: "Oznacz Ola jako obecnego" })).toBeInTheDocument();
+  });
+
   it("updates the selected activity after editing populated fields", async () => {
     fetchMock.mockResolvedValueOnce({ json: async () => ({ id: "activity-1" }), ok: true });
     render(<AttendanceManager activities={activities} groups={groups} recipients={recipients} />);

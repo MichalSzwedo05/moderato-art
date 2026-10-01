@@ -25,8 +25,9 @@ function matchingGroup(activity: Activity | undefined, groups: Group[]) {
   if (activity.groupId) return groups.find((group) => group.id === activity.groupId);
   const participantIds = new Set(activity.participants.map((participant) => participant.submissionId));
   return groups
-    .filter((group) => group.submissionIds.length >= participantIds.size && [...participantIds].every((id) => group.submissionIds.includes(id)))
-    .sort((left, right) => left.submissionIds.length - right.submissionIds.length)[0];
+    .map((group) => ({ group, overlap: group.submissionIds.filter((id) => participantIds.has(id)).length }))
+    .filter((entry) => entry.overlap > 0)
+    .sort((left, right) => right.overlap - left.overlap || left.group.submissionIds.length - right.group.submissionIds.length)[0]?.group;
 }
 
 function activityLabel(activity: Activity) {
