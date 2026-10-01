@@ -37,6 +37,11 @@ describe("AttendanceManager activity form", () => {
     expect(within(details as HTMLElement).getByText("Lekcja 1")).toBeInTheDocument();
     expect(within(details as HTMLElement).getByText("2026-10-01 · 16:00–17:00")).toBeInTheDocument();
     expect(within(details as HTMLElement).getByText("Grupa A")).toBeInTheDocument();
+    const attendanceList = screen.getByRole("region", { name: "Lista obecności" });
+    expect(attendanceList).toHaveTextContent("Anna");
+    expect(attendanceList).toHaveTextContent("Obecny");
+    expect(attendanceList).toHaveTextContent("Jan");
+    expect(attendanceList).toHaveTextContent("Nieobecny");
     expect(screen.queryByLabelText("Nazwa zajęć")).not.toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "Edytuj" }));
@@ -61,6 +66,7 @@ describe("AttendanceManager activity form", () => {
     await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
     expect(screen.queryByText("Uczestnicy")).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Edytuj" })).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "Lista obecności" })).toBeInTheDocument();
     const [url, options] = fetchMock.mock.calls[0] as [string, RequestInit];
     expect(url).toBe("/api/admin/attendance/activity-1");
     expect(options.method).toBe("PATCH");

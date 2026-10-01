@@ -3147,6 +3147,87 @@ h2 {
   background: var(--dark-blue);
 }
 
+.attendance-selected-details {
+  align-items: center;
+  background: color-mix(in srgb, var(--cream) 55%, var(--surface));
+  border: 1px solid var(--border-color);
+  border-radius: .7rem;
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+  padding: .8rem 1rem;
+}
+
+.attendance-selected-details > div {
+  display: grid;
+  gap: .2rem;
+  min-width: 0;
+}
+
+.attendance-selected-details strong {
+  color: var(--dark-blue);
+  overflow-wrap: anywhere;
+}
+
+.attendance-selected-details span {
+  color: var(--gray-light);
+  font-size: .82rem;
+}
+
+.attendance-edit-button {
+  background: var(--blue);
+  border: 0;
+  border-radius: .6rem;
+  color: #fff;
+  cursor: pointer;
+  flex: 0 0 auto;
+  font: inherit;
+  font-size: .8rem;
+  font-weight: 800;
+  margin: 0;
+  padding: .55rem .8rem;
+  width: auto;
+}
+
+.attendance-edit-button:hover,
+.attendance-edit-button:focus-visible {
+  background: var(--dark-blue);
+}
+
+.attendance-selected-status {
+  background: color-mix(in srgb, var(--cream) 42%, var(--surface));
+  border: 1px solid var(--border-color);
+  border-radius: .7rem;
+  display: grid;
+  gap: .55rem;
+  padding: .8rem 1rem;
+}
+
+.attendance-selected-status-heading {
+  align-items: center;
+  display: flex;
+  gap: .75rem;
+  justify-content: space-between;
+}
+
+.attendance-selected-status-heading strong { color: var(--dark-blue); }
+.attendance-selected-status-heading span { color: var(--gray-light); font-size: .8rem; font-weight: 700; }
+
+.attendance-selected-status-list { display: grid; gap: .35rem; }
+
+.attendance-selected-status-list > div {
+  align-items: center;
+  border-radius: .45rem;
+  display: flex;
+  gap: .75rem;
+  justify-content: space-between;
+  padding: .45rem .6rem;
+}
+
+.attendance-selected-status-present { background: color-mix(in srgb, var(--blue) 12%, var(--surface)); color: var(--dark-blue); }
+.attendance-selected-status-absent { background: color-mix(in srgb, var(--cream-deep) 55%, var(--surface)); color: var(--gray-text); }
+.attendance-selected-status-list strong { font-size: .78rem; white-space: nowrap; }
+
 .attendance-selected-actions {
   align-items: center;
   display: flex;
