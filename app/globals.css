@@ -2102,6 +2102,20 @@ h2 {
   margin-top: 0;
 }
 
+.admin-modal-actions {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: .8rem;
+  justify-content: flex-end;
+  margin-top: .35rem;
+}
+
+.admin-modal-actions button,
+.admin-modal-actions .admin-secondary-button {
+  margin-top: 0;
+}
+
 .admin-secondary-button {
   align-items: center;
   background: var(--blue);
