@@ -89,6 +89,14 @@ function nextLessonName(activities: CalendarBoardActivity[]) {
   return `Lekcja ${(numbers.length ? Math.max(...numbers) : 0) + 1}`;
 }
 
+function getCalendarHours(activities: CalendarBoardActivity[]) {
+  const starts = activities.map((activity) => minutesOfDay(activity.startsAt));
+  const ends = activities.map((activity) => minutesOfDay(activity.endsAt ?? activity.startsAt) + 30);
+  const first = Math.max(0, Math.min(defaultStartHour, ...starts.map((minutes) => Math.floor(minutes / 60))));
+  const last = Math.min(24, Math.max(defaultEndHour + 1, ...ends.map((minutes) => Math.ceil(minutes / 60))));
+  return Array.from({ length: Math.max(1, last - first) }, (_, index) => first + index);
+}
+
 async function readError(response: Response, fallback: string) {
   try {
     const body = await response.json() as { message?: string };
@@ -116,13 +124,7 @@ export function CalendarBoard({ activities, currentDate, groups, weekStart }: Ca
   const [pending, setPending] = useState(false);
 
   const days = useMemo(() => dayNames.map((_, index) => addDays(weekStart, index)), [weekStart]);
-  const hours = useMemo(() => {
-    const starts = items.map((activity) => minutesOfDay(activity.startsAt));
-    const ends = items.map((activity) => minutesOfDay(activity.endsAt ?? activity.startsAt) + 30);
-    const first = Math.max(0, Math.min(defaultStartHour, ...starts.map((minutes) => Math.floor(minutes / 60))));
-    const last = Math.min(24, Math.max(defaultEndHour + 1, ...ends.map((minutes) => Math.ceil(minutes / 60))));
-    return Array.from({ length: Math.max(1, last - first) }, (_, index) => first + index);
-  }, [items]);
+  const hours = useMemo(() => getCalendarHours(items), [items]);
   const rangeStart = hours[0] * 60;
   const rangeMinutes = hours.length * 60;
 

@@ -80,6 +80,19 @@ describe("CalendarBoard", () => {
     expect(screen.queryByText("22:00")).not.toBeInTheDocument();
   });
 
+  it("recalculates the range when refreshed events change", () => {
+    const view = renderBoard();
+
+    expect(screen.queryByText("20:00")).not.toBeInTheDocument();
+    view.rerender(<CalendarBoard activities={[activity({ endsAt: "2026-09-23T21:15:00.000Z", startsAt: "2026-09-23T20:30:00.000Z" })]} currentDate={currentDate} groups={groups} weekStart={weekStart} />);
+    expect(screen.getByText("20:00")).toBeInTheDocument();
+    expect(screen.getByText("21:00")).toBeInTheDocument();
+
+    view.rerender(<CalendarBoard activities={[]} currentDate={currentDate} groups={groups} weekStart={weekStart} />);
+    expect(screen.queryByText("20:00")).not.toBeInTheDocument();
+    expect(screen.getByText("19:00")).toBeInTheDocument();
+  });
+
   it("keeps the full title visible for a short activity block", () => {
     renderBoard([activity({ name: "Długie zajęcia indywidualne" })]);
 
@@ -208,6 +221,28 @@ describe("CalendarBoard", () => {
     expect(url).toBe("/api/admin/attendance/activity-1");
     expect(options.method).toBe("PATCH");
     expect(JSON.parse(String(options.body))).toEqual({ activityDate: "2026-09-23", endsAt: "17:00", name: "Lekcja 1 poprawiona", startsAt: "16:00" });
+  });
+
+  it("recalculates the range after updating and deleting an activity", async () => {
+    mocks.fetch
+      .mockResolvedValueOnce({ json: async () => ({ id: "activity-1" }), ok: true })
+      .mockResolvedValueOnce({ json: async () => ({ deleted: 1 }), ok: true });
+    renderBoard([activity()]);
+
+    expect(screen.queryByText("20:00")).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Lekcja 1, 16:00–17:00, 2 osób" }));
+    fireEvent.change(screen.getByLabelText("Od"), { target: { value: "20:00" } });
+    fireEvent.change(screen.getByLabelText("Do"), { target: { value: "21:00" } });
+    fireEvent.click(screen.getByRole("button", { name: "Zatwierdź" }));
+
+    await waitFor(() => expect(screen.getByText("20:00")).toBeInTheDocument());
+    expect(screen.getByText("21:00")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Lekcja 1, 20:00–21:00, 2 osób" }));
+    fireEvent.click(screen.getByRole("button", { name: "Usuń" }));
+
+    await waitFor(() => expect(screen.queryByText("20:00")).not.toBeInTheDocument());
+    expect(screen.getByText("19:00")).toBeInTheDocument();
   });
 
   it("surfaces an error when creation is rejected", async () => {
