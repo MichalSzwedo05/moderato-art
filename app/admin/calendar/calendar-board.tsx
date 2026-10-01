@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 export type CalendarBoardActivity = {
   activityDate: string;
   endsAt: string | null;
+  groupId: string | null;
   id: string;
   name: string;
   participants: Array<{ childName: string | null; id: string; parentName: string | null; present: boolean }>;
@@ -287,7 +288,7 @@ export function CalendarBoard({ activities, currentDate, groups, weekStart }: Ca
     setFeedback(undefined);
     try {
       const response = await fetch(`/api/admin/attendance/${encodeURIComponent(selectedActivity.id)}`, {
-        body: JSON.stringify({ activityDate: dateValue(selectedActivity.activityDate), endsAt: detail.endsAt, name: detail.name, startsAt: detail.startsAt }),
+        body: JSON.stringify({ activityDate: dateValue(selectedActivity.activityDate), endsAt: detail.endsAt, groupId: selectedActivity.groupId || "", name: detail.name, startsAt: detail.startsAt }),
         headers: { "Content-Type": "application/json" },
         method: "PATCH",
       });

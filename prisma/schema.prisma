@@ -69,12 +69,15 @@ model AttendanceActivity {
   endsAt       DateTime?
   invalid      Boolean                 @default(false)
   seriesId     String?                 @db.VarChar(64)
+  groupId      String?                 @db.VarChar(64)
   createdAt    DateTime                @default(now())
   updatedAt    DateTime                @updatedAt
+  group        ContactGroup?           @relation(fields: [groupId], references: [id], onDelete: SetNull)
   participants AttendanceParticipant[]
 
   @@unique([name, activityDate])
   @@index([activityDate, startsAt])
+  @@index([groupId])
   @@index([seriesId, activityDate])
   @@index([updatedAt])
 }
@@ -98,6 +101,7 @@ model ContactGroup {
   createdAt   DateTime                 @default(now())
   updatedAt   DateTime                 @updatedAt
   memberships ContactGroupMembership[]
+  attendanceActivities AttendanceActivity[]
 }
 
 model MessageLog {

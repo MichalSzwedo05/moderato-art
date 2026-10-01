@@ -12,6 +12,7 @@ type RouteContext = { params: Promise<{ id: string }> };
 const updateSchema = z.object({
   activityDate: attendanceDateSchema,
   endsAt: attendanceTimeSchema.optional().or(z.literal("")),
+  groupId: z.string().trim().max(64).optional().or(z.literal("")),
   name: attendanceActivityNameSchema,
   participants: z.array(z.object({ present: z.boolean(), submissionId: z.string().trim().min(1).max(100) })).max(1_000).optional(),
   startsAt: attendanceTimeSchema,
@@ -51,7 +52,11 @@ export async function PATCH(request: Request, context: RouteContext) {
         await transaction.attendanceParticipant.deleteMany({ where: { activityId: id } });
         await transaction.attendanceParticipant.createMany({ data: parsed.data.participants.map((participant) => ({ activityId: id, present: participant.present, submissionId: participant.submissionId })) });
       }
-      return transaction.attendanceActivity.update({ where: { id }, data: { activityDate: attendanceDateStart(parsed.data.activityDate), endsAt: end, name: parsed.data.name, startsAt: start }, select: { id: true } });
+      if (parsed.data.groupId) {
+        const group = await transaction.contactGroup.findUnique({ select: { id: true }, where: { id: parsed.data.groupId } });
+        if (!group) return null;
+      }
+      return transaction.attendanceActivity.update({ where: { id }, data: { activityDate: attendanceDateStart(parsed.data.activityDate), endsAt: end, groupId: parsed.data.groupId || null, name: parsed.data.name, startsAt: start }, select: { id: true } });
     });
     if (result === undefined) return errorResponse("Nie znaleziono aktywności.", 404);
     if (result === null) return errorResponse("Nie znaleziono wybranej osoby.", 404);

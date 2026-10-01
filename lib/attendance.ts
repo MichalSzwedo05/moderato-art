@@ -75,6 +75,7 @@ export type AttendanceCalendarActivity = {
   activityDate: Date;
   endsAt: Date | null;
   id: string;
+  groupId: string | null;
   name: string;
   participants: Array<{ childName: string | null; id: string; parentName: string | null; present: boolean }>;
   presentCount: number;
@@ -96,6 +97,7 @@ export async function getAttendanceBoardData(weekStart: Date) {
     activityDate: activity.activityDate,
     endsAt: activity.endsAt,
     id: activity.id,
+    groupId: activity.groupId,
     name: activity.name,
     participants: activity.participants.map((participant) => ({ childName: participant.submission.childName, id: participant.submission.id, parentName: participant.submission.parentName, present: participant.present })),
     presentCount: activity.participants.filter((participant) => participant.present).length,

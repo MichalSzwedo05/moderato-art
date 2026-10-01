@@ -15,6 +15,7 @@ function activity(overrides: Partial<CalendarBoardActivity> = {}): CalendarBoard
   return {
     activityDate: "2026-09-23T00:00:00.000Z",
     endsAt: "2026-09-23T17:00:00.000Z",
+    groupId: "group-1",
     id: "activity-1",
     name: "Lekcja 1",
     participants: [{ childName: "Anna", id: "submission-1", parentName: "Rodzic A", present: true }, { childName: "Jan", id: "submission-2", parentName: "Rodzic B", present: false }],
@@ -225,7 +226,7 @@ describe("CalendarBoard", () => {
     const [url, options] = mocks.fetch.mock.calls[0] as [string, RequestInit];
     expect(url).toBe("/api/admin/attendance/activity-1");
     expect(options.method).toBe("PATCH");
-    expect(JSON.parse(String(options.body))).toEqual({ activityDate: "2026-09-23", endsAt: "17:00", name: "Lekcja 1 poprawiona", startsAt: "16:00" });
+    expect(JSON.parse(String(options.body))).toEqual({ activityDate: "2026-09-23", endsAt: "17:00", groupId: "group-1", name: "Lekcja 1 poprawiona", startsAt: "16:00" });
   });
 
   it("recalculates the range after updating and deleting an activity", async () => {

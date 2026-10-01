@@ -19,6 +19,7 @@ export const runtime = "nodejs";
 const createSchema = z.object({
   activityDate: attendanceDateSchema,
   endsAt: attendanceTimeSchema.optional().or(z.literal("")),
+  groupId: z.string().trim().max(64).optional().or(z.literal("")),
   name: attendanceActivityNameSchema,
   participants: z.array(z.object({ present: z.boolean(), submissionId: z.string().trim().min(1).max(100) })).max(1_000),
   repeatWeeks: attendanceRepeatWeeksSchema.optional(),
@@ -62,6 +63,10 @@ export async function POST(request: Request) {
     const prisma = getPrisma();
     const submissions = await prisma.contactSubmission.findMany({ select: { id: true }, where: { id: { in: parsed.data.participants.map((participant) => participant.submissionId) } } });
     if (submissions.length !== parsed.data.participants.length) return errorResponse("Nie znaleziono wybranej osoby.", 404);
+    if (parsed.data.groupId) {
+      const group = await prisma.contactGroup.findUnique({ select: { id: true }, where: { id: parsed.data.groupId } });
+      if (!group) return errorResponse("Nie znaleziono wybranej grupy.", 404);
+    }
 
     const created: Array<{ activityDate: string; id: string }> = [];
     const skippedDates: string[] = [];
@@ -72,6 +77,7 @@ export async function POST(request: Request) {
           data: {
             activityDate: attendanceDateStart(occurrence.activityDate),
             endsAt: occurrence.endsAt,
+            groupId: parsed.data.groupId || null,
             name: parsed.data.name,
             participants: { create: parsed.data.participants.map((participant) => ({ present: participant.present, submissionId: participant.submissionId })) },
             seriesId,

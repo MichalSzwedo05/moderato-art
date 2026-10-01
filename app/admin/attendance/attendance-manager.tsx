@@ -5,7 +5,7 @@ import { useState } from "react";
 type Recipient = { childName: string | null; email: string; id: string; parentName: string | null; phone: string | null };
 type Group = { id: string; name: string; submissionIds: string[] };
 type Participant = { present: boolean; submissionId: string };
-type Activity = { activityDate: string; endsAt: string | null; id: string; name: string; participants: Participant[]; startsAt: string };
+type Activity = { activityDate: string; endsAt: string | null; groupId: string | null; id: string; name: string; participants: Participant[]; startsAt: string };
 type FormMode = "new" | "select";
 
 const dateValue = (value: string) => value.slice(0, 10);
@@ -22,6 +22,7 @@ function nextLessonName(activities: Activity[]) {
 function addHour(time: string) { const [hours, minutes] = time.split(":").map(Number); return `${String((hours + 1) % 24).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`; }
 function matchingGroup(activity: Activity | undefined, groups: Group[]) {
   if (!activity) return undefined;
+  if (activity.groupId) return groups.find((group) => group.id === activity.groupId);
   const participantIds = new Set(activity.participants.map((participant) => participant.submissionId));
   return groups
     .filter((group) => group.submissionIds.length >= participantIds.size && [...participantIds].every((id) => group.submissionIds.includes(id)))
@@ -129,7 +130,7 @@ export function AttendanceManager({ activities: initialActivities, groups, recip
       setPendingId(selectedActivity.id);
       setFeedback(undefined);
       try {
-        const response = await fetch(`/api/admin/attendance/${encodeURIComponent(selectedActivity.id)}`, { body: JSON.stringify({ activityDate, endsAt, name, participants: submissionIds.map((submissionId) => ({ present: presentSubmissionIds.includes(submissionId), submissionId })), startsAt }), headers: { "Content-Type": "application/json" }, method: "PATCH" });
+        const response = await fetch(`/api/admin/attendance/${encodeURIComponent(selectedActivity.id)}`, { body: JSON.stringify({ activityDate, endsAt, groupId, name, participants: submissionIds.map((submissionId) => ({ present: presentSubmissionIds.includes(submissionId), submissionId })), startsAt }), headers: { "Content-Type": "application/json" }, method: "PATCH" });
         const result = await response.json() as { message?: string };
         if (!response.ok) throw new Error(result.message || "Nie udało się zapisać zajęć.");
         const updatedActivity = { ...selectedActivity, activityDate: `${activityDate}T00:00:00.000Z`, endsAt: endsAt ? `${activityDate}T${endsAt}:00.000Z` : null, name, participants: submissionIds.map((submissionId) => ({ present: presentSubmissionIds.includes(submissionId), submissionId })), startsAt: `${activityDate}T${startsAt}:00.000Z` };
@@ -144,10 +145,10 @@ export function AttendanceManager({ activities: initialActivities, groups, recip
 
     setPendingId("new"); setFeedback(undefined);
     try {
-      const response = await fetch("/api/admin/attendance", { body: JSON.stringify({ activityDate, endsAt, name, participants: submissionIds.map((submissionId) => ({ present: presentSubmissionIds.includes(submissionId), submissionId })), startsAt }), headers: { "Content-Type": "application/json" }, method: "POST" });
+       const response = await fetch("/api/admin/attendance", { body: JSON.stringify({ activityDate, endsAt, groupId, name, participants: submissionIds.map((submissionId) => ({ present: presentSubmissionIds.includes(submissionId), submissionId })), startsAt }), headers: { "Content-Type": "application/json" }, method: "POST" });
       const result = await response.json() as { id?: string; message?: string };
        if (!response.ok || !result.id) throw new Error(result.message || "Nie udało się utworzyć zajęć.");
-      const createdActivity = { activityDate: `${activityDate}T00:00:00.000Z`, endsAt: endsAt ? `${activityDate}T${endsAt}:00.000Z` : null, id: result.id!, name, participants: submissionIds.map((id) => ({ present: presentSubmissionIds.includes(id), submissionId: id })), startsAt: `${activityDate}T${startsAt}:00.000Z` };
+       const createdActivity = { activityDate: `${activityDate}T00:00:00.000Z`, endsAt: endsAt ? `${activityDate}T${endsAt}:00.000Z` : null, groupId: groupId || null, id: result.id!, name, participants: submissionIds.map((id) => ({ present: presentSubmissionIds.includes(id), submissionId: id })), startsAt: `${activityDate}T${startsAt}:00.000Z` };
       setActivities((current) => [createdActivity, ...current]);
        setName(nextLessonName([createdActivity, ...activities])); setSubmissionIds([]); setPresentSubmissionIds([]); setGroupId(""); setFeedback({ error: false, message: "Zajęcia zostały utworzone." });
      } catch (error) { setFeedback({ error: true, message: error instanceof Error ? error.message : "Nie udało się utworzyć zajęć." }); }

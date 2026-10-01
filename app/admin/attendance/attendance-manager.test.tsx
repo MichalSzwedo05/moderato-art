@@ -16,6 +16,7 @@ const groups = [{ id: "group-1", name: "Grupa A", submissionIds: ["submission-1"
 const activities = [{
   activityDate: "2026-10-01T00:00:00.000Z",
   endsAt: "2026-10-01T17:00:00.000Z",
+  groupId: "group-1",
   id: "activity-1",
   name: "Lekcja 1",
   participants: [{ present: true, submissionId: "submission-1" }, { present: false, submissionId: "submission-2" }],
@@ -82,6 +83,7 @@ describe("AttendanceManager activity form", () => {
     expect(JSON.parse(String(options.body))).toEqual({
       activityDate: "2026-10-01",
       endsAt: "18:00",
+      groupId: "group-1",
       name: "Lekcja zmieniona",
       participants: [{ present: true, submissionId: "submission-1" }, { present: true, submissionId: "submission-2" }],
       startsAt: "17:00",
