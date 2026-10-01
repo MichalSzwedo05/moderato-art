@@ -3416,7 +3416,7 @@ h2 {
   font-weight: 800;
   margin-left: auto;
   margin-top: 0;
-  padding: .45rem .65rem;
+  padding: .55rem .8rem;
   width: auto;
 }
 
@@ -3442,7 +3442,7 @@ h2 {
   cursor: pointer;
   font-size: .8rem !important;
   font-weight: 800;
-  padding: .45rem .65rem !important;
+  padding: .55rem .8rem !important;
   width: auto !important;
 }
 
@@ -3516,15 +3516,16 @@ h2 {
 .attendance-create-status {
   align-items: center;
   cursor: pointer;
-  border-radius: .4rem;
+  border-radius: .6rem;
   border: 1px solid transparent;
   display: inline-flex;
   flex: 0 0 auto;
   font-size: .78rem;
   font-weight: 800;
   justify-content: center;
-  padding: .35rem .5rem;
+  padding: .55rem .8rem;
   white-space: nowrap;
+  width: auto;
 }
 
 .admin-form .attendance-create-status:hover,
