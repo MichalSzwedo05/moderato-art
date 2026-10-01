@@ -32,6 +32,14 @@ describe("AttendanceManager activity form", () => {
     expect(screen.getByRole("heading", { name: "Wybierz zajęcia" })).toBeInTheDocument();
     fireEvent.change(screen.getByLabelText("Wybierz zajęcia"), { target: { value: "activity-1" } });
 
+    const details = document.querySelector(".attendance-selected-details");
+    expect(details).toBeInTheDocument();
+    expect(within(details as HTMLElement).getByText("Lekcja 1")).toBeInTheDocument();
+    expect(within(details as HTMLElement).getByText("2026-10-01 · 16:00–17:00")).toBeInTheDocument();
+    expect(within(details as HTMLElement).getByText("Grupa A")).toBeInTheDocument();
+    expect(screen.queryByLabelText("Nazwa zajęć")).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Edytuj" }));
     expect(screen.getByLabelText("Nazwa zajęć")).toHaveValue("Lekcja 1");
     expect(screen.getByLabelText("Data")).toHaveValue("2026-10-01");
     expect(screen.getByLabelText("Od")).toHaveValue("16:00");
@@ -44,6 +52,7 @@ describe("AttendanceManager activity form", () => {
     render(<AttendanceManager activities={activities} groups={groups} recipients={recipients} />);
 
     fireEvent.change(screen.getByLabelText("Wybierz zajęcia"), { target: { value: "activity-1" } });
+    fireEvent.click(screen.getByRole("button", { name: "Edytuj" }));
     fireEvent.change(screen.getByLabelText("Nazwa zajęć"), { target: { value: "Lekcja zmieniona" } });
     fireEvent.change(screen.getByLabelText("Od"), { target: { value: "17:00" } });
     fireEvent.change(screen.getByLabelText("Do"), { target: { value: "18:00" } });

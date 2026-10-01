@@ -4183,6 +4183,8 @@ h2 {
   .admin-calendar-board-column { min-height: 34rem; }
   .attendance-create-heading { align-items: flex-start; flex-direction: column; }
   .attendance-create-mode-button { width: 100%; }
+  .attendance-selected-details { align-items: stretch; flex-direction: column; }
+  .attendance-edit-button { width: 100%; }
   .attendance-selected-actions { align-items: stretch; flex-direction: column; }
   .attendance-selected-actions-left,
   .attendance-selected-actions-right { width: 100%; }
