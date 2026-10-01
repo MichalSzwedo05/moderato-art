@@ -335,10 +335,11 @@ export function CalendarBoard({ activities, currentDate, groups, weekStart }: Ca
         {items.filter((activity) => dateValue(activity.activityDate) === day).map((activity) => {
           const start = Math.max(rangeStart, minutesOfDay(activity.startsAt));
           const end = Math.max(start + minimumBlockMinutes, minutesOfDay(activity.endsAt ?? activity.startsAt));
+          const compact = end - start <= 60;
           const summary = `${activity.name}, ${timeValue(activity.startsAt)}–${timeValue(activity.endsAt ?? activity.startsAt)}, ${activity.totalParticipants} osób${activity.presentCount ? `, ${activity.presentCount} obecnych` : ""}`;
           return <button
             aria-label={summary}
-            className={`admin-calendar-block ${activity.seriesId ? "admin-calendar-block-series" : ""}`}
+            className={`admin-calendar-block ${compact ? "admin-calendar-block-compact" : ""} ${activity.seriesId ? "admin-calendar-block-series" : ""}`}
             key={activity.id}
             onClick={() => openDetail(activity)}
             style={{ height: `${((end - start) / rangeMinutes) * 100}%`, top: `${((start - rangeStart) / rangeMinutes) * 100}%` }}

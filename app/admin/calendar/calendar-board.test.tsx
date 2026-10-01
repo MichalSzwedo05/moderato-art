@@ -59,6 +59,14 @@ describe("CalendarBoard", () => {
     expect(screen.getByRole("button", { name: /Dodaj zajęcia poniedziałek, 21 września 2026 o 09:00/ })).toBeInTheDocument();
   });
 
+  it("keeps the full title visible for a short activity block", () => {
+    renderBoard([activity({ name: "Długie zajęcia indywidualne" })]);
+
+    const block = screen.getByRole("button", { name: "Długie zajęcia indywidualne, 16:00–17:00, 2 osób" });
+    expect(block).toHaveClass("admin-calendar-block-compact");
+    expect(block.querySelector("strong")).toHaveTextContent("Długie zajęcia indywidualne");
+  });
+
   it("creates a one-off activity with the participants of the selected group", async () => {
     mocks.fetch.mockResolvedValueOnce({ json: async () => ({ id: "activity-2", skippedDates: [] }), ok: true });
     renderBoard();

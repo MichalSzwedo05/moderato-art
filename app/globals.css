@@ -3000,6 +3000,23 @@ h2 {
   z-index: 1;
 }
 
+.admin-calendar-block-compact {
+  min-height: 2.7rem;
+  overflow: visible;
+  z-index: 3;
+}
+
+.admin-calendar-block-compact span,
+.admin-calendar-block-compact small {
+  display: none;
+}
+
+.admin-calendar-block-compact strong {
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+
 .admin-calendar-block:hover,
 .admin-calendar-block:focus-visible {
   border-color: var(--green);
