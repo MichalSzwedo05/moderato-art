@@ -56,10 +56,22 @@ export async function PATCH(request: Request, context: RouteContext) {
         const group = await transaction.contactGroup.findUnique({ select: { id: true }, where: { id: parsed.data.groupId } });
         if (!group) return null;
       }
+      const conflict = await transaction.attendanceActivity.findFirst({
+        select: { name: true },
+        where: {
+          activityDate: attendanceDateStart(parsed.data.activityDate),
+          endsAt: end ? { gt: start } : undefined,
+          id: { not: id },
+          invalid: false,
+          startsAt: end ? { lt: end } : { lte: start },
+        },
+      });
+      if (conflict) return { conflict: conflict.name };
       return transaction.attendanceActivity.update({ where: { id }, data: { activityDate: attendanceDateStart(parsed.data.activityDate), endsAt: end, groupId: parsed.data.groupId || activity.groupId, name: parsed.data.name, startsAt: start }, select: { id: true } });
     });
     if (result === undefined) return errorResponse("Nie znaleziono aktywności.", 404);
     if (result === null) return errorResponse("Nie znaleziono wybranej osoby.", 404);
+    if ("conflict" in result) return errorResponse(`Nie można zapisać zajęć. Termin koliduje z zajęciami „${result.conflict}”. Wybierz inną godzinę.`, 409);
     return NextResponse.json(result, { status: 200 });
   } catch (error) {
     console.error("Attendance activity update failed", error instanceof Error ? error.message : String(error));

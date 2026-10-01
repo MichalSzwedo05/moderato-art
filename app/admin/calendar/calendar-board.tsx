@@ -239,6 +239,7 @@ export function CalendarBoard({ activities, currentDate, groups, weekStart }: Ca
   }
 
   function serverCreateError(message: string) {
+    if (message.includes("koliduje z zajęciami")) return { endsAt: "Termin nakłada się na inne zajęcia. Zmień godzinę rozpoczęcia lub zakończenia." } satisfies CreateFieldErrors;
     if (message.includes("prawidłowe godziny")) return { endsAt: "Sprawdź godziny rozpoczęcia i zakończenia." } satisfies CreateFieldErrors;
     if (message.includes("Uzupełnij dane") || message.includes("wybranej osoby")) return { groupId: "Wybierz grupę z zapisanymi uczestnikami." } satisfies CreateFieldErrors;
     if (message.includes("już istnieje")) return { name: "Zajęcia o tej nazwie już istnieją w wybranym terminie." } satisfies CreateFieldErrors;

@@ -5,6 +5,7 @@ const mocks = vi.hoisted(() => ({
   updateMany: vi.fn(),
   delete: vi.fn(),
   findMany: vi.fn(),
+  findFirst: vi.fn(),
   getAdminAuthConfig: vi.fn(),
   getAdminSession: vi.fn(),
   isSameAdminOrigin: vi.fn(),
@@ -12,7 +13,7 @@ const mocks = vi.hoisted(() => ({
 
 vi.mock("@/lib/admin-auth", () => ({ getAdminAuthConfig: mocks.getAdminAuthConfig, getAdminSession: mocks.getAdminSession }));
 vi.mock("@/lib/admin-security", () => ({ isSameAdminOrigin: mocks.isSameAdminOrigin }));
-vi.mock("@/lib/prisma", () => ({ getPrisma: () => ({ attendanceActivity: { create: mocks.create, delete: mocks.delete, updateMany: mocks.updateMany }, contactSubmission: { findMany: mocks.findMany } }) }));
+vi.mock("@/lib/prisma", () => ({ getPrisma: () => ({ attendanceActivity: { create: mocks.create, delete: mocks.delete, findFirst: mocks.findFirst, updateMany: mocks.updateMany }, contactGroup: { findUnique: vi.fn().mockResolvedValue({ id: "group-1" }) }, contactSubmission: { findMany: mocks.findMany } }) }));
 
 
 import { POST } from "./route";
@@ -29,6 +30,7 @@ describe("POST /api/admin/attendance", () => {
     mocks.isSameAdminOrigin.mockReturnValue(true);
     mocks.findMany.mockResolvedValue([{ id: "one" }]);
     mocks.create.mockResolvedValue({ id: "activity" });
+    mocks.findFirst.mockResolvedValue(null);
   });
 
   it("creates an activity with selected participants", async () => {
@@ -85,6 +87,16 @@ describe("POST /api/admin/attendance", () => {
     const response = await POST(request({ activityDate: "2026-09-28", name: "Lekcja 1", participants: [{ present: false, submissionId: "one" }], repeatWeeks: 60, startsAt: "16:00" }));
 
     expect(response.status).toBe(400);
+    expect(mocks.create).not.toHaveBeenCalled();
+  });
+
+  it("rejects a time overlap before creating an activity", async () => {
+    mocks.findFirst.mockResolvedValue({ name: "Lekcja 4" });
+
+    const response = await POST(request({ activityDate: "2026-09-28", endsAt: "17:00", name: "Lekcja 5", participants: [{ present: false, submissionId: "one" }], startsAt: "16:00" }));
+
+    expect(response.status).toBe(409);
+    expect(await response.json()).toMatchObject({ message: expect.stringContaining("koliduje z zajęciami") });
     expect(mocks.create).not.toHaveBeenCalled();
   });
 

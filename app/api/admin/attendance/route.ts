@@ -68,6 +68,19 @@ export async function POST(request: Request) {
       if (!group) return errorResponse("Nie znaleziono wybranej grupy.", 404);
     }
 
+    for (const occurrence of occurrences) {
+      const conflict = await prisma.attendanceActivity.findFirst({
+        select: { name: true },
+        where: {
+          activityDate: attendanceDateStart(occurrence.activityDate),
+          endsAt: occurrence.startsAt ? { gt: occurrence.startsAt } : undefined,
+          invalid: false,
+          startsAt: occurrence.endsAt ? { lt: occurrence.endsAt } : { lte: occurrence.startsAt },
+        },
+      });
+      if (conflict) return errorResponse(`Nie można utworzyć zajęć. Termin ${occurrence.activityDate} koliduje z zajęciami „${conflict.name}”. Wybierz inną godzinę.`, 409);
+    }
+
     const created: Array<{ activityDate: string; id: string }> = [];
     const skippedDates: string[] = [];
 

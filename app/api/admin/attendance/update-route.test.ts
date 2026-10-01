@@ -30,7 +30,7 @@ describe("PATCH /api/admin/attendance/:id", () => {
     mocks.getAdminAuthConfig.mockReturnValue({ authOrigin: "https://moderato-art.example" });
     mocks.getAdminSession.mockResolvedValue({ id: "session" });
     mocks.isSameAdminOrigin.mockReturnValue(true);
-    mocks.attendanceFindFirst.mockResolvedValue({ groupId: "group-1", id: "activity-1" });
+    mocks.attendanceFindFirst.mockResolvedValueOnce({ groupId: "group-1", id: "activity-1" }).mockResolvedValueOnce(null);
     mocks.findMany.mockResolvedValue([{ id: "submission-1" }, { id: "submission-2" }, { id: "submission-3" }]);
     mocks.attendanceUpdate.mockResolvedValue({ id: "activity-1" });
     mocks.transaction.mockImplementation(async (callback: (transaction: unknown) => Promise<unknown>) => callback({ attendanceActivity: { findFirst: mocks.attendanceFindFirst, update: mocks.attendanceUpdate }, attendanceParticipant: { createMany: mocks.createMany, deleteMany: mocks.deleteMany }, contactGroup: { findUnique: vi.fn().mockResolvedValue({ id: "group-1" }) }, contactSubmission: { findMany: mocks.findMany } }));
