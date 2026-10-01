@@ -40,12 +40,12 @@ export async function POST(request: Request) {
   const to = new Date(`${parsed.data.dateTo}T23:59:59.999Z`);
   try {
     const activities = await getPrisma().attendanceActivity.findMany({
-      include: { participants: { include: { submission: { select: { childName: true, email: true, parentName: true } } }, orderBy: { submission: { childName: "asc" } }, where: parsed.data.submissionId ? { submissionId: parsed.data.submissionId } : undefined } },
+      include: { group: { select: { name: true } }, participants: { include: { submission: { select: { childName: true, email: true, parentName: true } } }, orderBy: { submission: { childName: "asc" } }, where: parsed.data.submissionId ? { submissionId: parsed.data.submissionId } : undefined } },
       orderBy: [{ activityDate: "asc" }, { startsAt: "asc" }, { id: "asc" }],
       where: { activityDate: { gte: from, lte: to }, groupId: parsed.data.groupId, invalid: false, ...(!parsed.data.preview && parsed.data.submissionId ? { participants: { some: { submissionId: parsed.data.submissionId } } } : {}) },
     });
     const rows = [
-      ["Osoba", "E-mail", "Zajęcia", "Data", "Od", "Do", "Status"],
+      ["Osoba", "E-mail", "Zajęcia", "Data", "Od", "Do", "Status", "Grupa"],
       ...activities.flatMap((activity) => activity.participants.map((participant) => [
         participant.submission.childName || participant.submission.parentName || "Bez podanego imienia",
         participant.submission.email,
@@ -53,7 +53,8 @@ export async function POST(request: Request) {
         activity.activityDate.toISOString().slice(0, 10),
         activity.startsAt.toISOString().slice(11, 16),
         activity.endsAt?.toISOString().slice(11, 16) || "",
-        participant.present ? "Obecny" : "Nieobecny",
+         participant.present ? "Obecny" : "Nieobecny",
+         activity.group?.name || "",
       ])),
     ];
     if (parsed.data.preview) {
