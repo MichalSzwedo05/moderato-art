@@ -3466,6 +3466,39 @@ h2 {
   width: 100% !important;
 }
 
+.attendance-extra-participants {
+  display: grid;
+  gap: .45rem;
+  max-width: 24rem;
+  width: 100%;
+}
+
+.attendance-extra-participant {
+  align-items: center;
+  background: color-mix(in srgb, var(--blue) 10%, var(--surface));
+  border: 1px solid var(--border-color);
+  border-radius: .6rem;
+  color: var(--dark-blue);
+  cursor: pointer;
+  display: flex;
+  font: inherit;
+  gap: .75rem;
+  justify-content: space-between;
+  margin: 0;
+  padding: .55rem .8rem;
+  text-align: left;
+  width: 100%;
+}
+
+.attendance-extra-participant:hover,
+.attendance-extra-participant:focus-visible {
+  background: color-mix(in srgb, var(--blue) 20%, var(--surface));
+  border-color: var(--blue);
+}
+
+.attendance-extra-participant span { font-weight: 800; }
+.attendance-extra-participant small { color: var(--gray-light); overflow-wrap: anywhere; }
+
 .attendance-add-person-select {
   background: var(--blue) !important;
   border: 0 !important;
