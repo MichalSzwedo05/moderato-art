@@ -59,6 +59,27 @@ describe("CalendarBoard", () => {
     expect(screen.getByRole("button", { name: /Dodaj zajęcia poniedziałek, 21 września 2026 o 09:00/ })).toBeInTheDocument();
   });
 
+  it("shows the default calendar range from 09:00 to 19:00", () => {
+    renderBoard();
+
+    expect(screen.getByText("09:00")).toBeInTheDocument();
+    expect(screen.getByText("19:00")).toBeInTheDocument();
+    expect(screen.queryByText("08:00")).not.toBeInTheDocument();
+    expect(screen.queryByText("20:00")).not.toBeInTheDocument();
+  });
+
+  it("extends the visible range for early and late activities", () => {
+    renderBoard([
+      activity({ endsAt: "2026-09-23T08:30:00.000Z", startsAt: "2026-09-23T07:30:00.000Z" }),
+      activity({ endsAt: "2026-09-23T21:15:00.000Z", id: "activity-2", startsAt: "2026-09-23T20:30:00.000Z" }),
+    ]);
+
+    expect(screen.getByText("07:00")).toBeInTheDocument();
+    expect(screen.getByText("21:00")).toBeInTheDocument();
+    expect(screen.queryByText("06:00")).not.toBeInTheDocument();
+    expect(screen.queryByText("22:00")).not.toBeInTheDocument();
+  });
+
   it("keeps the full title visible for a short activity block", () => {
     renderBoard([activity({ name: "Długie zajęcia indywidualne" })]);
 

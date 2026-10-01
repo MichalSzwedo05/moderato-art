@@ -31,8 +31,8 @@ type CreateFieldErrors = Partial<Record<CreateField, string>>;
 
 const dayNames = ["Poniedziałek", "Wtorek", "Środa", "Czwartek", "Piątek", "Sobota", "Niedziela"];
 const minimumBlockMinutes = 30;
-const earliestHour = 7;
-const latestHour = 22;
+const defaultStartHour = 9;
+const defaultEndHour = 19;
 
 const shortDayFormatter = new Intl.DateTimeFormat("pl-PL", { day: "2-digit", month: "2-digit", timeZone: "UTC" });
 const longDayFormatter = new Intl.DateTimeFormat("pl-PL", { dateStyle: "full", timeZone: "UTC" });
@@ -119,8 +119,8 @@ export function CalendarBoard({ activities, currentDate, groups, weekStart }: Ca
   const hours = useMemo(() => {
     const starts = items.map((activity) => minutesOfDay(activity.startsAt));
     const ends = items.map((activity) => minutesOfDay(activity.endsAt ?? activity.startsAt) + 30);
-    const first = Math.max(0, Math.min(earliestHour, ...starts.map((minutes) => Math.floor(minutes / 60) - 1)));
-    const last = Math.min(24, Math.max(latestHour, ...ends.map((minutes) => Math.ceil(minutes / 60))));
+    const first = Math.max(0, Math.min(defaultStartHour, ...starts.map((minutes) => Math.floor(minutes / 60))));
+    const last = Math.min(24, Math.max(defaultEndHour + 1, ...ends.map((minutes) => Math.ceil(minutes / 60))));
     return Array.from({ length: Math.max(1, last - first) }, (_, index) => first + index);
   }, [items]);
   const rangeStart = hours[0] * 60;
