@@ -3443,22 +3443,17 @@ h2 {
 }
 
 .attendance-add-participant-button {
-  align-items: center;
   background: var(--blue);
   border: 0;
-  border-radius: 50%;
+  border-radius: .6rem;
   color: #fff;
   cursor: pointer;
-  display: inline-flex;
   font: inherit;
-  font-size: 1.25rem;
+  font-size: .8rem;
   font-weight: 800;
-  height: 2rem;
-  justify-content: center;
-  line-height: 1;
   margin: 0;
-  padding: 0;
-  width: 2rem;
+  padding: .55rem .8rem;
+  width: auto;
 }
 
 .attendance-add-participant-button:hover,
