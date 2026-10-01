@@ -3442,7 +3442,12 @@ h2 {
   cursor: pointer;
   font-size: .8rem !important;
   font-weight: 800;
+  inline-size: 10.5rem !important;
+  max-inline-size: 10.5rem !important;
+  overflow: hidden;
   padding: .55rem .8rem !important;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   width: auto !important;
 }
 
