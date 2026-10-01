@@ -37,11 +37,7 @@ describe("AttendanceManager activity form", () => {
     expect(within(details as HTMLElement).getByText("Lekcja 1")).toBeInTheDocument();
     expect(within(details as HTMLElement).getByText("2026-10-01 · 16:00–17:00")).toBeInTheDocument();
     expect(within(details as HTMLElement).getByText("Grupa A")).toBeInTheDocument();
-    const attendanceList = screen.getByRole("region", { name: "Lista obecności" });
-    expect(attendanceList).toHaveTextContent("Anna");
-    expect(attendanceList).toHaveTextContent("Obecny");
-    expect(attendanceList).toHaveTextContent("Jan");
-    expect(attendanceList).toHaveTextContent("Nieobecny");
+    expect(screen.queryByRole("region", { name: "Lista obecności" })).not.toBeInTheDocument();
     expect(screen.queryByLabelText("Nazwa zajęć")).not.toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "Edytuj" }));
@@ -61,12 +57,13 @@ describe("AttendanceManager activity form", () => {
     fireEvent.change(screen.getByLabelText("Nazwa zajęć"), { target: { value: "Lekcja zmieniona" } });
     fireEvent.change(screen.getByLabelText("Od"), { target: { value: "17:00" } });
     fireEvent.change(screen.getByLabelText("Do"), { target: { value: "18:00" } });
+    fireEvent.click(screen.getByRole("button", { name: "Oznacz Jan jako obecnego" }));
     fireEvent.submit(screen.getByRole("heading", { name: "Wybierz zajęcia" }).closest("form")!);
 
     await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
-    expect(screen.queryByText("Uczestnicy")).not.toBeInTheDocument();
+    expect(screen.getByText("Uczestnicy")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Oznacz Jan jako nieobecnego" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Edytuj" })).toBeInTheDocument();
-    expect(screen.getByRole("region", { name: "Lista obecności" })).toBeInTheDocument();
     const [url, options] = fetchMock.mock.calls[0] as [string, RequestInit];
     expect(url).toBe("/api/admin/attendance/activity-1");
     expect(options.method).toBe("PATCH");
@@ -74,7 +71,7 @@ describe("AttendanceManager activity form", () => {
       activityDate: "2026-10-01",
       endsAt: "18:00",
       name: "Lekcja zmieniona",
-      participants: [{ present: true, submissionId: "submission-1" }, { present: false, submissionId: "submission-2" }],
+      participants: [{ present: true, submissionId: "submission-1" }, { present: true, submissionId: "submission-2" }],
       startsAt: "17:00",
     });
   });
