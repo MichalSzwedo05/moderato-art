@@ -61,9 +61,19 @@ describe("POST /api/admin/attendance/report", () => {
       activityDate: new Date("2026-10-02T00:00:00.000Z"), endsAt: null, name: "Lekcja 6",
       participants: [{ present: true, submission: { childName: "Ola", email: "ola@example.com", parentName: "Rodzic C" }, submissionId: "submission-2" }], startsAt: new Date("2026-10-02T18:00:00.000Z"),
     }]);
-    const response = await POST(request({ dateFrom: "2026-10-01", dateTo: "2026-10-02", preview: true, submissionId: "submission-1" }));
+    const response = await POST(request({ dateFrom: "2026-10-01", dateTo: "2026-10-02", groupId: "group-1", preview: true, submissionId: "submission-1" }));
     expect(response.status).toBe(200);
     expect(await response.json()).toEqual({ dates: ["2026-10-01"], people: [{ email: "jan@example.com", name: "Jan", statuses: { "2026-10-01": false } }], selectedPerson: "submission-1" });
+    expect(mocks.findMany).toHaveBeenCalledWith(expect.objectContaining({ where: expect.objectContaining({ groupId: "group-1" }) }));
+  });
+
+  it("returns all activity dates for an all-participant preview", async () => {
+    mocks.findMany.mockResolvedValue([{
+      activityDate: new Date("2026-10-01T00:00:00.000Z"), endsAt: null, name: "Lekcja 5",
+      participants: [{ present: true, submission: { childName: "Jan", email: "jan@example.com", parentName: "Rodzic B" }, submissionId: "submission-1" }], startsAt: new Date("2026-10-01T18:00:00.000Z"),
+    }]);
+    const response = await POST(request({ dateFrom: "2026-10-01", dateTo: "2026-10-01", preview: true }));
+    expect(await response.json()).toMatchObject({ dates: ["2026-10-01"], selectedPerson: null });
   });
 
   it("requires the admin origin and session", async () => {
