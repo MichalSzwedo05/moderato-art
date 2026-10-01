@@ -10,6 +10,7 @@ import { AttendanceManager } from "./attendance-manager";
 const recipients = [
   { childName: "Anna", email: "anna@example.com", id: "submission-1", parentName: "Rodzic A", phone: null },
   { childName: "Jan", email: "jan@example.com", id: "submission-2", parentName: "Rodzic B", phone: null },
+  { childName: "Ola", email: "ola@example.com", id: "submission-3", parentName: "Rodzic C", phone: null },
 ];
 const groups = [{ id: "group-1", name: "Grupa A", submissionIds: ["submission-1", "submission-2"] }];
 const activities = [{
@@ -85,6 +86,23 @@ describe("AttendanceManager activity form", () => {
       participants: [{ present: true, submissionId: "submission-1" }, { present: true, submissionId: "submission-2" }],
       startsAt: "17:00",
     });
+  });
+
+  it("adds a person outside the assigned group to the attendance list", async () => {
+    fetchMock.mockResolvedValueOnce({ json: async () => ({ id: "activity-1" }), ok: true });
+    render(<AttendanceManager activities={activities} groups={groups} recipients={recipients} />);
+
+    const addPerson = screen.getByRole("combobox", { name: "Dodaj osobę do obecności" });
+    expect(addPerson).toBeInTheDocument();
+    fireEvent.change(addPerson, { target: { value: "submission-3" } });
+    expect(screen.getByRole("button", { name: "Oznacz Ola jako obecnego" })).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Oznacz Ola jako obecnego" }));
+    fireEvent.submit(screen.getByRole("heading", { name: "Wybierz zajęcia" }).closest("form")!);
+
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+    const body = JSON.parse(String((fetchMock.mock.calls[0] as [string, RequestInit])[1].body));
+    expect(body.participants).toContainEqual({ present: true, submissionId: "submission-3" });
   });
 
   it("shows confirm on the left and delete on the right for selected activities", async () => {

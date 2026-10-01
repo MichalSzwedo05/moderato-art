@@ -3425,6 +3425,32 @@ h2 {
   background: var(--dark-blue);
 }
 
+.attendance-create-people-actions {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+  margin-left: auto;
+}
+
+.attendance-add-person-select {
+  background: var(--blue) !important;
+  border: 0 !important;
+  border-radius: .6rem !important;
+  box-sizing: border-box;
+  color: #fff !important;
+  cursor: pointer;
+  font-size: .8rem !important;
+  font-weight: 800;
+  padding: .45rem .65rem !important;
+  width: auto !important;
+}
+
+.attendance-add-person-select option {
+  background: var(--surface);
+  color: var(--gray-text);
+}
+
 .attendance-create-people-heading > span {
   align-items: center;
   background: var(--blue);
@@ -4380,6 +4406,9 @@ h2 {
   .admin-calendar-board-column { min-height: 34rem; }
   .attendance-create-heading { align-items: flex-start; flex-direction: column; }
   .attendance-create-mode-button { width: 100%; }
+  .attendance-create-people-actions { align-items: stretch; margin-left: 0; width: 100%; }
+  .attendance-add-person-select,
+  .attendance-create-people-actions .attendance-bulk-button { flex: 1 1 0; width: 100% !important; }
   .attendance-selected-details { align-items: stretch; flex-direction: column; }
   .attendance-edit-button { width: 100%; }
   .attendance-selected-actions { align-items: stretch; flex-direction: column; }
