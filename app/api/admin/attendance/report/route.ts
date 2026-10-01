@@ -67,7 +67,7 @@ export async function POST(request: Request) {
           people.set(id, existing);
         }
       }
-      return NextResponse.json({ dates, people: [...people.values()].sort((left, right) => left.name.localeCompare(right.name, "pl")) });
+      return NextResponse.json({ dates, people: [...people.values()].sort((left, right) => left.name.localeCompare(right.name, "pl")), selectedPerson: parsed.data.submissionId || null });
     }
     const csv = `\uFEFF${rows.map((row) => row.map(csvCell).join(",")).join("\r\n")}\r\n`;
     return new Response(csv, { headers: { "Cache-Control": "private, no-store, max-age=0", "Content-Disposition": `attachment; filename="${reportFilename(new Date())}"`, "Content-Type": "text/csv; charset=utf-8", "X-Content-Type-Options": "nosniff" } });

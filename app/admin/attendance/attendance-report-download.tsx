@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 
 type Recipient = { childName: string | null; email: string; id: string; parentName: string | null };
 type ReportPerson = { email: string; name: string; statuses: Record<string, boolean> };
-type ReportPreview = { dates: string[]; people: ReportPerson[] };
+type ReportPreview = { dates: string[]; people: ReportPerson[]; selectedPerson: string | null };
 
 function localDateValue() {
   const now = new Date();
@@ -77,9 +77,14 @@ export function AttendanceReportDownload({ recipients }: { recipients: Recipient
     setFeedback(undefined);
     try {
       const response = await fetch("/api/admin/attendance/report", { body: JSON.stringify({ dateFrom, dateTo, preview: true, submissionId: submissionId || undefined }), headers: { "Content-Type": "application/json" }, method: "POST" });
-      const body = await response.json() as { dates?: string[]; message?: string; people?: ReportPerson[] };
+      const body = await response.json() as { dates?: string[]; message?: string; people?: ReportPerson[]; selectedPerson?: string | null };
       if (!response.ok) throw new Error(body.message || "Nie udało się przygotować podglądu raportu.");
-      setPreview({ dates: body.dates || [], people: body.people || [] });
+      const selectedRecipient = submissionId ? recipients.find((recipient) => recipient.id === submissionId) : undefined;
+      const people = body.people || [];
+      if (selectedRecipient && !people.some((person) => person.email === selectedRecipient.email)) {
+        people.push({ email: selectedRecipient.email, name: displayName(selectedRecipient), statuses: {} });
+      }
+      setPreview({ dates: body.dates || [], people, selectedPerson: body.selectedPerson || submissionId || null });
     } catch (error) {
       setFeedback({ error: true, message: error instanceof Error ? error.message : "Nie udało się przygotować podglądu raportu." });
     } finally {
