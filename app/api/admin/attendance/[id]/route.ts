@@ -43,7 +43,7 @@ export async function PATCH(request: Request, context: RouteContext) {
   try {
     const prisma = getPrisma();
     const result = await prisma.$transaction(async (transaction) => {
-      const activity = await transaction.attendanceActivity.findFirst({ where: { id, invalid: false }, select: { id: true } });
+      const activity = await transaction.attendanceActivity.findFirst({ where: { id, invalid: false }, select: { groupId: true, id: true } });
       if (!activity) return undefined;
       if (parsed.data.participants) {
         const ids = parsed.data.participants.map((participant) => participant.submissionId);
@@ -56,7 +56,7 @@ export async function PATCH(request: Request, context: RouteContext) {
         const group = await transaction.contactGroup.findUnique({ select: { id: true }, where: { id: parsed.data.groupId } });
         if (!group) return null;
       }
-      return transaction.attendanceActivity.update({ where: { id }, data: { activityDate: attendanceDateStart(parsed.data.activityDate), endsAt: end, groupId: parsed.data.groupId || null, name: parsed.data.name, startsAt: start }, select: { id: true } });
+      return transaction.attendanceActivity.update({ where: { id }, data: { activityDate: attendanceDateStart(parsed.data.activityDate), endsAt: end, groupId: parsed.data.groupId || activity.groupId, name: parsed.data.name, startsAt: start }, select: { id: true } });
     });
     if (result === undefined) return errorResponse("Nie znaleziono aktywności.", 404);
     if (result === null) return errorResponse("Nie znaleziono wybranej osoby.", 404);
