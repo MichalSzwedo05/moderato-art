@@ -86,6 +86,7 @@ describe("CalendarBoard", () => {
     const block = screen.getByRole("button", { name: "Długie zajęcia indywidualne, 16:00–17:00, 2 osób" });
     expect(block).toHaveClass("admin-calendar-block-compact");
     expect(block.querySelector("strong")).toHaveTextContent("Długie zajęcia indywidualne");
+    expect(block.querySelector("span")).toHaveTextContent("16:00–17:00");
   });
 
   it("creates a one-off activity with the participants of the selected group", async () => {

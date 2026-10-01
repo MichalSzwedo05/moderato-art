@@ -3046,7 +3046,6 @@ h2 {
   z-index: 3;
 }
 
-.admin-calendar-block-compact span,
 .admin-calendar-block-compact small {
   display: none;
 }
@@ -3055,6 +3054,11 @@ h2 {
   line-height: 1.2;
   overflow-wrap: anywhere;
   white-space: normal;
+}
+
+.admin-calendar-block-compact span {
+  display: block;
+  flex-shrink: 0;
 }
 
 .admin-calendar-block:hover,
