@@ -3250,7 +3250,11 @@ h2 {
   justify-content: space-between;
 }
 
-.attendance-report-preview-header h2 { margin-bottom: .25rem; }
+.attendance-report-preview-header h2 {
+  font-size: clamp(1.6rem, 3vw, 2.2rem);
+  margin-bottom: .25rem;
+  white-space: nowrap;
+}
 .attendance-report-preview-header p { color: var(--gray-light); margin: 0; }
 
 .attendance-report-preview-header button {
