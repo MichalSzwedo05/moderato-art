@@ -26,7 +26,7 @@ type CalendarBoardProps = {
 };
 
 type DraftActivity = { activityDate: string; endsAt: string; groupId: string; name: string; repeatWeeks: number; startsAt: string };
-type DetailActivity = { endsAt: string; name: string; startsAt: string };
+type DetailActivity = { endsAt: string; name: string; nameEditable: boolean; startsAt: string };
 type DeleteScope = "future" | "series" | "single";
 type CreateField = "endsAt" | "groupId" | "name" | "repeatWeeks" | "startsAt";
 type CreateFieldErrors = Partial<Record<CreateField, string>>;
@@ -170,6 +170,7 @@ export function CalendarBoard({ activities, currentDate, groups, weekStart }: Ca
   const router = useRouter();
   const createDialogRef = useRef<HTMLDialogElement>(null);
   const detailDialogRef = useRef<HTMLDialogElement>(null);
+  const detailNameInputRef = useRef<HTMLInputElement>(null);
   const createTitleId = useId();
   const detailTitleId = useId();
   const [items, setItems] = useState(activities);
@@ -230,6 +231,7 @@ export function CalendarBoard({ activities, currentDate, groups, weekStart }: Ca
     setDetail({
       endsAt: activity.endsAt ? timeValue(activity.endsAt) : addHour(timeValue(activity.startsAt)),
       name: activity.name,
+      nameEditable: false,
       startsAt: timeValue(activity.startsAt),
     });
   }
@@ -461,7 +463,7 @@ export function CalendarBoard({ activities, currentDate, groups, weekStart }: Ca
         <h2 id={detailTitleId}>{selectedActivity.name}</h2>
         <p className="admin-submissions-intro">{longDayFormatter.format(utcDate(selectedActivity.activityDate))} · {selectedActivity.totalParticipants} osób</p>
         <p className="admin-calendar-detail-group"><strong>Grupa:</strong> {activityGroupName(selectedActivity, groups) || "Nie przypisano grupy"}</p>
-        <label>Nazwa zajęć<input maxLength={160} onChange={(event) => setDetail({ ...detail, name: event.target.value })} value={detail.name} /></label>
+        <label>Nazwa zajęć<input maxLength={160} onChange={(event) => setDetail({ ...detail, name: event.target.value })} onClick={() => { if (detail.nameEditable) return; setDetail({ ...detail, nameEditable: true }); requestAnimationFrame(() => detailNameInputRef.current?.focus()); }} readOnly={!detail.nameEditable} ref={detailNameInputRef} value={detail.name} /></label>
         <div aria-label="Lista obecności" className="attendance-selected-status calendar-attendance-status" role="region"><div className="attendance-selected-status-heading"><div className="calendar-attendance-status-title"><strong>Lista obecności</strong><span>Uczestnicy zajęć</span></div><span className="calendar-attendance-status-count">{selectedActivity.presentCount}/{selectedActivity.totalParticipants} obecnych</span></div>{selectedActivity.participants.length === 0 ? <p className="admin-submissions-empty">Brak uczestników.</p> : <div className="attendance-selected-status-list calendar-attendance-status-list">{sortParticipants(selectedActivity.participants).map((participant) => <div className={`calendar-attendance-status-row ${participant.present ? "calendar-attendance-status-row-present" : "calendar-attendance-status-row-absent"}`} key={participant.id}><span className="calendar-attendance-status-person"><i aria-hidden="true" />{participantName(participant)}</span><strong className="calendar-attendance-status-badge">{participant.present ? "Obecny" : "Nieobecny"}</strong></div>)}</div>}</div>
         <div className="attendance-time-grid">
           <label>Od<input onChange={(event) => setDetail({ ...detail, startsAt: event.target.value })} type="time" value={detail.startsAt} /></label>

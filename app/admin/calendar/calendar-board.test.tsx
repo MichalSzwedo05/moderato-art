@@ -213,6 +213,9 @@ describe("CalendarBoard", () => {
     expect(screen.queryByRole("combobox", { name: "Usuń" })).not.toBeInTheDocument();
     expect(screen.getByLabelText("Od")).toHaveValue("16:00");
     expect(screen.getByLabelText("Do")).toHaveValue("17:00");
+    expect(screen.getByLabelText("Nazwa zajęć")).toHaveAttribute("readonly");
+    fireEvent.click(screen.getByLabelText("Nazwa zajęć"));
+    expect(screen.getByLabelText("Nazwa zajęć")).not.toHaveAttribute("readonly");
     expect(screen.getByText("Pianino grupa A")).toBeInTheDocument();
     expect(screen.getByRole("region", { name: "Lista obecności" })).toHaveTextContent("Anna");
     expect(screen.getByRole("region", { name: "Lista obecności" })).toHaveTextContent("Obecny");
