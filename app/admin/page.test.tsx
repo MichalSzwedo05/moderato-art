@@ -47,6 +47,6 @@ describe("AdminPage", () => {
     mocks.redirect.mockImplementation(() => { throw new Error("redirect"); });
 
     await expect(AdminPage({ searchParams: Promise.resolve({}) })).rejects.toThrow("redirect");
-    expect(mocks.redirect).toHaveBeenCalledWith("/admin/gallery");
+    expect(mocks.redirect).toHaveBeenCalledWith("/admin/attendance");
   });
 });

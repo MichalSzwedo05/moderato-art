@@ -41,6 +41,7 @@ export default async function AttendancePage({ searchParams }: AttendancePagePro
         activityDate: activity.activityDate.toISOString(),
         endsAt: activity.endsAt?.toISOString() || null,
         groupId: activity.groupId,
+        groupIds: activity.groups.map((group) => group.groupId),
         id: activity.id,
         name: activity.name,
         participants: activity.participants.map((participant) => ({ present: participant.present, submissionId: participant.submissionId })),

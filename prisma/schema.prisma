@@ -73,6 +73,7 @@ model AttendanceActivity {
   createdAt    DateTime                @default(now())
   updatedAt    DateTime                @updatedAt
   group        ContactGroup?           @relation(fields: [groupId], references: [id], onDelete: SetNull)
+  groups       AttendanceActivityGroup[]
   participants AttendanceParticipant[]
 
   @@unique([name, activityDate])
@@ -102,6 +103,18 @@ model ContactGroup {
   updatedAt   DateTime                 @updatedAt
   memberships ContactGroupMembership[]
   attendanceActivities AttendanceActivity[]
+  attendanceActivityGroups AttendanceActivityGroup[]
+}
+
+model AttendanceActivityGroup {
+  activityId String
+  groupId    String
+  createdAt  DateTime          @default(now())
+  activity   AttendanceActivity @relation(fields: [activityId], references: [id], onDelete: Cascade)
+  group      ContactGroup       @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  @@id([activityId, groupId])
+  @@index([groupId, activityId])
 }
 
 model MessageLog {

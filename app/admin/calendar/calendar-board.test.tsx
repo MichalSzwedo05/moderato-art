@@ -58,7 +58,7 @@ describe("CalendarBoard", () => {
     expect(screen.getByText("Poniedziałek")).toBeInTheDocument();
     expect(screen.getByText("Niedziela")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Lekcja 1, 16:00–17:00, 2 osób" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /Dodaj zajęcia poniedziałek, 21 września 2026 o 09:00/ })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Dodaj zajęcia poniedziałek, 21 września 2026 o 16:00/ })).toBeInTheDocument();
   });
 
   it("shows the default calendar range from 09:00 to 19:00", () => {
@@ -82,6 +82,15 @@ describe("CalendarBoard", () => {
     expect(screen.queryByText("22:00")).not.toBeInTheDocument();
   });
 
+  it("starts and ends the visible range at the attendance hours", () => {
+    renderBoard([activity({ endsAt: "2026-09-23T13:45:00.000Z", startsAt: "2026-09-23T11:15:00.000Z" })]);
+
+    expect(screen.getByText("11:00")).toBeInTheDocument();
+    expect(screen.getByText("13:00")).toBeInTheDocument();
+    expect(screen.queryByText("09:00")).not.toBeInTheDocument();
+    expect(screen.queryByText("14:00")).not.toBeInTheDocument();
+  });
+
   it("recalculates the range when refreshed events change", () => {
     const view = renderBoard();
 
@@ -102,6 +111,21 @@ describe("CalendarBoard", () => {
     expect(block).toHaveClass("admin-calendar-block-compact");
     expect(block.querySelector("strong")).toHaveTextContent("Długie zajęcia indywidualne");
     expect(block.querySelector("span")).toHaveTextContent("16:00–17:00");
+  });
+
+  it("places overlapping activities into separate horizontal lanes", () => {
+    const overlappingActivities = [
+      activity({ id: "activity-1", name: "Lekcja A" }),
+      activity({ id: "activity-2", name: "Lekcja B" }),
+      activity({ id: "activity-3", name: "Lekcja C" }),
+    ];
+    renderBoard(overlappingActivities);
+
+    const blocks = [...document.querySelectorAll<HTMLButtonElement>(".admin-calendar-block")];
+    expect(blocks).toHaveLength(3);
+    expect(new Set(blocks.map((block) => block.style.left)).size).toBe(3);
+    expect(blocks.every((block) => block.style.width === "calc(33.3333% - 4px)")).toBe(true);
+    expect(blocks.every((block) => block.classList.contains("admin-calendar-block-laned"))).toBe(true);
   });
 
   it("creates a one-off activity with the participants of the selected group", async () => {
@@ -243,7 +267,7 @@ describe("CalendarBoard", () => {
     fireEvent.click(screen.getByRole("button", { name: "Zatwierdź" }));
 
     await waitFor(() => expect(screen.getByText("20:00")).toBeInTheDocument());
-    expect(screen.getByText("21:00")).toBeInTheDocument();
+    expect(screen.queryByText("21:00")).not.toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "Lekcja 1, 20:00–21:00, 2 osób" }));
     fireEvent.click(screen.getByRole("button", { name: "Usuń" }));
