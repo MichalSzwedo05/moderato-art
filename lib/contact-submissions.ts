@@ -11,6 +11,7 @@ export const contactSubmissionMmsMaxMessageLength = 10_000;
 export const contactSubmissionEmailMaxRecipients = 1_000;
 export const contactSubmissionEmailMaxSubjectLength = 200;
 export const contactSubmissionEmailMaxMessageLength = 20_000;
+export const contactSubmissionEmailMaxAttachmentBytes = 40 * 1024 * 1024;
 export const contactSubmissionFilters = ["ALL", "NEW", "CONTACTED", "ARCHIVED"] as const;
 
 export type ContactSubmissionFilter = typeof contactSubmissionFilters[number];
