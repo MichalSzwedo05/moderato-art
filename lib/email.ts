@@ -9,7 +9,14 @@ export type EmailConfig = {
 };
 
 type EmailMessageOptions = {
+  attachments?: EmailAttachment[];
   throwOnError?: boolean;
+};
+
+export type EmailAttachment = {
+  content: Buffer;
+  contentType?: string;
+  filename: string;
 };
 
 export async function sendEmailMessage(
@@ -31,15 +38,28 @@ export async function sendEmailMessage(
       to: [recipient],
     }));
 
-    for (let offset = 0; offset < emails.length; offset += resendBatchSize) {
-      const result = await Promise.race([
-        resend.batch.send(emails.slice(offset, offset + resendBatchSize)),
-        new Promise<never>((_, reject) => {
-          timeout = setTimeout(() => reject(new Error("Admin email sending timed out")), resendTimeoutMs);
-        }),
-      ]);
-      if (result.error) throw new Error(result.error.message);
-      if (timeout) clearTimeout(timeout);
+    if (options.attachments?.length) {
+      for (const email of emails) {
+        const result = await Promise.race([
+          resend.emails.send({ ...email, attachments: options.attachments }),
+          new Promise<never>((_, reject) => {
+            timeout = setTimeout(() => reject(new Error("Admin email sending timed out")), resendTimeoutMs);
+          }),
+        ]);
+        if (result.error) throw new Error(result.error.message);
+        if (timeout) clearTimeout(timeout);
+      }
+    } else {
+      for (let offset = 0; offset < emails.length; offset += resendBatchSize) {
+        const result = await Promise.race([
+          resend.batch.send(emails.slice(offset, offset + resendBatchSize)),
+          new Promise<never>((_, reject) => {
+            timeout = setTimeout(() => reject(new Error("Admin email sending timed out")), resendTimeoutMs);
+          }),
+        ]);
+        if (result.error) throw new Error(result.error.message);
+        if (timeout) clearTimeout(timeout);
+      }
     }
 
     return true;

@@ -30,6 +30,15 @@ function request(body: unknown, origin = "https://moderato-art.example") {
   });
 }
 
+function multipartRequest(fields: Record<string, string>, attachment?: File, origin = "https://moderato-art.example") {
+  const values = new Map<string, FormDataEntryValue>(Object.entries(fields));
+  if (attachment) values.set("attachment", attachment);
+  return {
+    formData: async () => ({ get: (name: string) => values.get(name) ?? null }),
+    headers: new Headers({ origin, "content-type": "multipart/form-data" }),
+  } as unknown as Request;
+}
+
 describe("POST /api/admin/email", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -83,6 +92,46 @@ describe("POST /api/admin/email", () => {
       "Przypomnienie",
       { throwOnError: true },
     );
+  });
+
+  it("sends a multipart attachment to the selected recipients", async () => {
+    const attachment = {
+      arrayBuffer: async () => new TextEncoder().encode("PDF content").buffer,
+      name: "plan.pdf",
+      size: 11,
+      type: "application/pdf",
+    } as unknown as File;
+    const response = await POST(multipartRequest({
+      message: "Przypomnienie",
+      subject: "Ważne",
+      submissionIds: JSON.stringify(["one", "two"]),
+    }, attachment));
+
+    expect(response.status).toBe(200);
+    expect(mocks.sendEmailMessage).toHaveBeenCalledWith(
+      contactConfig.notification,
+      ["anna@example.com", "ola@example.com"],
+      "Ważne",
+      "Przypomnienie",
+      {
+        attachments: [{ content: expect.any(Buffer), contentType: "application/pdf", filename: "plan.pdf" }],
+        throwOnError: true,
+      },
+    );
+  });
+
+  it("rejects an attachment larger than the configured limit", async () => {
+    const largeAttachment = { name: "large.zip", size: 40 * 1024 * 1024 + 1, type: "application/zip" } as File;
+
+    const response = await POST(multipartRequest({
+      message: "Przypomnienie",
+      subject: "Ważne",
+      submissionIds: JSON.stringify(["one"]),
+    }, largeAttachment));
+
+    expect(response.status).toBe(400);
+    expect(mocks.findMany).not.toHaveBeenCalled();
+    expect(mocks.sendEmailMessage).not.toHaveBeenCalled();
   });
 
   it("rejects unauthenticated requests before reading recipients", async () => {
