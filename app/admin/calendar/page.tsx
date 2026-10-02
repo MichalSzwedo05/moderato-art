@@ -2,8 +2,10 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getAdminAuthConfig, getAdminSession } from "@/lib/admin-auth";
-import { attendanceDateString, getAttendanceCalendarData, parseAttendanceWeek, shiftAttendanceWeek } from "@/lib/attendance";
+import { attendanceDateString, getAttendanceBoardData, parseAttendanceWeek, shiftAttendanceWeek } from "@/lib/attendance";
+import { getContactGroups } from "@/lib/contact-groups";
 import { AdminPanel } from "../admin-panel";
+import { CalendarBoard } from "./calendar-board";
 import { CalendarScroller } from "./calendar-scroller";
 
 export const dynamic = "force-dynamic";
@@ -12,14 +14,8 @@ export const metadata: Metadata = { robots: { follow: false, index: false }, tit
 
 type CalendarPageProps = { searchParams: Promise<{ week?: string }> };
 
-const dayNames = ["Poniedziałek", "Wtorek", "Środa", "Czwartek", "Piątek", "Sobota", "Niedziela"];
-
 function formatDay(value: Date) {
   return new Intl.DateTimeFormat("pl-PL", { day: "2-digit", month: "2-digit", timeZone: "UTC" }).format(value);
-}
-
-function formatTime(value: Date) {
-  return new Intl.DateTimeFormat("pl-PL", { hour: "2-digit", minute: "2-digit", timeZone: "UTC" }).format(value);
 }
 
 function weekLabel(start: Date) {
@@ -34,11 +30,12 @@ export default async function CalendarPage({ searchParams }: CalendarPageProps) 
   if (!(await getAdminSession())) redirect("/admin");
 
   const weekStart = parseAttendanceWeek((await searchParams).week);
-  const activities = await getAttendanceCalendarData(weekStart);
+  const [activities, groups] = await Promise.all([getAttendanceBoardData(weekStart), getContactGroups()]);
   const previousWeek = attendanceDateString(shiftAttendanceWeek(weekStart, -1));
   const nextWeek = attendanceDateString(shiftAttendanceWeek(weekStart, 1));
   const currentWeek = attendanceDateString(parseAttendanceWeek(undefined));
   const currentDate = attendanceDateString(new Date());
+  const totalActivities = activities.length;
 
   return <AdminPanel title="Kalendarz">
     <section className="admin-calendar-toolbar">
@@ -46,19 +43,28 @@ export default async function CalendarPage({ searchParams }: CalendarPageProps) 
       <div className="admin-calendar-toolbar-week"><h2>{weekLabel(weekStart)}</h2><Link href={`/admin/calendar?week=${currentWeek}`}>Bieżący tydzień</Link></div>
       <Link className="admin-secondary-button" href={`/admin/calendar?week=${nextWeek}`}>Następny tydzień →</Link>
     </section>
-    <CalendarScroller currentDate={currentDate}>
-      {dayNames.map((dayName, index) => {
-        const day = new Date(weekStart);
-        day.setUTCDate(day.getUTCDate() + index);
-        const dayActivities = activities.filter((activity) => attendanceDateString(activity.activityDate) === attendanceDateString(day));
-        return <section className="admin-calendar-day" data-calendar-date={attendanceDateString(day)} key={dayName}>
-          <header><h2>{dayName}</h2><p>{formatDay(day)}</p></header>
-          {dayActivities.length === 0 ? <p className="admin-calendar-empty">Brak zajęć</p> : <div className="admin-calendar-activities">{dayActivities.map((activity) => {
-            const present = activity.participants.filter((participant) => participant.present).length;
-            return <Link className="admin-calendar-activity" href={`/admin/attendance?date=${attendanceDateString(activity.activityDate)}&activity=${encodeURIComponent(activity.id)}`} key={activity.id}><strong>{activity.name}</strong><span>{formatTime(activity.startsAt)}{activity.endsAt ? `–${formatTime(activity.endsAt)}` : ""}</span><small>{present}/{activity.participants.length} obecnych</small></Link>;
-          })}</div>}
-        </section>;
-      })}
+    <section className="admin-submissions-intro">
+      <p>Kliknij godzinę, aby dodać zajęcia, albo kliknij istniejące, aby je zmienić lub usunąć. Zajęcia można powtarzać co tydzień przez kilka tygodni.</p>
+      <p>{totalActivities === 0 ? "W tym tygodniu nie ma jeszcze żadnych zajęć." : `W tym tygodniu zaplanowano ${totalActivities} zajęć.`}</p>
+    </section>
+    <CalendarScroller className="admin-calendar-board-wrap" currentDate={currentDate}>
+      <CalendarBoard
+        activities={activities.map((activity) => ({
+          activityDate: activity.activityDate.toISOString(),
+          endsAt: activity.endsAt?.toISOString() || null,
+          id: activity.id,
+          groupId: activity.groupId,
+          name: activity.name,
+          participants: activity.participants,
+          presentCount: activity.presentCount,
+          seriesId: activity.seriesId,
+          startsAt: activity.startsAt.toISOString(),
+          totalParticipants: activity.totalParticipants,
+        }))}
+        currentDate={currentDate}
+        groups={groups.map((group) => ({ id: group.id, name: group.name, submissionIds: group.memberships.map((membership) => membership.submissionId) }))}
+        weekStart={attendanceDateString(weekStart)}
+      />
     </CalendarScroller>
   </AdminPanel>;
 }
