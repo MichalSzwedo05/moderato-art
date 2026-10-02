@@ -213,9 +213,9 @@ describe("CalendarBoard", () => {
     expect(screen.queryByRole("combobox", { name: "Usuń" })).not.toBeInTheDocument();
     expect(screen.getByLabelText("Od")).toHaveValue("16:00");
     expect(screen.getByLabelText("Do")).toHaveValue("17:00");
-    expect(screen.getByLabelText("Nazwa zajęć")).toHaveAttribute("readonly");
-    fireEvent.click(screen.getByLabelText("Nazwa zajęć"));
-    expect(screen.getByLabelText("Nazwa zajęć")).not.toHaveAttribute("readonly");
+    expect(screen.queryByRole("textbox", { name: "Nazwa zajęć" })).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Nazwa zajęć" }));
+    expect(screen.getByRole("textbox", { name: "Nazwa zajęć" })).toBeInTheDocument();
     expect(screen.getByText("Pianino grupa A")).toBeInTheDocument();
     expect(screen.getByRole("region", { name: "Lista obecności" })).toHaveTextContent("Anna");
     expect(screen.getByRole("region", { name: "Lista obecności" })).toHaveTextContent("Obecny");
@@ -247,7 +247,8 @@ describe("CalendarBoard", () => {
     renderBoard([activity()]);
 
     fireEvent.click(screen.getByRole("button", { name: "Lekcja 1, 16:00–17:00, 2 osób" }));
-    fireEvent.change(screen.getByLabelText("Nazwa zajęć"), { target: { value: "Lekcja 1 poprawiona" } });
+    fireEvent.click(screen.getByRole("button", { name: "Nazwa zajęć" }));
+    fireEvent.change(screen.getByRole("textbox", { name: "Nazwa zajęć" }), { target: { value: "Lekcja 1 poprawiona" } });
     fireEvent.click(screen.getByRole("button", { name: "Zatwierdź" }));
 
     await waitFor(() => expect(mocks.fetch).toHaveBeenCalledTimes(1));
