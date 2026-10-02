@@ -38,10 +38,6 @@ function activityGroupIds(activity: Activity | undefined, groups: Group[]) {
   return group ? [group.id] : [];
 }
 
-function activityLabel(activity: Activity) {
-  return `${dateValue(activity.activityDate)} · ${timeValue(activity.startsAt)}${activity.endsAt ? `–${timeValue(activity.endsAt)}` : ""} · ${activity.name}`;
-}
-
 function nearestActivity(activities: Activity[], targetDate?: string) {
   if (!targetDate) {
     const now = Date.now();
