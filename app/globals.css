@@ -3114,6 +3114,18 @@ h2 {
 
 .admin-calendar-detail-group strong { color: var(--dark-blue); }
 
+.admin-calendar-detail-name-trigger {
+  background: color-mix(in srgb, var(--cream) 88%, var(--surface));
+  border: 1px solid var(--border-color);
+  border-radius: .6rem;
+  box-sizing: border-box;
+  color: var(--gray-text);
+  font: inherit;
+  padding: .65rem .75rem;
+  text-align: left;
+  width: 100%;
+}
+
 .admin-calendar-repeat {
   border: 1px solid var(--border-color);
   border-radius: .6rem;
