@@ -33,6 +33,9 @@ export function AttendanceReportDownload({ groups, recipients }: { groups: Repor
   const [previewPending, setPreviewPending] = useState(false);
   const previewDialogRef = useRef<HTMLDialogElement>(null);
   const sortedRecipients = useMemo(() => [...recipients].sort((left, right) => displayName(left).localeCompare(displayName(right), "pl")), [recipients]);
+  const selectedGroupRecipients = groupId
+    ? sortedRecipients.filter((recipient) => groups.find((group) => group.id === groupId)?.submissionIds.includes(recipient.id))
+    : sortedRecipients;
   const selectedRecipientGroups = submissionId
     ? groups.filter((group) => group.submissionIds.includes(submissionId))
     : [];
@@ -106,7 +109,7 @@ export function AttendanceReportDownload({ groups, recipients }: { groups: Repor
         people.push({ email: selectedRecipient.email, name: displayName(selectedRecipient), statuses: {} });
       } else if (!submissionId) {
         const existingPeople = new Set(people.map((person) => person.email));
-        for (const recipient of sortedRecipients) {
+        for (const recipient of selectedGroupRecipients) {
           if (!existingPeople.has(recipient.email)) people.push({ email: recipient.email, name: displayName(recipient), statuses: {} });
         }
       }

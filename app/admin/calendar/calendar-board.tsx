@@ -112,11 +112,49 @@ function activityGroupName(activity: CalendarBoardActivity, groups: CalendarBoar
 }
 
 function getCalendarHours(activities: CalendarBoardActivity[]) {
+  if (activities.length === 0) return Array.from({ length: defaultEndHour - defaultStartHour + 1 }, (_, index) => defaultStartHour + index);
   const starts = activities.map((activity) => minutesOfDay(activity.startsAt));
-  const ends = activities.map((activity) => minutesOfDay(activity.endsAt ?? activity.startsAt) + 30);
-  const first = Math.max(0, Math.min(defaultStartHour, ...starts.map((minutes) => Math.floor(minutes / 60))));
-  const last = Math.min(24, Math.max(defaultEndHour + 1, ...ends.map((minutes) => Math.ceil(minutes / 60))));
+  const ends = activities.map(activityEndMinutes);
+  const first = Math.max(0, Math.min(...starts.map((minutes) => Math.floor(minutes / 60))));
+  const last = Math.min(24, Math.max(first + 1, ...ends.map((minutes) => Math.ceil(minutes / 60))));
   return Array.from({ length: Math.max(1, last - first) }, (_, index) => first + index);
+}
+
+function activityEndMinutes(activity: CalendarBoardActivity) {
+  return Math.max(minutesOfDay(activity.startsAt) + minimumBlockMinutes, minutesOfDay(activity.endsAt ?? activity.startsAt));
+}
+
+function layoutActivities(activities: CalendarBoardActivity[]) {
+  const sorted = [...activities].sort((left, right) => minutesOfDay(left.startsAt) - minutesOfDay(right.startsAt) || activityEndMinutes(right) - activityEndMinutes(left) || left.id.localeCompare(right.id));
+  const layouts = new Map<string, { lane: number; laneCount: number }>();
+  let cluster: CalendarBoardActivity[] = [];
+  let clusterEnd = -1;
+
+  function layoutCluster(current: CalendarBoardActivity[]) {
+    const laneEnds: number[] = [];
+    const assigned: Array<{ activity: CalendarBoardActivity; lane: number }> = [];
+    for (const activity of current) {
+      const start = minutesOfDay(activity.startsAt);
+      const lane = laneEnds.findIndex((end) => end <= start);
+      const nextLane = lane === -1 ? laneEnds.length : lane;
+      laneEnds[nextLane] = activityEndMinutes(activity);
+      assigned.push({ activity, lane: nextLane });
+    }
+    assigned.forEach(({ activity, lane }) => layouts.set(activity.id, { lane, laneCount: laneEnds.length }));
+  }
+
+  for (const activity of sorted) {
+    const start = minutesOfDay(activity.startsAt);
+    if (cluster.length > 0 && start >= clusterEnd) {
+      layoutCluster(cluster);
+      cluster = [];
+      clusterEnd = -1;
+    }
+    cluster.push(activity);
+    clusterEnd = Math.max(clusterEnd, activityEndMinutes(activity));
+  }
+  if (cluster.length > 0) layoutCluster(cluster);
+  return layouts;
 }
 
 async function readError(response: Response, fallback: string) {
@@ -354,7 +392,10 @@ export function CalendarBoard({ activities, currentDate, groups, weekStart }: Ca
       <div className="admin-calendar-board-gutter" aria-hidden="true">
         {hours.map((hour) => <span key={hour}>{hourLabel(hour)}</span>)}
       </div>
-      {days.map((day) => <div className={`admin-calendar-board-column ${day === currentDate ? "admin-calendar-board-column-today" : ""}`} data-calendar-date={day} key={day}>
+      {days.map((day) => {
+        const dayActivities = items.filter((activity) => dateValue(activity.activityDate) === day);
+        const activityLayouts = layoutActivities(dayActivities);
+        return <div className={`admin-calendar-board-column ${day === currentDate ? "admin-calendar-board-column-today" : ""}`} data-calendar-date={day} key={day}>
         {hours.map((hour) => <button
           aria-label={`Dodaj zajęcia ${longDayFormatter.format(utcDate(day))} o ${hourLabel(hour)}`}
           className="admin-calendar-slot"
@@ -362,25 +403,29 @@ export function CalendarBoard({ activities, currentDate, groups, weekStart }: Ca
           onClick={() => openCreate(day, hour)}
           type="button"
         />)}
-        {items.filter((activity) => dateValue(activity.activityDate) === day).map((activity) => {
+        {dayActivities.map((activity) => {
           const start = Math.max(rangeStart, minutesOfDay(activity.startsAt));
           const end = Math.max(start + minimumBlockMinutes, minutesOfDay(activity.endsAt ?? activity.startsAt));
+          const layout = activityLayouts.get(activity.id) || { lane: 0, laneCount: 1 };
+          const laneWidth = 100 / layout.laneCount;
           const compact = end - start <= 60;
           const summary = `${activity.name}, ${timeValue(activity.startsAt)}–${timeValue(activity.endsAt ?? activity.startsAt)}, ${activity.totalParticipants} osób${activity.presentCount ? `, ${activity.presentCount} obecnych` : ""}`;
           return <button
             aria-label={summary}
-            className={`admin-calendar-block ${compact ? "admin-calendar-block-compact" : ""} ${activity.seriesId ? "admin-calendar-block-series" : ""}`}
-            key={activity.id}
-            onClick={() => openDetail(activity)}
-            style={{ height: `${((end - start) / rangeMinutes) * 100}%`, top: `${((start - rangeStart) / rangeMinutes) * 100}%` }}
-            type="button"
+             className={`admin-calendar-block ${compact ? "admin-calendar-block-compact" : ""} ${layout.laneCount > 1 ? "admin-calendar-block-laned" : ""} ${activity.seriesId ? "admin-calendar-block-series" : ""}`}
+             key={activity.id}
+             onClick={() => openDetail(activity)}
+             style={{ height: `${((end - start) / rangeMinutes) * 100}%`, left: layout.laneCount > 1 ? `calc(${layout.lane * laneWidth}% + 2px)` : undefined, right: layout.laneCount > 1 ? "auto" : undefined, top: `${((start - rangeStart) / rangeMinutes) * 100}%`, width: layout.laneCount > 1 ? `calc(${laneWidth}% - 4px)` : undefined }}
+             title={summary}
+             type="button"
           >
             <strong>{activity.name}</strong>
             <span>{timeValue(activity.startsAt)}{activity.endsAt ? `–${timeValue(activity.endsAt)}` : ""}</span>
             <small>{activity.totalParticipants} osób{activity.presentCount ? ` · ${activity.presentCount} obecnych` : ""}</small>
           </button>;
         })}
-      </div>)}
+      </div>;
+      })}
     </div>
     {feedback ? <p className={feedback.error ? "admin-notice" : "admin-success"} role={feedback.error ? "alert" : "status"}>{feedback.message}</p> : null}
 

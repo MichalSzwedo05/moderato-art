@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
   create: vi.fn(),
+  groupMembershipFindMany: vi.fn(),
   updateMany: vi.fn(),
   delete: vi.fn(),
   findMany: vi.fn(),
@@ -13,7 +14,7 @@ const mocks = vi.hoisted(() => ({
 
 vi.mock("@/lib/admin-auth", () => ({ getAdminAuthConfig: mocks.getAdminAuthConfig, getAdminSession: mocks.getAdminSession }));
 vi.mock("@/lib/admin-security", () => ({ isSameAdminOrigin: mocks.isSameAdminOrigin }));
-vi.mock("@/lib/prisma", () => ({ getPrisma: () => ({ attendanceActivity: { create: mocks.create, delete: mocks.delete, findFirst: mocks.findFirst, updateMany: mocks.updateMany }, contactGroup: { findUnique: vi.fn().mockResolvedValue({ id: "group-1" }) }, contactSubmission: { findMany: mocks.findMany } }) }));
+vi.mock("@/lib/prisma", () => ({ getPrisma: () => ({ attendanceActivity: { create: mocks.create, delete: mocks.delete, findFirst: mocks.findFirst, updateMany: mocks.updateMany }, contactGroup: { findUnique: vi.fn().mockResolvedValue({ id: "group-1" }) }, contactGroupMembership: { findMany: mocks.groupMembershipFindMany }, contactSubmission: { findMany: mocks.findMany } }) }));
 
 
 import { POST } from "./route";
@@ -29,6 +30,7 @@ describe("POST /api/admin/attendance", () => {
     mocks.getAdminSession.mockResolvedValue({ id: "session" });
     mocks.isSameAdminOrigin.mockReturnValue(true);
     mocks.findMany.mockResolvedValue([{ id: "one" }]);
+    mocks.groupMembershipFindMany.mockResolvedValue([]);
     mocks.create.mockResolvedValue({ id: "activity" });
     mocks.findFirst.mockResolvedValue(null);
   });
@@ -106,5 +108,18 @@ describe("POST /api/admin/attendance", () => {
     expect(response.status).toBe(201);
     expect(await response.json()).toMatchObject({ seriesId: null, skippedDates: [] });
     expect(mocks.create).toHaveBeenCalledTimes(1);
+  });
+
+  it("adds the deduplicated members of every selected group", async () => {
+    mocks.findMany.mockResolvedValue([{ id: "one" }, { id: "two" }, { id: "three" }]);
+    mocks.groupMembershipFindMany.mockResolvedValue([{ submissionId: "one" }, { submissionId: "two" }, { submissionId: "two" }, { submissionId: "three" }]);
+    const response = await POST(request({ activityDate: "2026-09-28", endsAt: "17:00", groupId: "group-1", groupIds: ["group-1", "group-2"], name: "Lekcja grupowa", participants: [{ present: true, submissionId: "one" }], startsAt: "16:00" }));
+
+    expect(response.status).toBe(201);
+    expect(mocks.create).toHaveBeenCalledWith(expect.objectContaining({ data: expect.objectContaining({ participants: { create: [
+      { present: true, submissionId: "one" },
+      { present: false, submissionId: "two" },
+      { present: false, submissionId: "three" },
+    ] } }) }));
   });
 });

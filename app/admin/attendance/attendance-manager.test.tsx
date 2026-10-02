@@ -12,7 +12,10 @@ const recipients = [
   { childName: "Jan", email: "jan@example.com", id: "submission-2", parentName: "Rodzic B", phone: null },
   { childName: "Ola", email: "ola@example.com", id: "submission-3", parentName: "Rodzic C", phone: null },
 ];
-const groups = [{ id: "group-1", name: "Grupa A", submissionIds: ["submission-1", "submission-2"] }];
+const groups = [
+  { id: "group-1", name: "Grupa A", submissionIds: ["submission-1", "submission-2"] },
+  { id: "group-2", name: "Grupa B", submissionIds: ["submission-2", "submission-3"] },
+];
 const activities = [{
   activityDate: "2026-10-01T00:00:00.000Z",
   endsAt: "2026-10-01T17:00:00.000Z",
@@ -59,6 +62,35 @@ describe("AttendanceManager activity form", () => {
     expect(screen.getByText("Lekcja 2")).toBeInTheDocument();
   });
 
+  it("defaults to the activity closest to the current time", () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-10-05T16:30:00.000Z"));
+    const activitiesNearCurrentTime = [
+      { ...activities[0], activityDate: "2026-10-05T00:00:00.000Z", id: "activity-before", name: "Wcześniejsze zajęcia", startsAt: "2026-10-05T16:00:00.000Z" },
+      { ...activities[0], activityDate: "2026-10-05T00:00:00.000Z", id: "activity-after", name: "Późniejsze zajęcia", startsAt: "2026-10-05T18:00:00.000Z" },
+    ];
+    render(<AttendanceManager activities={activitiesNearCurrentTime} groups={groups} recipients={recipients} />);
+
+    expect(screen.getByLabelText("Wybierz zajęcia")).toHaveValue("activity-before");
+    vi.useRealTimers();
+  });
+
+  it("selects the closest activity when returning to activity selection", () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-10-05T16:30:00.000Z"));
+    const activitiesNearCurrentTime = [
+      { ...activities[0], activityDate: "2026-10-05T00:00:00.000Z", id: "activity-before", name: "Wcześniejsze zajęcia", startsAt: "2026-10-05T16:00:00.000Z" },
+      { ...activities[0], activityDate: "2026-10-05T00:00:00.000Z", id: "activity-after", name: "Późniejsze zajęcia", startsAt: "2026-10-05T18:00:00.000Z" },
+    ];
+    render(<AttendanceManager activities={activitiesNearCurrentTime} groups={groups} recipients={recipients} />);
+
+    fireEvent.click(screen.getByRole("button", { name: "+ Nowe zajęcia" }));
+    fireEvent.click(screen.getByRole("button", { name: "Wybierz zajęcia" }));
+
+    expect(screen.getByLabelText("Wybierz zajęcia")).toHaveValue("activity-before");
+    vi.useRealTimers();
+  });
+
   it("recovers the assigned group for legacy activities with an extra participant", () => {
     const legacyActivity = { ...activities[0], groupId: null, participants: [...activities[0].participants, { present: false, submissionId: "submission-3" }] };
     render(<AttendanceManager activities={[legacyActivity]} groups={groups} recipients={recipients} selectedActivityId="activity-1" />);
@@ -93,6 +125,7 @@ describe("AttendanceManager activity form", () => {
       activityDate: "2026-10-01",
       endsAt: "18:00",
       groupId: "group-1",
+      groupIds: ["group-1"],
       name: "Lekcja zmieniona",
       participants: [{ present: true, submissionId: "submission-1" }, { present: true, submissionId: "submission-2" }],
       startsAt: "17:00",
@@ -114,6 +147,19 @@ describe("AttendanceManager activity form", () => {
     await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
     const body = JSON.parse(String((fetchMock.mock.calls[0] as [string, RequestInit])[1].body));
     expect(body.participants).toContainEqual({ present: true, submissionId: "submission-3" });
+  });
+
+  it("combines members from multiple groups without duplicates", async () => {
+    fetchMock.mockResolvedValueOnce({ json: async () => ({ id: "activity-2" }), ok: true });
+    render(<AttendanceManager activities={activities} groups={groups} recipients={recipients} />);
+
+    fireEvent.click(screen.getByRole("button", { name: "+ Nowe zajęcia" }));
+    fireEvent.change(screen.getByLabelText("Wybierz grupę"), { target: { value: "group-1" } });
+    fireEvent.change(screen.getByLabelText("Wybierz grupę"), { target: { value: "group-2" } });
+
+    expect(screen.getByText("Uczestnicy").parentElement).toHaveTextContent("3");
+    expect(screen.getAllByText("Jan")).toHaveLength(1);
+    expect(screen.getByText("Ola")).toBeInTheDocument();
   });
 
   it("shows confirm on the left and delete on the right for selected activities", async () => {
@@ -141,6 +187,17 @@ describe("AttendanceManager activity form", () => {
     expect(screen.getByRole("heading", { name: "Nowe zajęcia" })).toBeInTheDocument();
     expect(screen.queryByLabelText("Wybierz zajęcia")).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Wybierz zajęcia" })).toBeInTheDocument();
+  });
+
+  it("resets the new activity date instead of reusing the selected activity date", () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-10-05T12:00:00.000Z"));
+    render(<AttendanceManager activities={activities} groups={groups} recipients={recipients} />);
+
+    fireEvent.click(screen.getByRole("button", { name: "+ Nowe zajęcia" }));
+
+    expect(screen.getByLabelText("Data")).toHaveValue("2026-10-05");
+    vi.useRealTimers();
   });
 
   it("sends the selected weekly repeat count for new activities", async () => {

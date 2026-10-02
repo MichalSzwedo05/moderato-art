@@ -50,5 +50,5 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
     return <LoginForm mode={config.mode} notice={params.login} />;
   }
 
-  redirect("/admin/gallery");
+  redirect("/admin/attendance");
 }

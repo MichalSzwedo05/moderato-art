@@ -20,6 +20,7 @@ const createSchema = z.object({
   activityDate: attendanceDateSchema,
   endsAt: attendanceTimeSchema.optional().or(z.literal("")),
   groupId: z.string().trim().max(64).optional().or(z.literal("")),
+  groupIds: z.array(z.string().trim().min(1).max(64)).max(100).optional(),
   name: attendanceActivityNameSchema,
   participants: z.array(z.object({ present: z.boolean(), submissionId: z.string().trim().min(1).max(100) })).max(1_000),
   repeatWeeks: attendanceRepeatWeeksSchema.optional(),
@@ -46,6 +47,7 @@ export async function POST(request: Request) {
   try { body = await request.json(); } catch { return errorResponse("Nieprawidłowy format żądania.", 400); }
   const parsed = createSchema.safeParse(body);
   if (!parsed.success || new Set(parsed.data.participants.map((participant) => participant.submissionId)).size !== parsed.data.participants.length) return errorResponse("Uzupełnij dane aktywności i wybierz osoby.", 400);
+  if (parsed.success && parsed.data.groupIds && new Set(parsed.data.groupIds).size !== parsed.data.groupIds.length) return errorResponse("Nieprawidłowa lista grup.", 400);
 
   const start = parseAttendanceDateTime(parsed.data.activityDate, parsed.data.startsAt);
   const end = parsed.data.endsAt ? parseAttendanceDateTime(parsed.data.activityDate, parsed.data.endsAt) : undefined;
@@ -61,12 +63,22 @@ export async function POST(request: Request) {
 
   try {
     const prisma = getPrisma();
-    const submissions = await prisma.contactSubmission.findMany({ select: { id: true }, where: { id: { in: parsed.data.participants.map((participant) => participant.submissionId) } } });
-    if (submissions.length !== parsed.data.participants.length) return errorResponse("Nie znaleziono wybranej osoby.", 404);
-    if (parsed.data.groupId) {
-      const group = await prisma.contactGroup.findUnique({ select: { id: true }, where: { id: parsed.data.groupId } });
-      if (!group) return errorResponse("Nie znaleziono wybranej grupy.", 404);
+    const selectedGroupIds = parsed.data.groupIds ?? (parsed.data.groupId ? [parsed.data.groupId] : []);
+    const selectedGroups = await Promise.all(selectedGroupIds.map((groupId) => prisma.contactGroup.findUnique({ select: { id: true }, where: { id: groupId } })));
+    if (selectedGroups.some((group) => !group)) return errorResponse("Nie znaleziono wybranej grupy.", 404);
+    const memberships = selectedGroupIds.length && prisma.contactGroupMembership?.findMany
+      ? await prisma.contactGroupMembership.findMany({ select: { submissionId: true }, where: { groupId: { in: selectedGroupIds } } })
+      : [];
+    const participants = [...parsed.data.participants];
+    const participantIds = new Set(participants.map((participant) => participant.submissionId));
+    for (const membership of memberships) {
+      if (participantIds.has(membership.submissionId)) continue;
+      participantIds.add(membership.submissionId);
+      participants.push({ present: false, submissionId: membership.submissionId });
     }
+    if (participants.length > 1_000) return errorResponse("Wybrano zbyt wiele osób.", 400);
+    const submissions = await prisma.contactSubmission.findMany({ select: { id: true }, where: { id: { in: participants.map((participant) => participant.submissionId) } } });
+    if (submissions.length !== participants.length) return errorResponse("Nie znaleziono wybranej osoby.", 404);
 
     for (const occurrence of occurrences) {
       const conflict = await prisma.attendanceActivity.findFirst({
@@ -90,9 +102,10 @@ export async function POST(request: Request) {
           data: {
             activityDate: attendanceDateStart(occurrence.activityDate),
             endsAt: occurrence.endsAt,
-            groupId: parsed.data.groupId || null,
+            groupId: selectedGroupIds[0] || null,
+            ...(selectedGroupIds.length ? { groups: { create: selectedGroupIds.map((groupId) => ({ groupId })) } } : {}),
             name: parsed.data.name,
-            participants: { create: parsed.data.participants.map((participant) => ({ present: participant.present, submissionId: participant.submissionId })) },
+            participants: { create: participants.map((participant) => ({ present: participant.present, submissionId: participant.submissionId })) },
             seriesId,
             startsAt: occurrence.startsAt,
           },

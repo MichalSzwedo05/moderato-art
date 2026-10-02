@@ -121,6 +121,7 @@ export async function getAttendanceData() {
             submissionId: true,
           },
         },
+        groups: { select: { groupId: true } },
       },
       orderBy: [{ activityDate: "desc" }, { startsAt: "desc" }, { id: "desc" }],
     }),
