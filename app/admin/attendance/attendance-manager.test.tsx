@@ -136,6 +136,16 @@ describe("AttendanceManager activity form", () => {
     expect(screen.getByText("Lekcja 2")).toBeInTheDocument();
   });
 
+  it("highlights the default activity on the requested day", () => {
+    const laterActivity = { ...activities[0], id: "activity-2", name: "Lekcja 2", startsAt: "2026-10-06T18:00:00.000Z", activityDate: "2026-10-06T00:00:00.000Z", endsAt: "2026-10-06T19:00:00.000Z" };
+    const requestedActivity = { ...activities[0], activityDate: "2026-10-06T00:00:00.000Z", endsAt: "2026-10-06T17:00:00.000Z", startsAt: "2026-10-06T16:00:00.000Z" };
+    render(<AttendanceManager activities={[requestedActivity, laterActivity]} groups={groups} recipients={recipients} selectedDate="2026-10-06" />);
+
+    expect(screen.getByLabelText("Wybierz zajęcia")).toHaveValue("activity-1");
+    expect(screen.getByRole("button", { name: "Wybierz Lekcja 1, 2026-10-06 16:00, Grupa A" })).toHaveClass("attendance-nearest-activity-active");
+    expect(screen.getByRole("button", { name: "Wybierz Lekcja 2, 2026-10-06 18:00, Grupa A" })).not.toHaveClass("attendance-nearest-activity-active");
+  });
+
   it("defaults to the activity closest to the current time", () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date("2026-10-05T16:30:00.000Z"));
