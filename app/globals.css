@@ -2871,8 +2871,10 @@ h2 {
 .attendance-nearest-activity strong { font-size: .7rem; }
 .attendance-nearest-activity small { color: #fff; font-size: .72rem; font-weight: 900; margin-top: .12rem; }
 .attendance-nearest-activity:hover,
-.attendance-nearest-activity:focus-visible,
-.attendance-nearest-activity-active { border-color: var(--blue); color: var(--blue); }
+.attendance-nearest-activity:focus-visible { border-color: var(--blue); color: var(--blue); }
+.attendance-nearest-activity-active,
+.attendance-nearest-activity-active:hover,
+.attendance-nearest-activity-active:focus-visible { background: var(--blue); border-color: var(--blue); color: #fff; }
 
 .attendance-activity-filters {
   align-items: end;
