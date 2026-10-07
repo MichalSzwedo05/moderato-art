@@ -5036,6 +5036,9 @@ h2 {
   .attendance-create-person span { grid-column: 1; grid-row: 1; }
   .attendance-create-person .attendance-create-status { grid-column: 1; grid-row: 2; justify-self: stretch; width: 100%; }
   .attendance-create-heading { align-items: flex-start; flex-direction: column; }
+  .attendance-create-heading > div:first-child { order: 1; }
+  .attendance-create-actions { order: 2; }
+  .attendance-filter-toggle-row { order: 3; }
   .attendance-create-actions { align-items: stretch; width: 100%; }
   .attendance-create-actions > * { flex: 1 1 0; justify-content: center; width: auto; }
   .attendance-create-mode-button { width: 100%; }
