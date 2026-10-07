@@ -2839,6 +2839,7 @@ h2 {
   font-size: 1rem;
   justify-content: center;
   margin: 0;
+  min-width: 2rem;
   padding: 0;
   width: 2rem;
 }
@@ -5022,9 +5023,10 @@ h2 {
   .attendance-nearest-day { gap: .25rem; }
   .attendance-filter-toggle-row,
   .attendance-nearest-activities { overflow: hidden; }
-  .attendance-nearest-activity-row { display: grid; grid-template-columns: 2rem minmax(0, 1fr) 2rem; overflow: hidden; }
-  .attendance-nearest-day { flex: none; width: 100%; max-width: none; overflow-x: auto; }
-  .attendance-nearest-date { font-size: .75rem; }
+  .attendance-nearest-activity-row { display: grid; grid-template-columns: 2rem minmax(0, 1fr) 2rem; overflow: hidden; width: 100%; }
+  .admin-form .attendance-nearest-arrow { margin: 0; max-width: 2rem; min-width: 2rem; width: 2rem; }
+  .attendance-nearest-day { flex: none; min-width: 0; width: auto; max-width: none; overflow-x: auto; }
+  .attendance-nearest-date { font-size: .9rem; }
   .attendance-nearest-activity { padding: .25rem .35rem; }
   .attendance-create-form > label { gap: .2rem; }
   .attendance-activity-filter-summary { margin-top: -.25rem; }
