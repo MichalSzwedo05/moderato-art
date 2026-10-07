@@ -142,6 +142,7 @@ describe("AttendanceManager activity form", () => {
     render(<AttendanceManager activities={[requestedActivity, laterActivity]} groups={groups} recipients={recipients} selectedDate="2026-10-06" />);
 
     expect(screen.getByLabelText("Wybierz zajęcia")).toHaveValue("activity-1");
+    expect(document.querySelector(".attendance-selected-section")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Wybierz Lekcja 1, 2026-10-06 16:00, Grupa A" })).toHaveClass("attendance-nearest-activity-active");
     expect(screen.getByRole("button", { name: "Wybierz Lekcja 2, 2026-10-06 18:00, Grupa A" })).not.toHaveClass("attendance-nearest-activity-active");
   });
