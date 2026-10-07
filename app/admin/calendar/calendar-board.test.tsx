@@ -244,7 +244,6 @@ describe("CalendarBoard", () => {
     renderBoard([activity()]);
 
     fireEvent.click(screen.getByRole("button", { name: "Lekcja 1, 16:00–17:00, 2 osób" }));
-
     expect(screen.queryByLabelText("Nazwa zajęć")).not.toBeInTheDocument();
     expect(screen.queryByLabelText("Od")).not.toBeInTheDocument();
     expect(screen.queryByLabelText("Do")).not.toBeInTheDocument();
