@@ -2827,7 +2827,7 @@ h2 {
 .attendance-nearest-activities { align-items: center; display: flex; flex-direction: column; gap: .4rem; justify-content: center; min-width: 0; width: 100%; }
 .attendance-nearest-activity-row { align-items: stretch; display: flex; gap: .4rem; justify-content: center; min-width: 0; width: 100%; }
 .attendance-nearest-day { align-items: stretch; display: flex; flex: 0 1 auto; flex-wrap: nowrap; gap: .4rem; justify-content: flex-start; min-width: 0; max-width: calc(100% - 4.8rem); overflow-x: auto; overflow-y: hidden; }
-.attendance-nearest-date { color: var(--dark-blue); font-size: .8rem; text-align: center; }
+.attendance-nearest-date { color: var(--dark-blue); font-size: 1rem; font-weight: 900; text-align: center; }
 .attendance-nearest-arrow {
   align-items: center;
   background: var(--surface);
@@ -5026,7 +5026,7 @@ h2 {
   .attendance-nearest-activities { overflow: hidden; }
   .attendance-nearest-activity-row { display: grid; grid-template-columns: 2rem minmax(0, 1fr) 2rem; overflow: hidden; }
   .attendance-nearest-day { flex: none; min-width: 0; width: auto; max-width: none; overflow-x: auto; }
-  .attendance-nearest-date { font-size: .75rem; }
+  .attendance-nearest-date { font-size: .9rem; }
   .attendance-nearest-activity { padding: .25rem .35rem; }
   .attendance-create-form > label { gap: .2rem; }
   .attendance-activity-filter-summary { margin-top: -.25rem; }
