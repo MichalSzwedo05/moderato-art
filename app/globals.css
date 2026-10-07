@@ -2872,9 +2872,9 @@ h2 {
 .attendance-nearest-activity small { color: #fff; font-size: .72rem; font-weight: 900; margin-top: .12rem; }
 .attendance-nearest-activity:hover,
 .attendance-nearest-activity:focus-visible { border-color: var(--blue); color: var(--blue); }
-.attendance-nearest-activity-active,
-.attendance-nearest-activity-active:hover,
-.attendance-nearest-activity-active:focus-visible { background: var(--blue); border: 2px solid #c0392b; color: #fff; }
+.admin-form .attendance-nearest-activity-active,
+.admin-form .attendance-nearest-activity-active:hover,
+.admin-form .attendance-nearest-activity-active:focus-visible { background: var(--blue); border: 2px solid #c0392b; color: #fff; }
 
 .attendance-activity-filters {
   align-items: end;
