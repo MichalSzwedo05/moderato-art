@@ -74,18 +74,18 @@ function nearestActivity(activities: Activity[], targetDate?: string) {
   })[0];
 }
 
-function nearestActivities(activities: Activity[], targetDate?: string) {
-  return [...activities]
-    .sort((left, right) => {
-      if (!targetDate) {
-        const timeDistance = Math.abs(new Date(left.startsAt).getTime() - Date.now()) - Math.abs(new Date(right.startsAt).getTime() - Date.now());
-        return timeDistance || left.startsAt.localeCompare(right.startsAt) || left.id.localeCompare(right.id);
-      }
-      const dateDistance = Math.abs(new Date(`${dateValue(left.activityDate)}T00:00:00Z`).getTime() - new Date(`${targetDate}T00:00:00Z`).getTime())
-        - Math.abs(new Date(`${dateValue(right.activityDate)}T00:00:00Z`).getTime() - new Date(`${targetDate}T00:00:00Z`).getTime());
-      return dateDistance || left.startsAt.localeCompare(right.startsAt) || left.id.localeCompare(right.id);
-    })
-    .slice(0, 3);
+function sortActivitiesChronologically(activities: Activity[]) {
+  return [...activities].sort((left, right) => dateValue(left.activityDate).localeCompare(dateValue(right.activityDate)) || left.startsAt.localeCompare(right.startsAt) || left.id.localeCompare(right.id));
+}
+
+function groupActivitiesByDate(activities: Activity[]) {
+  return sortActivitiesChronologically(activities).reduce<Array<{ activities: Activity[]; date: string }>>((result, activity) => {
+    const date = dateValue(activity.activityDate);
+    const current = result[result.length - 1];
+    if (current?.date === date) current.activities.push(activity);
+    else result.push({ activities: [activity], date });
+    return result;
+  }, []);
 }
 
 export function AttendanceManager({ activities: initialActivities, groups, recipients, selectedActivityId, selectedDate }: { activities: Activity[]; groups: Group[]; recipients: Recipient[]; selectedActivityId?: string; selectedDate?: string }) {
@@ -286,7 +286,15 @@ export function AttendanceManager({ activities: initialActivities, groups, recip
     return result;
   }, []);
   const hasActivityFilters = Boolean(activityDateFrom || activityDateTo || activityGroupId || activityTimeFrom || activityTimeTo);
-  const nearestFilteredActivities = nearestActivities(filteredActivities, selectedDate);
+  const activityDayGroups = groupActivitiesByDate(filteredActivities);
+  const selectedNavigationActivity = activityDayGroups.flatMap((group) => group.activities).find((activity) => activity.id === formActivityId)
+    || nearestActivity(filteredActivities, selectedDate);
+  const selectedNavigationDayIndex = selectedNavigationActivity
+    ? activityDayGroups.findIndex((group) => group.date === dateValue(selectedNavigationActivity.activityDate))
+    : -1;
+  const selectedNavigationDay = selectedNavigationDayIndex >= 0 ? activityDayGroups[selectedNavigationDayIndex] : undefined;
+  const previousNavigationDay = selectedNavigationDayIndex > 0 ? activityDayGroups[selectedNavigationDayIndex - 1] : undefined;
+  const nextNavigationDay = selectedNavigationDayIndex >= 0 ? activityDayGroups[selectedNavigationDayIndex + 1] : undefined;
 
   const availableExtraRecipients = recipients
     .filter((item) => !submissionIds.includes(item.id))
@@ -352,9 +360,8 @@ export function AttendanceManager({ activities: initialActivities, groups, recip
 
   return <>
      <form className="admin-form attendance-create-form" id="attendance-create-form" onSubmit={createActivity}>
-       <div className="attendance-create-heading"><div><h2>{formMode === "new" ? "Nowe zajęcia" : "Wybierz zajęcia"}</h2><p>Wybierz czas zajęć i zaznacz osoby obecne, aby zapisać obecność.</p></div><div className="attendance-create-actions">{formMode === "select" ? <button aria-expanded={filtersOpen} className="attendance-filter-toggle" onClick={() => setFiltersOpen((current) => !current)} type="button">Filtruj{hasActivityFilters ? ` · ${[activityDateFrom, activityDateTo, activityGroupId, activityTimeFrom, activityTimeTo].filter(Boolean).length}` : ""}</button> : null}{formMode === "select" ? <button className="attendance-create-mode-button" onClick={startNewActivity} type="button">+ Nowe zajęcia</button> : <button className="attendance-create-mode-button" onClick={startSelectingActivity} type="button">Wybierz zajęcia</button>}</div></div>
-         {formMode === "select" ? <>
-            <div className="attendance-filter-toggle-row"><div aria-label="Najbliższe zajęcia" className="attendance-nearest-activities">{nearestFilteredActivities.map((activity) => { const groupName = activityGroupIds(activity, groups).map((id) => groups.find((group) => group.id === id)?.name).filter(Boolean).join(", ") || "Bez grupy"; return <button aria-label={`Wybierz ${activity.name}, ${dateValue(activity.activityDate)} ${timeValue(activity.startsAt)}, ${groupName}`} className={activity.id === formActivityId ? "attendance-nearest-activity attendance-nearest-activity-active" : "attendance-nearest-activity"} key={activity.id} onClick={() => applyActivity(activity)} title={`${activity.name}, ${dateValue(activity.activityDate)} ${timeValue(activity.startsAt)}, ${groupName}`} type="button"><strong>{shortActivityWeekday(dateValue(activity.activityDate))} · {timeValue(activity.startsAt)}</strong><small>{groupName}</small></button>; })}</div></div>
+         <div className="attendance-create-heading"><div><h2>{formMode === "new" ? "Nowe zajęcia" : "Wybierz zajęcia"}</h2></div>{formMode === "select" ? <div className="attendance-filter-toggle-row"><div aria-label="Zajęcia w wybranym dniu" className="attendance-nearest-activities">{selectedNavigationDay ? <><strong className="attendance-nearest-date">{selectedNavigationDay.date} ({shortActivityWeekday(selectedNavigationDay.date)})</strong><div className="attendance-nearest-activity-row"><button aria-label="Poprzedni dzień z zajęciami" className="attendance-nearest-arrow" disabled={!previousNavigationDay} onClick={() => { if (previousNavigationDay) applyActivity(previousNavigationDay.activities[0]); }} type="button">←</button><div className="attendance-nearest-day">{selectedNavigationDay.activities.map((activity) => { const groupName = activityGroupIds(activity, groups).map((id) => groups.find((group) => group.id === id)?.name).filter(Boolean).join(", ") || "Bez grupy"; return <button aria-label={`Wybierz ${activity.name}, ${dateValue(activity.activityDate)} ${timeValue(activity.startsAt)}, ${groupName}`} className={activity.id === formActivityId ? "attendance-nearest-activity attendance-nearest-activity-active" : "attendance-nearest-activity"} key={activity.id} onClick={() => applyActivity(activity)} title={`${activity.name}, ${dateValue(activity.activityDate)} ${timeValue(activity.startsAt)}, ${groupName}`} type="button"><strong>{timeValue(activity.startsAt)}</strong><small>{groupName}</small></button>; })}</div><button aria-label="Następny dzień z zajęciami" className="attendance-nearest-arrow" disabled={!nextNavigationDay} onClick={() => { if (nextNavigationDay) applyActivity(nextNavigationDay.activities[0]); }} type="button">→</button></div></> : <span className="attendance-nearest-empty">Brak zajęć</span>}</div></div> : null}<div className="attendance-create-actions">{formMode === "select" ? <button aria-expanded={filtersOpen} className="attendance-filter-toggle" onClick={() => setFiltersOpen((current) => !current)} type="button">Filtruj{hasActivityFilters ? ` · ${[activityDateFrom, activityDateTo, activityGroupId, activityTimeFrom, activityTimeTo].filter(Boolean).length}` : ""}</button> : null}{formMode === "select" ? <button className="attendance-create-mode-button" onClick={startNewActivity} type="button">+ Nowe zajęcia</button> : <button className="attendance-create-mode-button" onClick={startSelectingActivity} type="button">Wybierz zajęcia</button>}</div></div>
+          {formMode === "select" ? <>
             {filtersOpen ? <div className="attendance-activity-filters">
               <label>Data od<input aria-label="Data zajęć od" onChange={(event) => updateActivityFilters({ dateFrom: event.target.value })} type="date" value={activityDateFrom} /></label>
               <label>Data do<input aria-label="Data zajęć do" onChange={(event) => updateActivityFilters({ dateTo: event.target.value })} type="date" value={activityDateTo} /></label>
