@@ -35,7 +35,6 @@ export default async function AttendancePage({ searchParams }: AttendancePagePro
   const { activities, recipients } = attendanceResult.value;
   const groups = groupsResult.value;
   return <AdminPanel footerActions={<AttendanceReportDownload groups={groups.map((group) => ({ id: group.id, name: group.name, submissionIds: group.memberships.map((membership) => membership.submissionId) }))} recipients={recipients} />} title="Obecność">
-    <section className="admin-submissions-intro"><p>Wybierz czas zajęć i zaznacz osoby obecne, aby zapisać obecność.</p></section>
     <AttendanceManager
       activities={activities.map((activity) => ({
         activityDate: activity.activityDate.toISOString(),
