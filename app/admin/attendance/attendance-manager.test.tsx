@@ -99,14 +99,31 @@ describe("AttendanceManager activity form", () => {
     expect(screen.getByLabelText("Data zajęć od")).toBeInTheDocument();
   });
 
-  it("offers nearest activities as direct shortcuts", () => {
+  it("moves through activities with the previous and next buttons", () => {
     const laterActivity = { ...activities[0], activityDate: "2026-10-02T00:00:00.000Z", id: "activity-2", name: "Lekcja 2" };
     render(<AttendanceManager activities={[activities[0], laterActivity]} groups={groups} recipients={recipients} selectedDate="2026-10-01" />);
 
-    fireEvent.click(screen.getByRole("button", { name: "Wybierz Lekcja 2, 2026-10-02 16:00, Grupa A" }));
+    expect(screen.getByRole("button", { name: "Poprzedni dzień z zajęciami" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Następny dzień z zajęciami" })).toBeEnabled();
+    fireEvent.click(screen.getByRole("button", { name: "Następny dzień z zajęciami" }));
 
-    expect(screen.getByRole("button", { name: "Wybierz Lekcja 2, 2026-10-02 16:00, Grupa A" })).toHaveTextContent("pt · 16:00Grupa A");
     expect(screen.getByText("2026-10-02 · 16:00–17:00")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Następny dzień z zajęciami" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Poprzedni dzień z zajęciami" })).toBeEnabled();
+
+    fireEvent.click(screen.getByRole("button", { name: "Poprzedni dzień z zajęciami" }));
+    expect(screen.getByText("2026-10-01 · 16:00–17:00")).toBeInTheDocument();
+  });
+
+  it("shows every activity from the selected day", () => {
+    const secondActivity = { ...activities[0], id: "activity-2", name: "Lekcja 2", startsAt: "2026-10-01T18:00:00.000Z" };
+    render(<AttendanceManager activities={[activities[0], secondActivity]} groups={groups} recipients={recipients} selectedDate="2026-10-01" />);
+
+    expect(screen.getByText("2026-10-01 (cz)")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Wybierz Lekcja 1, 2026-10-01 16:00, Grupa A" })).toHaveTextContent("16:00Grupa A");
+    expect(screen.getByRole("button", { name: "Wybierz Lekcja 2, 2026-10-01 18:00, Grupa A" })).toHaveTextContent("18:00Grupa A");
+    expect(screen.getByRole("button", { name: "Poprzedni dzień z zajęciami" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Następny dzień z zajęciami" })).toBeDisabled();
   });
 
   it("defaults to the activity closest to the requested date", () => {
