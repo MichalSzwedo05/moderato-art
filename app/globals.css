@@ -2874,7 +2874,7 @@ h2 {
 .attendance-nearest-activity:focus-visible { border-color: var(--blue); color: var(--blue); }
 .attendance-nearest-activity-active,
 .attendance-nearest-activity-active:hover,
-.attendance-nearest-activity-active:focus-visible { background: var(--blue); border-color: #c0392b; color: #fff; }
+.attendance-nearest-activity-active:focus-visible { background: var(--blue); border: 2px solid #c0392b; color: #fff; }
 
 .attendance-activity-filters {
   align-items: end;
