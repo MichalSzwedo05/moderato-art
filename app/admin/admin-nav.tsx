@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 
 const items = [
   { href: "/admin/gallery", label: "Galeria" },
@@ -18,15 +18,32 @@ const items = [
 
 export function AdminNav() {
   const pathname = usePathname();
+  const router = useRouter();
+
+  function navigate(value: string) {
+    if (!value) return;
+    if (value.startsWith("external:")) {
+      window.open(value.slice("external:".length), "_blank", "noopener,noreferrer");
+      return;
+    }
+    router.push(value);
+  }
+
   return (
     <nav aria-label="Nawigacja panelu administracyjnego" className="admin-nav">
-      {items.map((item) => (
-        item.external ? (
-          <a className="admin-nav-link" href={item.href} key={item.href} rel="noreferrer" target="_blank">{item.label}</a>
-        ) : (
-          <Link className={pathname === item.href ? "admin-nav-link admin-nav-link-active" : "admin-nav-link"} href={item.href} key={item.href}>{item.label}</Link>
-        )
-      ))}
+      <div className="admin-nav-links">
+        {items.map((item) => (
+          item.external ? (
+            <a className="admin-nav-link" href={item.href} key={item.href} rel="noreferrer" target="_blank">{item.label}</a>
+          ) : (
+            <Link className={pathname === item.href ? "admin-nav-link admin-nav-link-active" : "admin-nav-link"} href={item.href} key={item.href}>{item.label}</Link>
+          )
+        ))}
+      </div>
+      <label className="admin-nav-mobile-label" htmlFor="admin-nav-mobile">Przejdź do</label>
+      <select aria-label="Nawigacja panelu administracyjnego" className="admin-nav-mobile" id="admin-nav-mobile" onChange={(event) => navigate(event.target.value)} value={pathname}>
+        {items.map((item) => <option key={item.href} value={item.external ? `external:${item.href}` : item.href}>{item.label}</option>)}
+      </select>
     </nav>
   );
 }

@@ -10,7 +10,7 @@ const mocks = vi.hoisted(() => ({
 }));
 
 vi.mock("next/link", () => ({ default: ({ children, href, ...props }: { children: React.ReactNode; href: string }) => <a href={href} {...props}>{children}</a> }));
-vi.mock("next/navigation", () => ({ redirect: mocks.redirect, usePathname: () => "/admin/submissions" }));
+vi.mock("next/navigation", () => ({ redirect: mocks.redirect, usePathname: () => "/admin/submissions", useRouter: () => ({ push: vi.fn() }) }));
 vi.mock("./delete-submission-button", () => ({
   DeleteSubmissionButton: ({ parentName }: { parentName: string }) => <button type="button">Usuń zgłoszenie {parentName}</button>,
 }));

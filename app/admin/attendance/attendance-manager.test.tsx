@@ -54,6 +54,61 @@ describe("AttendanceManager activity form", () => {
     expect(screen.queryByRole("heading", { name: "Lekcja 1" })).not.toBeInTheDocument();
   });
 
+  it("filters activities by date, group, and start time", () => {
+    const secondActivity = {
+      ...activities[0],
+      activityDate: "2026-10-02T00:00:00.000Z",
+      groupId: "group-2",
+      id: "activity-2",
+      name: "Lekcja 2",
+      startsAt: "2026-10-02T18:00:00.000Z",
+    };
+    render(<AttendanceManager activities={[activities[0], secondActivity]} groups={groups} recipients={recipients} />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Filtruj" }));
+    fireEvent.change(screen.getByLabelText("Data zajęć od"), { target: { value: "2026-10-02" } });
+    fireEvent.change(screen.getByLabelText("Data zajęć do"), { target: { value: "2026-10-02" } });
+    fireEvent.change(screen.getByLabelText("Grupa zajęć"), { target: { value: "group-2" } });
+    fireEvent.change(screen.getByLabelText("Godzina zajęć od"), { target: { value: "17:00" } });
+    fireEvent.change(screen.getByLabelText("Godzina zajęć do"), { target: { value: "19:00" } });
+
+    expect(screen.getByText("Znaleziono: 1 zajęcia")).toBeInTheDocument();
+    expect(screen.getByRole("option", { name: /Lekcja 2/ })).toBeInTheDocument();
+    expect(screen.queryByRole("option", { name: /Lekcja 1/ })).not.toBeInTheDocument();
+  });
+
+  it("shows an empty selector state and clears filters", () => {
+    render(<AttendanceManager activities={activities} groups={groups} recipients={recipients} />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Filtruj" }));
+    fireEvent.change(screen.getByLabelText("Data zajęć od"), { target: { value: "2026-11-01" } });
+
+    expect(screen.getByRole("option", { name: "Brak zajęć spełniających filtry" })).toBeInTheDocument();
+    expect(screen.getByText("Znaleziono: 0 zajęć")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Wyczyść filtry" }));
+    expect(screen.getByText("Znaleziono: 1 zajęcia")).toBeInTheDocument();
+  });
+
+  it("keeps filters collapsed until requested", () => {
+    render(<AttendanceManager activities={activities} groups={groups} recipients={recipients} />);
+
+    expect(screen.getByRole("button", { name: "Filtruj" })).toHaveAttribute("aria-expanded", "false");
+    expect(screen.queryByLabelText("Data zajęć od")).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Filtruj" }));
+    expect(screen.getByRole("button", { name: "Filtruj" })).toHaveAttribute("aria-expanded", "true");
+    expect(screen.getByLabelText("Data zajęć od")).toBeInTheDocument();
+  });
+
+  it("offers nearest activities as direct shortcuts", () => {
+    const laterActivity = { ...activities[0], activityDate: "2026-10-02T00:00:00.000Z", id: "activity-2", name: "Lekcja 2" };
+    render(<AttendanceManager activities={[activities[0], laterActivity]} groups={groups} recipients={recipients} selectedDate="2026-10-01" />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Wybierz Lekcja 2, 2026-10-02 16:00, Grupa A" }));
+
+    expect(screen.getByRole("button", { name: "Wybierz Lekcja 2, 2026-10-02 16:00, Grupa A" })).toHaveTextContent("pt · 16:00Grupa A");
+    expect(screen.getByText("2026-10-02 · 16:00–17:00")).toBeInTheDocument();
+  });
+
   it("defaults to the activity closest to the requested date", () => {
     const laterActivity = { ...activities[0], activityDate: "2026-10-10T00:00:00.000Z", id: "activity-2", name: "Lekcja 2" };
     render(<AttendanceManager activities={[activities[0], laterActivity]} groups={groups} recipients={recipients} selectedDate="2026-10-09" />);
@@ -101,7 +156,7 @@ describe("AttendanceManager activity form", () => {
   });
 
   it("updates the selected activity after editing populated fields", async () => {
-    fetchMock.mockResolvedValueOnce({ json: async () => ({ id: "activity-1" }), ok: true });
+    fetchMock.mockResolvedValue({ json: async () => ({ id: "activity-1" }), ok: true });
     render(<AttendanceManager activities={activities} groups={groups} recipients={recipients} />);
 
     fireEvent.change(screen.getByLabelText("Wybierz zajęcia"), { target: { value: "activity-1" } });
@@ -111,14 +166,14 @@ describe("AttendanceManager activity form", () => {
     fireEvent.change(screen.getByLabelText("Do"), { target: { value: "18:00" } });
     fireEvent.click(screen.getByRole("button", { name: "Oznacz Jan jako obecnego" }));
     expect(screen.queryByRole("heading", { name: "Lekcja 1" })).not.toBeInTheDocument();
-    fireEvent.submit(screen.getByRole("heading", { name: "Wybierz zajęcia" }).closest("form")!);
-
     await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+    fireEvent.submit(screen.getByRole("heading", { name: "Wybierz zajęcia" }).closest("form")!);
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
     expect(screen.getByText("Uczestnicy")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Oznacz Jan jako nieobecnego" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Edytuj" })).toBeInTheDocument();
     expect(screen.getByText("Lekcja zmieniona")).toBeInTheDocument();
-    const [url, options] = fetchMock.mock.calls[0] as [string, RequestInit];
+    const [url, options] = fetchMock.mock.calls[1] as [string, RequestInit];
     expect(url).toBe("/api/admin/attendance/activity-1");
     expect(options.method).toBe("PATCH");
     expect(JSON.parse(String(options.body))).toEqual({
@@ -142,8 +197,6 @@ describe("AttendanceManager activity form", () => {
     expect(screen.getByRole("button", { name: "Oznacz Ola jako obecnego" })).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "Oznacz Ola jako obecnego" }));
-    fireEvent.submit(screen.getByRole("heading", { name: "Wybierz zajęcia" }).closest("form")!);
-
     await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
     const body = JSON.parse(String((fetchMock.mock.calls[0] as [string, RequestInit])[1].body));
     expect(body.participants).toContainEqual({ present: true, submissionId: "submission-3" });
@@ -170,7 +223,12 @@ describe("AttendanceManager activity form", () => {
     fireEvent.change(screen.getByLabelText("Wybierz zajęcia"), { target: { value: "activity-1" } });
 
     const actions = screen.getByRole("heading", { name: "Wybierz zajęcia" }).closest("form")?.querySelector(".attendance-selected-actions");
-    expect(actions?.querySelector(".attendance-selected-actions-left")?.querySelector("button")).toHaveTextContent("Zatwierdź zajęcia");
+    expect(actions?.querySelector(".attendance-selected-actions-left")).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Edytuj" }));
+    expect(screen.queryByRole("button", { name: "Zatwierdź zmiany" })).not.toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText("Nazwa zajęć"), { target: { value: "Zmieniona nazwa" } });
+    const saveButton = screen.getByRole("button", { name: "Zatwierdź zmiany" });
+    expect(saveButton.closest(".attendance-selected-groups")).toBeInTheDocument();
     expect(actions?.querySelector(".attendance-selected-actions-right")?.querySelector("button")).toHaveTextContent("Usuń zajęcia");
     const deleteButton = within(actions as HTMLElement).getByRole("button", { name: "Usuń zajęcia" });
     expect(deleteButton).toHaveClass("admin-destructive-button");

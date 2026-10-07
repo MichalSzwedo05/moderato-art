@@ -157,7 +157,7 @@ describe("CalendarBoard", () => {
 
     openCreateDialog();
     const actions = screen.getByRole("heading", { name: "Nowe zajęcia" }).closest("form")?.querySelector(".admin-calendar-create-actions");
-    expect(actions?.querySelectorAll("button")[0]).toHaveTextContent("Zapisz zajęcia");
+     expect(actions?.querySelectorAll("button")[0]).toHaveTextContent("Zatwierdź");
     expect(actions?.querySelectorAll("button")[1]).toHaveTextContent("Anuluj");
   });
 
@@ -195,7 +195,7 @@ describe("CalendarBoard", () => {
     fireEvent.change(screen.getByLabelText("Grupa"), { target: { value: "group-1" } });
     fireEvent.click(screen.getByRole("radio", { name: "Co tydzień przez" }));
     fireEvent.change(screen.getByLabelText("tygodni"), { target: { value: "3" } });
-    fireEvent.click(screen.getByRole("button", { name: "Zapisz zajęcia" }));
+    fireEvent.click(screen.getByRole("button", { name: "Zatwierdź" }));
 
     await waitFor(() => expect(mocks.fetch).toHaveBeenCalledTimes(1));
     const body = JSON.parse(String((mocks.fetch.mock.calls[0] as [string, RequestInit])[1].body));
@@ -204,24 +204,22 @@ describe("CalendarBoard", () => {
     await waitFor(() => expect(screen.getAllByText(/Pominięto daty z istniejącą już aktywnością: 2026-09-30/).length).toBeGreaterThan(0));
   });
 
-  it("opens an existing activity with a link to attendance and no delete scope for one-offs", () => {
+  it("opens an existing activity as a read-only modal", () => {
     renderBoard([activity()]);
 
     fireEvent.click(screen.getByRole("button", { name: "Lekcja 1, 16:00–17:00, 2 osób" }));
 
     expect(screen.getByRole("link", { name: "Obecność" })).toHaveAttribute("href", "/admin/attendance?date=2026-09-23&activity=activity-1");
     expect(screen.queryByRole("combobox", { name: "Usuń" })).not.toBeInTheDocument();
-    expect(screen.getByLabelText("Od")).toHaveValue("16:00");
-    expect(screen.getByLabelText("Do")).toHaveValue("17:00");
-    expect(screen.queryByRole("textbox", { name: "Nazwa zajęć" })).not.toBeInTheDocument();
-    fireEvent.click(screen.getByRole("button", { name: "Nazwa zajęć" }));
-    expect(screen.getByRole("textbox", { name: "Nazwa zajęć" })).toBeInTheDocument();
+    expect(screen.getByText("Nazwa zajęć:")).toBeInTheDocument();
+    expect(screen.getAllByText("16:00").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("17:00").length).toBeGreaterThan(0);
     expect(screen.getByText("Pianino grupa A")).toBeInTheDocument();
     expect(screen.getByRole("region", { name: "Lista obecności" })).toHaveTextContent("Anna");
     expect(screen.getByRole("region", { name: "Lista obecności" })).toHaveTextContent("Obecny");
     expect(screen.getByRole("region", { name: "Lista obecności" })).toHaveTextContent("Jan");
     expect(screen.getByRole("region", { name: "Lista obecności" })).toHaveTextContent("Nieobecny");
-    expect(screen.getByRole("button", { name: "Zatwierdź" })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Zatwierdź" })).not.toBeInTheDocument();
     expect(document.querySelectorAll(".admin-modal-actions-group")).toHaveLength(2);
   });
 
@@ -242,38 +240,23 @@ describe("CalendarBoard", () => {
     await waitFor(() => expect(mocks.refresh).toHaveBeenCalled());
   });
 
-  it("renames an activity in place", async () => {
-    mocks.fetch.mockResolvedValueOnce({ json: async () => ({ id: "activity-1" }), ok: true });
+  it("does not offer editing controls for an existing activity", async () => {
     renderBoard([activity()]);
 
     fireEvent.click(screen.getByRole("button", { name: "Lekcja 1, 16:00–17:00, 2 osób" }));
-    fireEvent.click(screen.getByRole("button", { name: "Nazwa zajęć" }));
-    fireEvent.change(screen.getByRole("textbox", { name: "Nazwa zajęć" }), { target: { value: "Lekcja 1 poprawiona" } });
-    fireEvent.click(screen.getByRole("button", { name: "Zatwierdź" }));
-
-    await waitFor(() => expect(mocks.fetch).toHaveBeenCalledTimes(1));
-    const [url, options] = mocks.fetch.mock.calls[0] as [string, RequestInit];
-    expect(url).toBe("/api/admin/attendance/activity-1");
-    expect(options.method).toBe("PATCH");
-    expect(JSON.parse(String(options.body))).toEqual({ activityDate: "2026-09-23", endsAt: "17:00", groupId: "group-1", name: "Lekcja 1 poprawiona", startsAt: "16:00" });
+    expect(screen.queryByLabelText("Nazwa zajęć")).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("Od")).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("Do")).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Zatwierdź" })).not.toBeInTheDocument();
+    expect(mocks.fetch).not.toHaveBeenCalled();
   });
 
-  it("recalculates the range after updating and deleting an activity", async () => {
-    mocks.fetch
-      .mockResolvedValueOnce({ json: async () => ({ id: "activity-1" }), ok: true })
-      .mockResolvedValueOnce({ json: async () => ({ deleted: 1 }), ok: true });
+  it("recalculates the range after deleting an activity", async () => {
+    mocks.fetch.mockResolvedValueOnce({ json: async () => ({ deleted: 1 }), ok: true });
     renderBoard([activity()]);
 
     expect(screen.queryByText("20:00")).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Lekcja 1, 16:00–17:00, 2 osób" }));
-    fireEvent.change(screen.getByLabelText("Od"), { target: { value: "20:00" } });
-    fireEvent.change(screen.getByLabelText("Do"), { target: { value: "21:00" } });
-    fireEvent.click(screen.getByRole("button", { name: "Zatwierdź" }));
-
-    await waitFor(() => expect(screen.getByText("20:00")).toBeInTheDocument());
-    expect(screen.queryByText("21:00")).not.toBeInTheDocument();
-
-    fireEvent.click(screen.getByRole("button", { name: "Lekcja 1, 20:00–21:00, 2 osób" }));
     fireEvent.click(screen.getByRole("button", { name: "Usuń" }));
 
     await waitFor(() => expect(screen.queryByText("20:00")).not.toBeInTheDocument());

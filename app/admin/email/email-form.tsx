@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useRef, useState, type FormEvent } from "react";
 import { MessageHistoryModal } from "../message-history-modal";
 import { emailHistoryChannels } from "@/lib/message-history-channels";
 
@@ -21,8 +21,10 @@ export function EmailForm({ groups = [], recipients }: { groups?: RecipientGroup
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [subject, setSubject] = useState("");
   const [message, setMessage] = useState("");
+  const [attachment, setAttachment] = useState<File>();
   const [feedback, setFeedback] = useState<{ message: string; error: boolean }>();
   const [pending, setPending] = useState(false);
+  const attachmentInput = useRef<HTMLInputElement>(null);
   const selectedRecipients = recipients.filter((recipient) => selectedIds.includes(recipient.id));
   const allSelected = recipients.length > 0 && selectedIds.length === recipients.length;
 
@@ -51,9 +53,13 @@ export function EmailForm({ groups = [], recipients }: { groups?: RecipientGroup
     setPending(true);
 
     try {
+      const formData = new FormData();
+      formData.set("message", message);
+      formData.set("subject", subject);
+      formData.set("submissionIds", JSON.stringify(selectedIds));
+      if (attachment) formData.set("attachment", attachment);
       const response = await fetch("/api/admin/email", {
-        body: JSON.stringify({ message, subject, submissionIds: selectedIds }),
-        headers: { "Content-Type": "application/json" },
+        body: formData,
         method: "POST",
       });
       const result = await response.json() as { message?: string };
@@ -61,6 +67,8 @@ export function EmailForm({ groups = [], recipients }: { groups?: RecipientGroup
       setFeedback({ error: false, message: result.message || "Wiadomość e-mail została wysłana." });
       setSubject("");
       setMessage("");
+      setAttachment(undefined);
+      if (attachmentInput.current) attachmentInput.current.value = "";
     } catch (error) {
       setFeedback({
         error: true,
@@ -125,6 +133,10 @@ export function EmailForm({ groups = [], recipients }: { groups?: RecipientGroup
     <label htmlFor="admin-email-message">Treść wiadomości
       <textarea id="admin-email-message" maxLength={20000} onChange={(event) => setMessage(event.target.value)} required rows={8} value={message} />
     </label>
+    <label htmlFor="admin-email-attachment">Załącznik (opcjonalnie)
+      <input id="admin-email-attachment" onChange={(event) => setAttachment(event.target.files?.[0])} ref={attachmentInput} type="file" />
+    </label>
+    {attachment ? <p>{attachment.name}</p> : null}
     <p className="admin-sms-counter">{message.length}/20000 znaków · wybrano {selectedIds.length}</p>
     <button disabled={pending || selectedIds.length === 0 || !subject.trim() || !message.trim()} type="submit">{pending ? "Wysyłanie…" : "Wyślij e-mail"}</button>
     {feedback ? <p className={feedback.error ? "admin-notice" : "admin-success"} role={feedback.error ? "alert" : "status"}>{feedback.message}</p> : null}

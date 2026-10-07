@@ -10,6 +10,11 @@ type FormMode = "new" | "select";
 
 const dateValue = (value: string) => value.slice(0, 10);
 const timeValue = (value: string) => value.slice(11, 16);
+const shortWeekdays = ["nd", "pn", "wt", "śr", "cz", "pt", "sb"];
+function shortActivityWeekday(value: string) {
+  const date = new Date(`${value}T00:00:00Z`);
+  return shortWeekdays[date.getUTCDay()];
+}
 function localDateValue() { const now = new Date(); return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`; }
 function nextLessonName(activities: Activity[]) {
   const lessonNumbers = activities
@@ -38,6 +43,22 @@ function activityGroupIds(activity: Activity | undefined, groups: Group[]) {
   return group ? [group.id] : [];
 }
 
+type ActivityFilters = { dateFrom: string; dateTo: string; groupId: string; timeFrom: string; timeTo: string };
+
+function matchesActivityFilters(activity: Activity, groups: Group[], filters: ActivityFilters) {
+  const date = dateValue(activity.activityDate);
+  const startsAt = timeValue(activity.startsAt);
+  return (!filters.dateFrom || date >= filters.dateFrom)
+    && (!filters.dateTo || date <= filters.dateTo)
+    && (!filters.timeFrom || startsAt >= filters.timeFrom)
+    && (!filters.timeTo || startsAt <= filters.timeTo)
+    && (!filters.groupId || activityGroupIds(activity, groups).includes(filters.groupId));
+}
+
+function sameIds(left: string[], right: string[]) {
+  return left.length === right.length && left.every((id) => right.includes(id));
+}
+
 function nearestActivity(activities: Activity[], targetDate?: string) {
   if (!targetDate) {
     const now = Date.now();
@@ -51,6 +72,20 @@ function nearestActivity(activities: Activity[], targetDate?: string) {
       - Math.abs(new Date(`${dateValue(right.activityDate)}T00:00:00Z`).getTime() - new Date(`${targetDate}T00:00:00Z`).getTime());
     return dateDistance || left.startsAt.localeCompare(right.startsAt) || left.id.localeCompare(right.id);
   })[0];
+}
+
+function nearestActivities(activities: Activity[], targetDate?: string) {
+  return [...activities]
+    .sort((left, right) => {
+      if (!targetDate) {
+        const timeDistance = Math.abs(new Date(left.startsAt).getTime() - Date.now()) - Math.abs(new Date(right.startsAt).getTime() - Date.now());
+        return timeDistance || left.startsAt.localeCompare(right.startsAt) || left.id.localeCompare(right.id);
+      }
+      const dateDistance = Math.abs(new Date(`${dateValue(left.activityDate)}T00:00:00Z`).getTime() - new Date(`${targetDate}T00:00:00Z`).getTime())
+        - Math.abs(new Date(`${dateValue(right.activityDate)}T00:00:00Z`).getTime() - new Date(`${targetDate}T00:00:00Z`).getTime());
+      return dateDistance || left.startsAt.localeCompare(right.startsAt) || left.id.localeCompare(right.id);
+    })
+    .slice(0, 3);
 }
 
 export function AttendanceManager({ activities: initialActivities, groups, recipients, selectedActivityId, selectedDate }: { activities: Activity[]; groups: Group[]; recipients: Recipient[]; selectedActivityId?: string; selectedDate?: string }) {
@@ -74,17 +109,77 @@ export function AttendanceManager({ activities: initialActivities, groups, recip
   const [pendingId, setPendingId] = useState<string>();
   const [feedback, setFeedback] = useState<{ error: boolean; message: string }>();
   const [createdSuccess, setCreatedSuccess] = useState<{ id: string; name: string }>();
+  const [activityDateFrom, setActivityDateFrom] = useState("");
+  const [activityDateTo, setActivityDateTo] = useState("");
+  const [activityGroupId, setActivityGroupId] = useState("");
+  const [activityTimeFrom, setActivityTimeFrom] = useState("");
+  const [activityTimeTo, setActivityTimeTo] = useState("");
+  const [filtersOpen, setFiltersOpen] = useState(false);
+
+  function updateActivityFilters(changes: Partial<ActivityFilters>) {
+    const nextFilters = {
+      dateFrom: activityDateFrom,
+      dateTo: activityDateTo,
+      groupId: activityGroupId,
+      timeFrom: activityTimeFrom,
+      timeTo: activityTimeTo,
+      ...changes,
+    };
+    setActivityDateFrom(nextFilters.dateFrom);
+    setActivityDateTo(nextFilters.dateTo);
+    setActivityGroupId(nextFilters.groupId);
+    setActivityTimeFrom(nextFilters.timeFrom);
+    setActivityTimeTo(nextFilters.timeTo);
+    const selectedActivity = activities.find((activity) => activity.id === formActivityId);
+    if (selectedActivity && !matchesActivityFilters(selectedActivity, groups, nextFilters)) {
+      setFormActivityId("");
+      setEditingSelectedActivity(false);
+    }
+  }
 
   function displayName(recipient: Recipient) { return recipient.childName || recipient.parentName || "Bez podanego imienia"; }
   function recipient(id: string) { return recipients.find((item) => item.id === id); }
+
+  async function saveAttendance(nextPresentSubmissionIds: string[], previousPresentSubmissionIds: string[]) {
+    if (formMode !== "select" || !formActivityId) return;
+    const selectedActivity = activities.find((activity) => activity.id === formActivityId);
+    if (!selectedActivity) return;
+    setPendingId(selectedActivity.id);
+    setFeedback(undefined);
+    const participants = submissionIds.map((submissionId) => ({ present: nextPresentSubmissionIds.includes(submissionId), submissionId }));
+    const savedActivityDate = editingSelectedActivity ? dateValue(selectedActivity.activityDate) : activityDate;
+    const savedEndsAt = editingSelectedActivity ? (selectedActivity.endsAt ? timeValue(selectedActivity.endsAt) : "") : endsAt;
+    const savedGroupIds = editingSelectedActivity ? activityGroupIds(selectedActivity, groups) : groupIds;
+    const savedName = editingSelectedActivity ? selectedActivity.name : name;
+    const savedStartsAt = editingSelectedActivity ? timeValue(selectedActivity.startsAt) : startsAt;
+    try {
+      const response = await fetch(`/api/admin/attendance/${encodeURIComponent(selectedActivity.id)}`, { body: JSON.stringify({ activityDate: savedActivityDate, endsAt: savedEndsAt, groupId: savedGroupIds[0] || "", groupIds: savedGroupIds, name: savedName, participants, startsAt: savedStartsAt }), headers: { "Content-Type": "application/json" }, method: "PATCH" });
+      const result = await response.json() as { message?: string };
+      if (!response.ok) throw new Error(result.message || "Nie udało się zapisać obecności.");
+      setActivities((current) => current.map((activity) => activity.id === selectedActivity.id ? { ...activity, participants } : activity));
+      setFeedback({ error: false, message: "Obecność została zapisana." });
+    } catch (error) {
+      setPresentSubmissionIds(previousPresentSubmissionIds);
+      setFeedback({ error: true, message: error instanceof Error ? error.message : "Nie udało się zapisać obecności." });
+    } finally {
+      setPendingId(undefined);
+    }
+  }
+
   function toggleDraftAttendance(submissionId: string) {
-    setPresentSubmissionIds((current) => current.includes(submissionId)
-      ? current.filter((id) => id !== submissionId)
-      : [...current, submissionId]);
+    const previousPresentSubmissionIds = presentSubmissionIds;
+    const nextPresentSubmissionIds = presentSubmissionIds.includes(submissionId)
+      ? presentSubmissionIds.filter((id) => id !== submissionId)
+      : [...presentSubmissionIds, submissionId];
+    setPresentSubmissionIds(nextPresentSubmissionIds);
+    void saveAttendance(nextPresentSubmissionIds, previousPresentSubmissionIds);
   }
 
   function toggleAllDraftAttendance() {
-    setPresentSubmissionIds((current) => current.length === selectedParticipants.length ? [] : selectedParticipants.map((item) => item.id));
+    const previousPresentSubmissionIds = presentSubmissionIds;
+    const nextPresentSubmissionIds = presentSubmissionIds.length === selectedParticipants.length ? [] : selectedParticipants.map((item) => item.id);
+    setPresentSubmissionIds(nextPresentSubmissionIds);
+    void saveAttendance(nextPresentSubmissionIds, previousPresentSubmissionIds);
   }
 
   function addExtraParticipant(id: string) {
@@ -171,13 +266,28 @@ export function AttendanceManager({ activities: initialActivities, groups, recip
     .filter((item): item is Recipient => Boolean(item))
     .sort((left, right) => displayName(left).localeCompare(displayName(right), "pl"));
   const selectedFormActivity = activities.find((activity) => activity.id === formActivityId);
-  const activityGroups = activities.reduce<Array<{ date: string; activities: Activity[] }>>((result, activity) => {
+  const activityDetailsChanged = Boolean(selectedFormActivity && (
+    dateValue(selectedFormActivity.activityDate) !== activityDate
+    || timeValue(selectedFormActivity.startsAt) !== startsAt
+    || (selectedFormActivity.endsAt ? timeValue(selectedFormActivity.endsAt) : "") !== endsAt
+    || selectedFormActivity.name !== name
+    || !sameIds(activityGroupIds(selectedFormActivity, groups), groupIds)
+    || !sameIds(selectedFormActivity.participants.map((participant) => participant.submissionId), submissionIds)
+    || selectedFormActivity.participants.some((participant) => participant.present !== presentSubmissionIds.includes(participant.submissionId))
+  ));
+  const filteredActivities = activities.filter((activity) => {
+    return matchesActivityFilters(activity, groups, { dateFrom: activityDateFrom, dateTo: activityDateTo, groupId: activityGroupId, timeFrom: activityTimeFrom, timeTo: activityTimeTo });
+  });
+  const activityGroups = filteredActivities.reduce<Array<{ date: string; activities: Activity[] }>>((result, activity) => {
     const date = dateValue(activity.activityDate);
     const current = result[result.length - 1];
     if (current?.date === date) current.activities.push(activity);
     else result.push({ activities: [activity], date });
     return result;
   }, []);
+  const hasActivityFilters = Boolean(activityDateFrom || activityDateTo || activityGroupId || activityTimeFrom || activityTimeTo);
+  const nearestFilteredActivities = nearestActivities(filteredActivities, selectedDate);
+
   const availableExtraRecipients = recipients
     .filter((item) => !submissionIds.includes(item.id))
     .sort((left, right) => displayName(left).localeCompare(displayName(right), "pl"));
@@ -242,14 +352,26 @@ export function AttendanceManager({ activities: initialActivities, groups, recip
 
   return <>
      <form className="admin-form attendance-create-form" id="attendance-create-form" onSubmit={createActivity}>
-       <div className="attendance-create-heading"><div><h2>{formMode === "new" ? "Nowe zajęcia" : "Wybierz zajęcia"}</h2><p>{formMode === "select" ? "Wybierz istniejące zajęcia, aby uzupełnić formularz i je zmodyfikować." : "Utwórz nowe zajęcia i przypisz do nich grupę."}</p></div>{formMode === "select" ? <button className="attendance-create-mode-button" onClick={startNewActivity} type="button">+ Nowe zajęcia</button> : <button className="attendance-create-mode-button" onClick={startSelectingActivity} type="button">Wybierz zajęcia</button>}</div>
-        {formMode === "select" ? <label>Wybierz zajęcia<select className="attendance-activity-picker" onChange={(event) => { const selectedActivity = activities.find((activity) => activity.id === event.target.value); if (selectedActivity) applyActivity(selectedActivity); else setFormActivityId(""); }} required value={formActivityId}><option value="">Wybierz zajęcia</option>{activityGroups.map((group) => <optgroup key={group.date} label={group.date}>{group.activities.map((activity) => <option key={activity.id} value={activity.id}>{timeValue(activity.startsAt)}{activity.endsAt ? `–${timeValue(activity.endsAt)}` : ""} · {activity.name}</option>)}</optgroup>)}</select></label> : null}
+       <div className="attendance-create-heading"><div><h2>{formMode === "new" ? "Nowe zajęcia" : "Wybierz zajęcia"}</h2><p>Wybierz czas zajęć i zaznacz osoby obecne, aby zapisać obecność.</p></div><div className="attendance-create-actions">{formMode === "select" ? <button aria-expanded={filtersOpen} className="attendance-filter-toggle" onClick={() => setFiltersOpen((current) => !current)} type="button">Filtruj{hasActivityFilters ? ` · ${[activityDateFrom, activityDateTo, activityGroupId, activityTimeFrom, activityTimeTo].filter(Boolean).length}` : ""}</button> : null}{formMode === "select" ? <button className="attendance-create-mode-button" onClick={startNewActivity} type="button">+ Nowe zajęcia</button> : <button className="attendance-create-mode-button" onClick={startSelectingActivity} type="button">Wybierz zajęcia</button>}</div></div>
+         {formMode === "select" ? <>
+            <div className="attendance-filter-toggle-row"><div aria-label="Najbliższe zajęcia" className="attendance-nearest-activities">{nearestFilteredActivities.map((activity) => { const groupName = activityGroupIds(activity, groups).map((id) => groups.find((group) => group.id === id)?.name).filter(Boolean).join(", ") || "Bez grupy"; return <button aria-label={`Wybierz ${activity.name}, ${dateValue(activity.activityDate)} ${timeValue(activity.startsAt)}, ${groupName}`} className={activity.id === formActivityId ? "attendance-nearest-activity attendance-nearest-activity-active" : "attendance-nearest-activity"} key={activity.id} onClick={() => applyActivity(activity)} title={`${activity.name}, ${dateValue(activity.activityDate)} ${timeValue(activity.startsAt)}, ${groupName}`} type="button"><strong>{shortActivityWeekday(dateValue(activity.activityDate))} · {timeValue(activity.startsAt)}</strong><small>{groupName}</small></button>; })}</div></div>
+            {filtersOpen ? <div className="attendance-activity-filters">
+              <label>Data od<input aria-label="Data zajęć od" onChange={(event) => updateActivityFilters({ dateFrom: event.target.value })} type="date" value={activityDateFrom} /></label>
+              <label>Data do<input aria-label="Data zajęć do" onChange={(event) => updateActivityFilters({ dateTo: event.target.value })} type="date" value={activityDateTo} /></label>
+              <label>Grupa<select aria-label="Grupa zajęć" onChange={(event) => updateActivityFilters({ groupId: event.target.value })} value={activityGroupId}><option value="">Wszystkie grupy</option>{groups.map((group) => <option key={group.id} value={group.id}>{group.name}</option>)}</select></label>
+              <label>Godzina od<input aria-label="Godzina zajęć od" onChange={(event) => updateActivityFilters({ timeFrom: event.target.value })} type="time" value={activityTimeFrom} /></label>
+              <label>Godzina do<input aria-label="Godzina zajęć do" onChange={(event) => updateActivityFilters({ timeTo: event.target.value })} type="time" value={activityTimeTo} /></label>
+              {hasActivityFilters ? <button className="attendance-clear-filters" onClick={() => updateActivityFilters({ dateFrom: "", dateTo: "", groupId: "", timeFrom: "", timeTo: "" })} type="button">Wyczyść filtry</button> : null}
+            </div> : null}
+           <label>Wybierz zajęcia<select className="attendance-activity-picker" onChange={(event) => { const selectedActivity = activities.find((activity) => activity.id === event.target.value); if (selectedActivity) applyActivity(selectedActivity); else setFormActivityId(""); }} required value={formActivityId}><option value="">{filteredActivities.length > 0 ? "Wybierz zajęcia" : "Brak zajęć spełniających filtry"}</option>{activityGroups.map((group) => <optgroup key={group.date} label={group.date}>{group.activities.map((activity) => <option key={activity.id} value={activity.id}>{timeValue(activity.startsAt)}{activity.endsAt ? `–${timeValue(activity.endsAt)}` : ""} · {activity.name}</option>)}</optgroup>)}</select></label>
+           <p className="attendance-activity-filter-summary">Znaleziono: {filteredActivities.length} {filteredActivities.length === 1 ? "zajęcia" : "zajęć"}</p>
+         </> : null}
        {formMode === "select" && formActivityId ? <div className="attendance-selected-section">
          {editingSelectedActivity ? <div className="attendance-selected-edit-fields"><label>Nazwa zajęć<input maxLength={160} onChange={(event) => setName(event.target.value)} required value={name} /></label>
            <div className="attendance-time-grid"><label>Data<input onChange={(event) => setActivityDate(event.target.value)} required type="date" value={activityDate} /></label><label>Od<input onChange={(event) => { const value = event.target.value; setStartsAt(value); setEndsAt(addHour(value)); }} required type="time" value={startsAt} /></label><label>Do<input onChange={(event) => setEndsAt(event.target.value)} type="time" value={endsAt} /></label></div>
-            <label>Wybierz grupę<select aria-label="Wybierz grupę" className="attendance-group-picker" onChange={(event) => selectGroup(event.target.value)} required={groupIds.length === 0} value={groupIds[0] || ""}><option value="">Dodaj grupę</option>{groups.map((group) => <option key={group.id} value={group.id}>{group.name}</option>)}</select></label><div className="attendance-selected-groups">{groupIds.map((id) => <span key={id}>{groups.find((group) => group.id === id)?.name || "Niedostępna grupa"}<button aria-label={`Usuń grupę ${groups.find((group) => group.id === id)?.name || id}`} onClick={() => removeGroup(id)} type="button">×</button></span>)}</div></div> : <div className="attendance-selected-details"><div><strong>{name}</strong><span>{activityDate} · {startsAt}–{endsAt || "bez godziny końcowej"}</span><span>{groupIds.map((id) => groups.find((group) => group.id === id)?.name).filter(Boolean).join(", ") || "Grupa uczestników niedostępna"}</span></div><button className="attendance-edit-button" onClick={() => { setEditingSelectedActivity(true); setShowParticipants(true); }} type="button">Edytuj</button></div>}
+             <label>Wybierz grupę<select aria-label="Wybierz grupę" className="attendance-group-picker" onChange={(event) => selectGroup(event.target.value)} required={groupIds.length === 0} value={groupIds[0] || ""}><option value="">Dodaj grupę</option>{groups.map((group) => <option key={group.id} value={group.id}>{group.name}</option>)}</select></label><div className="attendance-selected-groups">{groupIds.map((id) => <span key={id}>{groups.find((group) => group.id === id)?.name || "Niedostępna grupa"}<button aria-label={`Usuń grupę ${groups.find((group) => group.id === id)?.name || id}`} onClick={() => removeGroup(id)} type="button">×</button></span>)}{activityDetailsChanged ? <div className="attendance-edit-submit"><button disabled={pendingId !== undefined || !name.trim() || groupIds.length === 0 || submissionIds.length === 0 || !formActivityId} type="submit">{pendingId === formActivityId ? "Zapisywanie…" : "Zatwierdź zmiany"}</button></div> : null}</div></div> : <div className="attendance-selected-details"><div><strong>{name}</strong><span>{activityDate} · {startsAt}–{endsAt || "bez godziny końcowej"}</span><span>{groupIds.map((id) => groups.find((group) => group.id === id)?.name).filter(Boolean).join(", ") || "Grupa uczestników niedostępna"}</span></div><button className="attendance-edit-button" onClick={() => { setEditingSelectedActivity(true); setShowParticipants(true); }} type="button">Edytuj</button></div>}
         {groupIds.length > 0 && showParticipants ? <div className="attendance-create-people"><div className="attendance-create-people-heading"><strong>Uczestnicy</strong><span>{selectedParticipants.length}</span><button className="attendance-bulk-button" onClick={toggleAllDraftAttendance} type="button">{presentSubmissionIds.length === selectedParticipants.length ? "Wszyscy nieobecni" : "Wszyscy obecni"}</button></div>{selectedParticipants.length === 0 ? <p className="admin-submissions-empty">Wybrane grupy nie mają uczestników.</p> : selectedParticipants.map((item) => { const present = presentSubmissionIds.includes(item.id); return <div className={`attendance-create-person attendance-participant ${present ? "attendance-participant-present" : "attendance-participant-absent"}`} key={item.id}><span>{displayName(item)}<small>{item.email}</small></span><button aria-label={`Oznacz ${displayName(item)} jako ${present ? "nieobecnego" : "obecnego"}`} className={present ? "attendance-create-status attendance-create-status-present" : "attendance-create-status attendance-create-status-absent"} onClick={() => toggleDraftAttendance(item.id)} type="button">{present ? "Obecny" : "Nieobecny"}</button></div>; })}<div className="attendance-add-participant-row">{availableExtraRecipients.length > 0 ? <>{showAddParticipant ? <select aria-label="Dostępni uczestnicy spoza grupy" className="attendance-extra-participants-select" onChange={(event) => addExtraParticipant(event.target.value)} size={5} value=""><option disabled value="">Wybierz uczestnika</option>{availableExtraRecipients.map((item) => <option key={item.id} value={item.id}>{displayName(item)} · {item.email}</option>)}</select> : <button aria-label="Dodaj uczestnika spoza grupy" className="attendance-add-participant-button" onClick={() => setShowAddParticipant(true)} type="button">Dodaj uczestnika spoza grupy</button>}</> : null}</div></div> : null}
-          <div className="attendance-selected-actions"><div className="attendance-selected-actions-left"><button disabled={pendingId !== undefined || !name.trim() || groupIds.length === 0 || submissionIds.length === 0 || !formActivityId} type="submit">{pendingId === formActivityId ? "Zapisywanie…" : "Zatwierdź zajęcia"}</button></div><div className="attendance-selected-actions-right"><button className="admin-destructive-button" disabled={pendingId !== undefined || !selectedFormActivity} onClick={() => void deleteSelectedActivity()} type="button">Usuń zajęcia</button></div></div>
+           <div className="attendance-selected-actions"><div className="attendance-selected-actions-right"><button className="admin-destructive-button" disabled={pendingId !== undefined || !selectedFormActivity} onClick={() => void deleteSelectedActivity()} type="button">Usuń zajęcia</button></div></div>
        </div> : formMode === "select" ? null : <><label>Nazwa zajęć<input maxLength={160} onChange={(event) => setName(event.target.value)} required value={name} /></label>
        <div className="attendance-time-grid"><label>Data<input onChange={(event) => setActivityDate(event.target.value)} required type="date" value={activityDate} /></label><label>Od<input onChange={(event) => { const value = event.target.value; setStartsAt(value); setEndsAt(addHour(value)); }} required type="time" value={startsAt} /></label><label>Do<input onChange={(event) => setEndsAt(event.target.value)} type="time" value={endsAt} /></label></div>
         <label>Wybierz grupę<select aria-label="Wybierz grupę" className="attendance-group-picker" onChange={(event) => selectGroup(event.target.value)} required={groupIds.length === 0} value={groupIds[0] || ""}><option value="">Dodaj grupę</option>{groups.map((group) => <option key={group.id} value={group.id}>{group.name}</option>)}</select></label><div className="attendance-selected-groups">{groupIds.map((id) => <span key={id}>{groups.find((group) => group.id === id)?.name || "Niedostępna grupa"}<button aria-label={`Usuń grupę ${groups.find((group) => group.id === id)?.name || id}`} onClick={() => removeGroup(id)} type="button">×</button></span>)}</div>

@@ -26,7 +26,7 @@ type CalendarBoardProps = {
 };
 
 type DraftActivity = { activityDate: string; endsAt: string; groupId: string; name: string; repeatWeeks: number; startsAt: string };
-type DetailActivity = { endsAt: string; name: string; nameEditable: boolean; startsAt: string };
+type DetailActivity = { endsAt: string; name: string; startsAt: string };
 type DeleteScope = "future" | "series" | "single";
 type CreateField = "endsAt" | "groupId" | "name" | "repeatWeeks" | "startsAt";
 type CreateFieldErrors = Partial<Record<CreateField, string>>;
@@ -170,7 +170,6 @@ export function CalendarBoard({ activities, currentDate, groups, weekStart }: Ca
   const router = useRouter();
   const createDialogRef = useRef<HTMLDialogElement>(null);
   const detailDialogRef = useRef<HTMLDialogElement>(null);
-  const detailNameInputRef = useRef<HTMLInputElement>(null);
   const createTitleId = useId();
   const detailTitleId = useId();
   const [items, setItems] = useState(activities);
@@ -231,7 +230,6 @@ export function CalendarBoard({ activities, currentDate, groups, weekStart }: Ca
     setDetail({
       endsAt: activity.endsAt ? timeValue(activity.endsAt) : addHour(timeValue(activity.startsAt)),
       name: activity.name,
-      nameEditable: false,
       startsAt: timeValue(activity.startsAt),
     });
   }
@@ -337,30 +335,6 @@ export function CalendarBoard({ activities, currentDate, groups, weekStart }: Ca
     }
   }
 
-  async function saveActivity() {
-    if (!detail || !selectedActivity) return;
-    setPending(true);
-    setFeedback(undefined);
-    try {
-      const response = await fetch(`/api/admin/attendance/${encodeURIComponent(selectedActivity.id)}`, {
-        body: JSON.stringify({ activityDate: dateValue(selectedActivity.activityDate), endsAt: detail.endsAt, groupId: selectedActivity.groupId || "", name: detail.name, startsAt: detail.startsAt }),
-        headers: { "Content-Type": "application/json" },
-        method: "PATCH",
-      });
-      if (!response.ok) throw new Error(await readError(response, "Nie udało się zapisać zajęć."));
-      setItems((current) => current.map((activity) => activity.id === selectedActivity.id
-        ? { ...activity, endsAt: `${dateValue(activity.activityDate)}T${detail.endsAt}:00.000Z`, name: detail.name, startsAt: `${dateValue(activity.activityDate)}T${detail.startsAt}:00.000Z` }
-        : activity));
-      setDetail(undefined);
-      router.refresh();
-      setFeedback({ error: false, message: "Zapisano zmiany." });
-    } catch (error) {
-      setFeedback({ error: true, message: error instanceof Error ? error.message : "Nie udało się zapisać zajęć." });
-    } finally {
-      setPending(false);
-    }
-  }
-
   async function deleteActivity() {
     if (!detail || !selectedActivity) return;
     setPending(true);
@@ -452,7 +426,7 @@ export function CalendarBoard({ activities, currentDate, groups, weekStart }: Ca
         </fieldset>
         {createError ? <p className="admin-notice admin-form-error" role="alert">{createError}</p> : null}
         <div className="admin-calendar-create-actions">
-          <button disabled={pending} type="submit">{pending ? "Zapisywanie…" : "Zapisz zajęcia"}</button>
+           <button disabled={pending} type="submit">{pending ? "Zapisywanie…" : "Zatwierdź"}</button>
           <button disabled={pending} onClick={() => setDraft(undefined)} type="button">Anuluj</button>
         </div>
       </form> : null}
@@ -463,12 +437,9 @@ export function CalendarBoard({ activities, currentDate, groups, weekStart }: Ca
         <h2 id={detailTitleId}>{selectedActivity.name}</h2>
         <p className="admin-submissions-intro">{longDayFormatter.format(utcDate(selectedActivity.activityDate))} · {selectedActivity.totalParticipants} osób</p>
         <p className="admin-calendar-detail-group"><strong>Grupa:</strong> {activityGroupName(selectedActivity, groups) || "Nie przypisano grupy"}</p>
-        <label>Nazwa zajęć{detail.nameEditable ? <input autoFocus maxLength={160} onChange={(event) => setDetail({ ...detail, name: event.target.value })} ref={detailNameInputRef} value={detail.name} /> : <button className="admin-calendar-detail-name-trigger" onClick={() => setDetail({ ...detail, nameEditable: true })} type="button">{detail.name}</button>}</label>
+         <p className="admin-calendar-detail-readonly"><strong>Nazwa zajęć:</strong> {selectedActivity.name}</p>
         <div aria-label="Lista obecności" className="attendance-selected-status calendar-attendance-status" role="region"><div className="attendance-selected-status-heading"><div className="calendar-attendance-status-title"><strong>Lista obecności</strong><span>Uczestnicy zajęć</span></div><span className="calendar-attendance-status-count">{selectedActivity.presentCount}/{selectedActivity.totalParticipants} obecnych</span></div>{selectedActivity.participants.length === 0 ? <p className="admin-submissions-empty">Brak uczestników.</p> : <div className="attendance-selected-status-list calendar-attendance-status-list">{sortParticipants(selectedActivity.participants).map((participant) => <div className={`calendar-attendance-status-row ${participant.present ? "calendar-attendance-status-row-present" : "calendar-attendance-status-row-absent"}`} key={participant.id}><span className="calendar-attendance-status-person"><i aria-hidden="true" />{participantName(participant)}</span><strong className="calendar-attendance-status-badge">{participant.present ? "Obecny" : "Nieobecny"}</strong></div>)}</div>}</div>
-        <div className="attendance-time-grid">
-          <label>Od<input onChange={(event) => setDetail({ ...detail, startsAt: event.target.value })} type="time" value={detail.startsAt} /></label>
-          <label>Do<input onChange={(event) => setDetail({ ...detail, endsAt: event.target.value })} type="time" value={detail.endsAt} /></label>
-        </div>
+         <div className="attendance-time-grid calendar-detail-readonly-times"><p><strong>Od:</strong> {timeValue(selectedActivity.startsAt)}</p><p><strong>Do:</strong> {selectedActivity.endsAt ? timeValue(selectedActivity.endsAt) : "bez godziny końcowej"}</p></div>
         {selectedActivity.seriesId ? <label>Usuń<select onChange={(event) => setDeleteScope(event.target.value as DeleteScope)} value={deleteScope}>
           <option value="single">Tylko te zajęcia</option>
           <option value="series">Całą serię powtórzeń</option>
@@ -482,7 +453,6 @@ export function CalendarBoard({ activities, currentDate, groups, weekStart }: Ca
           </div>
           <div className="admin-modal-actions-group">
             <button className="admin-destructive-button" disabled={pending} onClick={() => void deleteActivity()} type="button">Usuń</button>
-            <button disabled={pending || !detail.name.trim()} onClick={() => void saveActivity()} type="button">Zatwierdź</button>
           </div>
         </div>
       </div> : null}

@@ -5,6 +5,7 @@ import { isSameAdminOrigin } from "@/lib/admin-security";
 import { getContactFormConfig } from "@/lib/contact-config";
 import { getPrisma } from "@/lib/prisma";
 import {
+  contactSubmissionEmailMaxAttachmentBytes,
   contactSubmissionEmailMaxMessageLength,
   contactSubmissionEmailMaxRecipients,
   contactSubmissionEmailMaxSubjectLength,
@@ -23,6 +24,19 @@ const emailRequestSchema = z.object({
     .max(contactSubmissionEmailMaxRecipients)
     .refine((ids) => new Set(ids).size === ids.length, "Duplikaty zgłoszeń."),
 }).strict();
+
+function isFile(value: FormDataEntryValue | null): value is File {
+  return typeof value === "object"
+    && value !== null
+    && "name" in value
+    && typeof value.name === "string"
+    && "size" in value
+    && typeof value.size === "number";
+}
+
+function attachmentFilename(filename: string) {
+  return filename.replaceAll("\\", "/").split("/").pop()?.replaceAll("\0", "") || "attachment";
+}
 
 function errorResponse(message: string, status: number) {
   return NextResponse.json({ message }, {
@@ -43,10 +57,31 @@ export async function POST(request: Request) {
   }
 
   let parsedBody: unknown;
+  let attachment: { content: Buffer; contentType?: string; filename: string } | undefined;
   try {
-    parsedBody = await request.json();
+    if (request.headers.get("content-type")?.includes("multipart/form-data")) {
+      const formData = await request.formData();
+      const submissionIds = formData.get("submissionIds");
+      parsedBody = {
+        message: formData.get("message"),
+        subject: formData.get("subject"),
+        submissionIds: typeof submissionIds === "string" ? JSON.parse(submissionIds) : undefined,
+      };
+      const file = formData.get("attachment");
+      if (file !== null && !isFile(file)) throw new Error("invalid_attachment");
+      if (isFile(file)) {
+        if (!file.size || file.size > contactSubmissionEmailMaxAttachmentBytes) throw new Error("attachment_size");
+        attachment = {
+          content: Buffer.from(await file.arrayBuffer()),
+          ...(file.type ? { contentType: file.type } : {}),
+          filename: attachmentFilename(file.name),
+        };
+      }
+    } else {
+      parsedBody = await request.json();
+    }
   } catch {
-    return errorResponse("Nieprawidłowy format żądania.", 400);
+    return errorResponse("Nieprawidłowy format żądania lub załącznik.", 400);
   }
 
   const parsedRequest = emailRequestSchema.safeParse(parsedBody);
@@ -79,7 +114,7 @@ export async function POST(request: Request) {
       recipients,
       parsedRequest.data.subject,
       parsedRequest.data.message,
-      { throwOnError: true },
+      { ...(attachment ? { attachments: [attachment] } : {}), throwOnError: true },
     );
 
     try {
