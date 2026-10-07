@@ -2806,6 +2806,51 @@ h2 {
   white-space: nowrap;
 }
 
+.attendance-filter-toggle-row { align-items: center; display: flex; justify-content: flex-end; margin-top: .65rem; min-width: 0; }
+.attendance-create-actions { align-items: center; display: flex; flex: 0 0 auto; gap: .55rem; }
+.attendance-filter-toggle {
+  background: transparent;
+  border: 1px solid var(--border-color);
+  border-radius: .5rem;
+  color: var(--dark-blue);
+  cursor: pointer;
+  font: inherit;
+  font-size: .8rem;
+  font-weight: 800;
+  margin: 0;
+  padding: .55rem .7rem;
+  width: auto;
+}
+.attendance-filter-toggle:hover,
+.attendance-filter-toggle:focus-visible { border-color: var(--blue); color: var(--blue); }
+.attendance-nearest-activities { align-items: center; display: flex; gap: .4rem; min-width: 0; overflow-x: auto; width: 100%; }
+.attendance-nearest-activity {
+  align-items: start;
+  background: var(--surface);
+  border: 1px solid var(--border-color);
+  border-radius: .45rem;
+  color: var(--dark-blue);
+  cursor: pointer;
+  flex: 0 0 auto;
+  font: inherit;
+  font-size: .72rem;
+  font-weight: 700;
+  margin: 0;
+  max-width: 6rem;
+  overflow: hidden;
+  padding: .32rem .45rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  width: auto;
+}
+.attendance-nearest-activity strong,
+.attendance-nearest-activity small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.attendance-nearest-activity strong { font-size: .7rem; }
+.attendance-nearest-activity small { color: var(--gray-light); font-size: .65rem; font-weight: 600; margin-top: .12rem; }
+.attendance-nearest-activity:hover,
+.attendance-nearest-activity:focus-visible,
+.attendance-nearest-activity-active { border-color: var(--blue); color: var(--blue); }
+
 .attendance-activity-filters {
   align-items: end;
   background: color-mix(in srgb, var(--cream) 42%, var(--surface));
@@ -3597,6 +3642,12 @@ h2 {
   gap: .55rem;
 }
 
+.attendance-edit-submit { display: flex; justify-content: flex-end; margin-left: auto; margin-top: .35rem; }
+.attendance-edit-submit button { margin: 0; width: auto; }
+
+.admin-calendar-detail-readonly { margin: 0; }
+.calendar-detail-readonly-times p { margin: 0; }
+
 .attendance-selected-section .attendance-create-people {
   background: color-mix(in srgb, var(--cream) 42%, var(--surface));
   max-height: none;
@@ -3821,7 +3872,7 @@ h2 {
   padding: .25rem .35rem .25rem .65rem;
 }
 
-.attendance-selected-groups button {
+.attendance-selected-groups span > button {
   background: transparent;
   border: 0;
   color: inherit;
@@ -4939,6 +4990,8 @@ h2 {
   .attendance-create-person span { grid-column: 1; grid-row: 1; }
   .attendance-create-person .attendance-create-status { grid-column: 1; grid-row: 2; justify-self: stretch; width: 100%; }
   .attendance-create-heading { align-items: flex-start; flex-direction: column; }
+  .attendance-create-actions { align-items: stretch; width: 100%; }
+  .attendance-create-actions > * { flex: 1 1 0; justify-content: center; width: auto; }
   .attendance-create-mode-button { width: 100%; }
   .attendance-create-people-actions { align-items: stretch; margin-left: 0; width: 100%; }
   .attendance-add-person-select,
