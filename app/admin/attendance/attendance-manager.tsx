@@ -10,9 +10,6 @@ type FormMode = "new" | "select";
 
 const dateValue = (value: string) => value.slice(0, 10);
 const timeValue = (value: string) => value.slice(11, 16);
-function dateLabel(value: string) {
-  return new Intl.DateTimeFormat("pl-PL", { day: "numeric", month: "short", weekday: "short", timeZone: "UTC" }).format(new Date(`${value}T00:00:00Z`));
-}
 function localDateValue() { const now = new Date(); return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`; }
 function nextLessonName(activities: Activity[]) {
   const lessonNumbers = activities
@@ -94,7 +91,6 @@ export function AttendanceManager({ activities: initialActivities, groups, recip
   const [activityGroupId, setActivityGroupId] = useState("");
   const [activityTimeFrom, setActivityTimeFrom] = useState("");
   const [activityTimeTo, setActivityTimeTo] = useState("");
-  const [quickDate, setQuickDate] = useState(defaultActivity ? dateValue(defaultActivity.activityDate) : selectedDate || dateValue(initialActivities[0]?.activityDate || ""));
 
   function updateActivityFilters(changes: Partial<ActivityFilters>) {
     const nextFilters = {
@@ -224,9 +220,6 @@ export function AttendanceManager({ activities: initialActivities, groups, recip
     return result;
   }, []);
   const hasActivityFilters = Boolean(activityDateFrom || activityDateTo || activityGroupId || activityTimeFrom || activityTimeTo);
-  const quickDates = [...new Set(filteredActivities.map((activity) => dateValue(activity.activityDate)))];
-  const activeQuickDate = quickDates.includes(quickDate) ? quickDate : quickDates[0] || "";
-  const quickActivities = filteredActivities.filter((activity) => dateValue(activity.activityDate) === activeQuickDate);
 
   const availableExtraRecipients = recipients
     .filter((item) => !submissionIds.includes(item.id))
@@ -294,13 +287,6 @@ export function AttendanceManager({ activities: initialActivities, groups, recip
      <form className="admin-form attendance-create-form" id="attendance-create-form" onSubmit={createActivity}>
        <div className="attendance-create-heading"><div><h2>{formMode === "new" ? "Nowe zajęcia" : "Wybierz zajęcia"}</h2><p>Wybierz czas zajęć i zaznacz osoby obecne, aby zapisać obecność.</p></div>{formMode === "select" ? <button className="attendance-create-mode-button" onClick={startNewActivity} type="button">+ Nowe zajęcia</button> : <button className="attendance-create-mode-button" onClick={startSelectingActivity} type="button">Wybierz zajęcia</button>}</div>
          {formMode === "select" ? <>
-           <section aria-labelledby="attendance-quick-picker-heading" className="attendance-quick-picker">
-             <div className="attendance-quick-picker-heading"><div><strong id="attendance-quick-picker-heading">Szybki wybór zajęć</strong><span>Wybierz datę, a następnie kliknij zajęcia.</span></div><span>{filteredActivities.length}</span></div>
-             {quickDates.length === 0 ? <p className="attendance-quick-empty">Brak zajęć spełniających aktualne filtry.</p> : <>
-               <div aria-label="Daty zajęć" className="attendance-date-choices">{quickDates.map((date) => <button className={date === activeQuickDate ? "attendance-date-choice attendance-date-choice-active" : "attendance-date-choice"} key={date} onClick={() => setQuickDate(date)} type="button">{dateLabel(date)}</button>)}</div>
-               <div aria-label={`Zajęcia ${activeQuickDate}`} className="attendance-quick-activities">{quickActivities.map((activity) => { const activityGroups = activityGroupIds(activity, groups).map((id) => groups.find((group) => group.id === id)?.name).filter(Boolean); return <button className={activity.id === formActivityId ? "attendance-quick-activity attendance-quick-activity-active" : "attendance-quick-activity"} key={activity.id} onClick={() => applyActivity(activity)} type="button"><strong>{timeValue(activity.startsAt)}{activity.endsAt ? `–${timeValue(activity.endsAt)}` : ""}</strong><span>{activity.name}</span><small>{activityGroups.join(", ") || "Bez przypisanej grupy"} · {activity.participants.length} os.</small></button>; })}</div>
-             </>}
-           </section>
            <div className="attendance-activity-filters">
              <label>Data od<input aria-label="Data zajęć od" onChange={(event) => updateActivityFilters({ dateFrom: event.target.value })} type="date" value={activityDateFrom} /></label>
              <label>Data do<input aria-label="Data zajęć do" onChange={(event) => updateActivityFilters({ dateTo: event.target.value })} type="date" value={activityDateTo} /></label>

@@ -54,16 +54,6 @@ describe("AttendanceManager activity form", () => {
     expect(screen.queryByRole("heading", { name: "Lekcja 1" })).not.toBeInTheDocument();
   });
 
-  it("selects an activity from the quick date and activity cards", () => {
-    const secondActivity = { ...activities[0], activityDate: "2026-10-02T00:00:00.000Z", id: "activity-2", name: "Lekcja 2", startsAt: "2026-10-02T18:00:00.000Z" };
-    render(<AttendanceManager activities={[activities[0], secondActivity]} groups={groups} recipients={recipients} />);
-
-    fireEvent.click(screen.getByRole("button", { name: /2 paź/ }));
-    fireEvent.click(screen.getByRole("button", { name: /18:00.*Lekcja 2/ }));
-
-    expect(screen.getByText("2026-10-02 · 18:00–17:00")).toBeInTheDocument();
-  });
-
   it("filters activities by date, group, and start time", () => {
     const secondActivity = {
       ...activities[0],
@@ -102,7 +92,7 @@ describe("AttendanceManager activity form", () => {
     render(<AttendanceManager activities={[activities[0], laterActivity]} groups={groups} recipients={recipients} selectedDate="2026-10-09" />);
 
     expect(screen.getByLabelText("Wybierz zajęcia")).toHaveValue("activity-2");
-    expect(screen.getAllByText("Lekcja 2").length).toBeGreaterThan(0);
+    expect(screen.getByText("Lekcja 2")).toBeInTheDocument();
   });
 
   it("defaults to the activity closest to the current time", () => {
@@ -160,7 +150,7 @@ describe("AttendanceManager activity form", () => {
     expect(screen.getByText("Uczestnicy")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Oznacz Jan jako nieobecnego" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Edytuj" })).toBeInTheDocument();
-    expect(screen.getAllByText("Lekcja zmieniona").length).toBeGreaterThan(0);
+    expect(screen.getByText("Lekcja zmieniona")).toBeInTheDocument();
     const [url, options] = fetchMock.mock.calls[0] as [string, RequestInit];
     expect(url).toBe("/api/admin/attendance/activity-1");
     expect(options.method).toBe("PATCH");
