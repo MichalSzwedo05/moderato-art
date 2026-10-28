@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 type Recipient = { childName: string | null; email: string; id: string; parentName: string | null; phone: string | null };
 type Group = { id: string; name: string; submissionIds: string[] };
@@ -115,6 +115,7 @@ export function AttendanceManager({ activities: initialActivities, groups, recip
   const [activityTimeFrom, setActivityTimeFrom] = useState("");
   const [activityTimeTo, setActivityTimeTo] = useState("");
   const [filtersOpen, setFiltersOpen] = useState(false);
+  const selectedActivityButtonRef = useRef<HTMLButtonElement>(null);
 
   function updateActivityFilters(changes: Partial<ActivityFilters>) {
     const nextFilters = {
@@ -296,6 +297,10 @@ export function AttendanceManager({ activities: initialActivities, groups, recip
   const previousNavigationDay = selectedNavigationDayIndex > 0 ? activityDayGroups[selectedNavigationDayIndex - 1] : undefined;
   const nextNavigationDay = selectedNavigationDayIndex >= 0 ? activityDayGroups[selectedNavigationDayIndex + 1] : undefined;
 
+  useEffect(() => {
+    selectedActivityButtonRef.current?.scrollIntoView?.({ block: "nearest", inline: "center" });
+  }, [selectedNavigationActivity?.id, selectedNavigationDay?.date]);
+
   const availableExtraRecipients = recipients
     .filter((item) => !submissionIds.includes(item.id))
     .sort((left, right) => displayName(left).localeCompare(displayName(right), "pl"));
@@ -360,7 +365,7 @@ export function AttendanceManager({ activities: initialActivities, groups, recip
 
   return <>
      <form className="admin-form attendance-create-form" id="attendance-create-form" onSubmit={createActivity}>
-         <div className="attendance-create-heading"><div><h2>{formMode === "new" ? "Nowe zajęcia" : "Wybierz zajęcia"}</h2></div>{formMode === "select" ? <div className="attendance-filter-toggle-row"><div aria-label="Zajęcia w wybranym dniu" className="attendance-nearest-activities">{selectedNavigationDay ? <><strong className="attendance-nearest-date">{selectedNavigationDay.date} ({shortActivityWeekday(selectedNavigationDay.date)})</strong><div className="attendance-nearest-activity-row"><button aria-label="Poprzedni dzień z zajęciami" className="attendance-nearest-arrow" disabled={!previousNavigationDay} onClick={() => { if (previousNavigationDay) applyActivity(previousNavigationDay.activities[0]); }} type="button">←</button><div className="attendance-nearest-day">{selectedNavigationDay.activities.map((activity) => { const groupName = activityGroupIds(activity, groups).map((id) => groups.find((group) => group.id === id)?.name).filter(Boolean).join(", ") || "Bez grupy"; return <button aria-label={`Wybierz ${activity.name}, ${dateValue(activity.activityDate)} ${timeValue(activity.startsAt)}, ${groupName}`} className={activity.id === formActivityId ? "attendance-nearest-activity attendance-nearest-activity-active" : "attendance-nearest-activity"} key={activity.id} onClick={() => applyActivity(activity)} title={`${activity.name}, ${dateValue(activity.activityDate)} ${timeValue(activity.startsAt)}, ${groupName}`} type="button"><strong>{timeValue(activity.startsAt)}</strong><small>{groupName}</small></button>; })}</div><button aria-label="Następny dzień z zajęciami" className="attendance-nearest-arrow" disabled={!nextNavigationDay} onClick={() => { if (nextNavigationDay) applyActivity(nextNavigationDay.activities[0]); }} type="button">→</button></div></> : <span className="attendance-nearest-empty">Brak zajęć</span>}</div></div> : null}<div className="attendance-create-actions">{formMode === "select" ? <button aria-expanded={filtersOpen} className="attendance-filter-toggle" onClick={() => setFiltersOpen((current) => !current)} type="button">Filtruj{hasActivityFilters ? ` · ${[activityDateFrom, activityDateTo, activityGroupId, activityTimeFrom, activityTimeTo].filter(Boolean).length}` : ""}</button> : null}{formMode === "select" ? <button className="attendance-create-mode-button" onClick={startNewActivity} type="button">+ Nowe zajęcia</button> : <button className="attendance-create-mode-button" onClick={startSelectingActivity} type="button">Wybierz zajęcia</button>}</div></div>
+         <div className="attendance-create-heading"><div><h2>{formMode === "new" ? "Nowe zajęcia" : "Wybierz zajęcia"}</h2></div>{formMode === "select" ? <div className="attendance-filter-toggle-row"><div aria-label="Zajęcia w wybranym dniu" className="attendance-nearest-activities">{selectedNavigationDay ? <><strong className="attendance-nearest-date">{selectedNavigationDay.date} ({shortActivityWeekday(selectedNavigationDay.date)})</strong><div className="attendance-nearest-activity-row"><button aria-label="Poprzedni dzień z zajęciami" className="attendance-nearest-arrow" disabled={!previousNavigationDay} onClick={() => { if (previousNavigationDay) applyActivity(previousNavigationDay.activities[0]); }} type="button">←</button><div className="attendance-nearest-day">{selectedNavigationDay.activities.map((activity) => { const groupName = activityGroupIds(activity, groups).map((id) => groups.find((group) => group.id === id)?.name).filter(Boolean).join(", ") || "Bez grupy"; return <button aria-label={`Wybierz ${activity.name}, ${dateValue(activity.activityDate)} ${timeValue(activity.startsAt)}, ${groupName}`} className={activity.id === formActivityId ? "attendance-nearest-activity attendance-nearest-activity-active" : "attendance-nearest-activity"} key={activity.id} onClick={() => applyActivity(activity)} ref={activity.id === formActivityId ? selectedActivityButtonRef : undefined} title={`${activity.name}, ${dateValue(activity.activityDate)} ${timeValue(activity.startsAt)}, ${groupName}`} type="button"><strong>{timeValue(activity.startsAt)}</strong><small>{groupName}</small></button>; })}</div><button aria-label="Następny dzień z zajęciami" className="attendance-nearest-arrow" disabled={!nextNavigationDay} onClick={() => { if (nextNavigationDay) applyActivity(nextNavigationDay.activities[0]); }} type="button">→</button></div></> : <span className="attendance-nearest-empty">Brak zajęć</span>}</div></div> : null}<div className="attendance-create-actions">{formMode === "select" ? <button aria-expanded={filtersOpen} className="attendance-filter-toggle" onClick={() => setFiltersOpen((current) => !current)} type="button">Filtruj{hasActivityFilters ? ` · ${[activityDateFrom, activityDateTo, activityGroupId, activityTimeFrom, activityTimeTo].filter(Boolean).length}` : ""}</button> : null}{formMode === "select" ? <button className="attendance-create-mode-button" onClick={startNewActivity} type="button">+ Nowe zajęcia</button> : <button className="attendance-create-mode-button" onClick={startSelectingActivity} type="button">Wybierz zajęcia</button>}</div></div>
           {formMode === "select" ? <>
             {filtersOpen ? <div className="attendance-activity-filters">
               <label>Data od<input aria-label="Data zajęć od" onChange={(event) => updateActivityFilters({ dateFrom: event.target.value })} type="date" value={activityDateFrom} /></label>

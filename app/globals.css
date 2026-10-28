@@ -130,6 +130,7 @@
 
 html {
   scroll-behavior: smooth;
+  scroll-padding-top: 5rem;
   overflow-x: hidden;
   overflow-x: clip;
 }
@@ -272,9 +273,9 @@ h3 {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(19rem, 0.8fr);
   align-items: center;
-  min-height: 38rem;
+  min-height: 34rem;
   gap: 3rem;
-  padding-block: 4.5rem;
+  padding-block: 3.5rem;
 }
 
 .eyebrow {
@@ -500,7 +501,7 @@ h2 {
 .gallery-section,
 .blog-section,
 .contact-section {
-  padding-block: 7rem;
+  padding-block: 5.5rem;
 }
 
 .intro-section {
@@ -575,7 +576,7 @@ h2 {
 .biography-details[open] summary span { transform: rotate(180deg); }
 .biography-details > div { padding-top: .8rem; }
 
-.testimonials-section { padding-block: 6rem; background: var(--cream-deep); }
+.testimonials-section { padding-block: 5rem; background: var(--cream-deep); }
 .testimonials-grid { display: grid; grid-template-columns: 1fr 1fr; align-items: center; gap: clamp(2rem, 8vw, 7rem); }
 .testimonials-grid h2 { max-width: 30rem; margin-bottom: 1rem; }
 .testimonials-grid > div > p:not(.eyebrow) { max-width: 29rem; color: var(--gray-light); line-height: 1.7; }
@@ -693,7 +694,7 @@ h2 {
 }
 
 .benefits-section {
-  padding-block: 7rem;
+  padding-block: 5.5rem;
   background: var(--benefits-background);
 }
 
@@ -1879,6 +1880,10 @@ h2 {
 }
 
 @media (max-width: 680px) {
+  html {
+    scroll-padding-top: 4.5rem;
+  }
+
   .site-shell {
     width: min(100% - 2.25rem, 74rem);
   }
@@ -1893,7 +1898,7 @@ h2 {
 
   .hero-grid {
     min-height: auto;
-    padding-block: 3.3rem;
+    padding-block: 2.8rem;
   }
 
   h1 {
@@ -1928,7 +1933,7 @@ h2 {
   .contact-section,
   .benefits-section,
   .testimonials-section {
-    padding-block: 4.6rem;
+    padding-block: 3.6rem;
   }
 
   .section-heading,
@@ -3103,7 +3108,7 @@ h2 {
   display: flex;
   flex-direction: column;
   gap: .3rem;
-  min-height: 60rem;
+  min-height: 0;
   padding: .3rem;
   position: relative;
   scroll-snap-align: center;
@@ -3119,7 +3124,8 @@ h2 {
   border: 1px solid transparent;
   border-radius: .4rem;
   cursor: pointer;
-  flex: 1;
+  flex: 1 1 3rem;
+  max-height: 3rem;
   min-height: 2.65rem;
   padding: 0;
   transition: background .15s ease, border-color .15s ease, transform .15s ease;
@@ -5040,7 +5046,7 @@ h2 {
   .admin-calendar-grid { grid-template-columns: repeat(7, minmax(12rem, 1fr)); }
   .admin-calendar-board { grid-template-columns: 3.5rem repeat(7, minmax(9rem, 1fr)); min-width: 68rem; }
   .admin-calendar-board-corner { min-width: 3.5rem; }
-  .admin-calendar-board-column { min-height: 60rem; }
+  .admin-calendar-board-column { min-height: 0; }
   .attendance-activity-picker { font-size: .9rem; padding-inline: .6rem; }
   .attendance-activity-filters { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .attendance-clear-filters { width: 100%; }
