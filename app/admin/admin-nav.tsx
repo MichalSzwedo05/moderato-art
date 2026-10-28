@@ -3,6 +3,14 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 
+const WHATSAPP_PHONE = "48605946678";
+const WHATSAPP_WEB_URL = `https://web.whatsapp.com/send?phone=${WHATSAPP_PHONE}`;
+const WHATSAPP_APP_URL = `https://wa.me/${WHATSAPP_PHONE}`;
+
+export function getWhatsAppUrl(isMobile: boolean, isLocalhost: boolean) {
+  return isMobile && !isLocalhost ? WHATSAPP_APP_URL : WHATSAPP_WEB_URL;
+}
+
 const items = [
   { href: "/admin/gallery", label: "Galeria" },
   { href: "/admin/articles", label: "Artykuły" },
@@ -13,6 +21,7 @@ const items = [
   { href: "/admin/attendance", label: "Obecność" },
   { href: "/admin/calendar", label: "Kalendarz" },
   { href: "/admin/submissions", label: "Zgłoszenia" },
+  { href: WHATSAPP_WEB_URL, label: "WhatsApp", whatsapp: true },
   { external: true, href: "https://docs.google.com/spreadsheets/d/1tek0IUfI64-xh0WTHq_fDGfskz91eNcg6lxGlduG25M/edit?usp=drive_web&ouid=106431518942586011282", label: "Zapisy Excel" },
 ];
 
@@ -20,8 +29,18 @@ export function AdminNav() {
   const pathname = usePathname();
   const router = useRouter();
 
+  function openWhatsApp() {
+    const isMobile = /Android|iPhone|iPad|iPod|Mobile|Windows Phone/i.test(navigator.userAgent);
+    const isLocalhost = ["localhost", "127.0.0.1", "[::1]"].includes(window.location.hostname);
+    window.location.assign(getWhatsAppUrl(isMobile, isLocalhost));
+  }
+
   function navigate(value: string) {
     if (!value) return;
+    if (value === "whatsapp") {
+      openWhatsApp();
+      return;
+    }
     if (value.startsWith("external:")) {
       window.open(value.slice("external:".length), "_blank", "noopener,noreferrer");
       return;
@@ -33,7 +52,19 @@ export function AdminNav() {
     <nav aria-label="Nawigacja panelu administracyjnego" className="admin-nav">
       <div className="admin-nav-links">
         {items.map((item) => (
-          item.external ? (
+          item.whatsapp ? (
+            <a
+              className="admin-nav-link"
+              href={item.href}
+              key={item.href}
+              onClick={(event) => {
+                event.preventDefault();
+                openWhatsApp();
+              }}
+            >
+              {item.label}
+            </a>
+          ) : item.external ? (
             <a className="admin-nav-link" href={item.href} key={item.href} rel="noreferrer" target="_blank">{item.label}</a>
           ) : (
             <Link className={pathname === item.href ? "admin-nav-link admin-nav-link-active" : "admin-nav-link"} href={item.href} key={item.href}>{item.label}</Link>
@@ -42,7 +73,7 @@ export function AdminNav() {
       </div>
       <label className="admin-nav-mobile-label" htmlFor="admin-nav-mobile">Przejdź do</label>
       <select aria-label="Nawigacja panelu administracyjnego" className="admin-nav-mobile" id="admin-nav-mobile" onChange={(event) => navigate(event.target.value)} value={pathname}>
-        {items.map((item) => <option key={item.href} value={item.external ? `external:${item.href}` : item.href}>{item.label}</option>)}
+        {items.map((item) => <option key={item.href} value={item.whatsapp ? "whatsapp" : item.external ? `external:${item.href}` : item.href}>{item.label}</option>)}
       </select>
     </nav>
   );
